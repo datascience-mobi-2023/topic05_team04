@@ -1,3 +1,41 @@
-#clean data
-result = 3 + 7
-print(result)
+---
+title: "Drug repurposing for breast cancer treatment - team04"
+author: "Simon Westermann, Luis Herfurth, Aaron Eidenmüller, Sharujan Suthakaran"
+date: "04/29/2023"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Information about the data
+
+I just loaded the rda files in here. If you moved the rda files and this rmd in the same working directory, than the load command will work for you aswell.
+
+```{r}
+load("prism_datasets.rda")
+load("cellline_datasets.rda")
+```
+
+### Prism Datasets  
+
+**Prism:** effect of the treatment (columns) on cell growth of the cell lines (rows); includes drug, dosage and assay used
+
+**Prism.treat:** for each treatment (rows)     further information on the treatment and   drug
+
+**Prism.cl:** contains information about the    different celllines    
+*if we search after "breast" in the column lineage we get our 22 celllines*
+
+### Cellline Datasets  
+
+**Prism.exp:** contains levels of gene expression. Celllines (rows) and genes (columns)
+
+**Prism.cnv:** contains copy number levels of genes. Normal is CN = 2. Gene names (rows) and celllines (columns)
+
+**Prism.snv:** marks mutation in the different celllines als functional or nonfunctional to the cancer.
+
+**Prism.achilles:** has information on how important a gene is for cell survival. Was generated using knockdown celllines. Gene names (rows) and celllines (colums)
+   
+   
+## Clean up of the data
