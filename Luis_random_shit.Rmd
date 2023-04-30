@@ -11,11 +11,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Information about the data
 
-I just loaded the rda files in here. If you moved the rda files and this rmd in the same working directory, than the load command will work for you aswell.
+I just loaded the rda files in here. If you moved the rda files and this rmd in the same working directory, than the load command will work for you aswell. 
 
 ```{r}
 load("prism_datasets.rda")
-load("cellline_datasets.rda")
+load("celllines_datasets.rda")
+
 ```
 
 ### Prism Datasets  
