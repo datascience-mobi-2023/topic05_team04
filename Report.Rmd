@@ -2,7 +2,7 @@
 title: "Drug repurposing for breast cancer treatment - team04"
 author: "Simon Westermann, Luis Herfurth, Aaron Eidenmüller, Sharujan Suthakaran"
 date: "29.April 2023"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
