@@ -1,6 +1,7 @@
+```{r}
 load("/Users/luisherfurth/Codenmachtspass/prism_datasets.rda")
 load("/Users/luisherfurth/Codenmachtspass/cellline_datasets.rda")
-
+```
 
 Checkt wie viele Zeilen und Spalten NA`s drin haben
 ```{r}
