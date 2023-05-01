@@ -1,0 +1,45 @@
+load("/Users/luisherfurth/Codenmachtspass/prism_datasets.rda")
+load("/Users/luisherfurth/Codenmachtspass/cellline_datasets.rda")
+
+
+Checkt wie viele Zeilen und Spalten NA`s drin haben
+```{r}
+str(prism)
+sum(is.na(prism)) ##432639
+sum(apply(prism, 1, function(x){any(is.na(x))})) ##481
+sum(apply(prism, 2, function(x){any(is.na(x))})) ##11168
+```
+--> Macht kein Sinn dies Spalten mit NA`s zu löschen, weil es zu viele sind
+
+```{r}
+min(prism, na.rm = TRUE) ##-12.06536
+max(prism, na.rm = TRUE) ##5.007653
+length(which(prism == "0")) ## 0 => keine mit genau 0
+```
+
+```{r}
+sum(apply(prism, 2, function(x){all(is.na(x))})) ## 43 Spalten mit nur NA`s
+NA.col <- colnames(prism[which(sapply(prism, class) == "logical")]) ## Die 43 Spalten mit nur NA`s
+rem.NAcol <- which(colnames(prism) %in% NA.col)
+sum(is.na(prism[,-rem.NAcol])) ## 411956
+```
+--> 411956 NA`s in den restlichen Spalten
+
+
+
+```{r}
+library(pheatmap)
+pheatmap(prism[, -rem.NAcol], show_rownames = FALSE, show_colnames = FALSE,
+        color = colorRampPalette(c("blue", "white", "red"))(100))
+```
+
+```{r}
+mean(colMeans(is.na(prism[,-rem.NAcol]))) #0.07698 => 7.7% NA`s in jeder Spalte
+hist(colMeans(is.na(prism[,-rem.NAcol])), breaks = 100, xlab = "NA Anteil", main = "Histogramm der NA Anteile")
+```
+
+```{r}
+```
+
+```{r}
+```
