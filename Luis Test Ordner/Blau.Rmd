@@ -33,6 +33,7 @@ hist(colMeans(is.na(prism[,-rem.NAcol])), breaks = 100, xlab = "NA Anteil", main
 
 ```{r}
 library(pheatmap)
+sum(is.na(replace(prism, prism == "NA", NA)))
 prismNA0 <- prism[, -rem.NAcol]
 prismNA0 <- prismNA0[is.na(prismNA0)] <- 0
 
