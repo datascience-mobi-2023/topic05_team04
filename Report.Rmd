@@ -23,9 +23,9 @@ load("celllines_datasets.rda")
 
 **Prism:** effect of the treatment (columns) on cell growth of the cell lines (rows); includes drug, dosage and assay used
 
-**Prism.treat:** for each treatment (rows)     further information on the treatment and   drug
+**Prism.treat:** for each treatment (rows) further information on the treatment and drug
 
-**Prism.cl:** contains information about the    different celllines    
+**Prism.cl:** contains information about the different celllines    
 *if we search after "breast" in the column lineage we get our 22 celllines*
 
 ### Cellline Datasets  
