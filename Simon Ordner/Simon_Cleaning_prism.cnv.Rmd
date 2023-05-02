@@ -37,8 +37,10 @@ ID_breast_prism.cl <- breast_prism.cl$DepMap_ID #extract Cell names
 rows_breast_prism.cnv <- which(rownames(prism.cnv) %in% c(ID_breast_prism.cl)) #extract breast rows from prism.cnv
 breast_prism.cnv <- prism.cnv[rows_breast_prism.cnv, ] #df prism.cnv with just breast rows
 
-sum(is.na(breast_prism.cnv)) #0 -> no NA value
-
+breast_prism.cnv <- replace(breast_prism.cnv, breast_prism.cnv =='NA', NA)
+prism.cnv <- replace(prism.cnv, prism.cnv =='NA', NA)
+sum(is.na(breast_prism.cnv)) #0 -> no NA values
+sum(is.na(prism.cnv)) #0 -> no NA values
 
 ```
 ```{r}
