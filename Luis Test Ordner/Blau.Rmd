@@ -5,7 +5,6 @@ load("/Users/luisherfurth/Codenmachtspass/cellline_datasets.rda")
 
 Checkt wie viele Zeilen und Spalten NA`s drin haben
 ```{r}
-str(prism)
 sum(is.na(prism)) ##432639
 sum(apply(prism, 1, function(x){any(is.na(x))})) ##481
 sum(apply(prism, 2, function(x){any(is.na(x))})) ##11168
@@ -29,14 +28,19 @@ sum(is.na(prism[,-rem.NAcol])) ## 411956
 
 
 ```{r}
-library(pheatmap)
-pheatmap(prism[, -rem.NAcol], show_rownames = FALSE, show_colnames = FALSE,
-        color = colorRampPalette(c("blue", "white", "red"))(100))
+
 ```
 
 ```{r}
 mean(colMeans(is.na(prism[,-rem.NAcol]))) #0.07698 => 7.7% NA`s in jeder Spalte
 hist(colMeans(is.na(prism[,-rem.NAcol])), breaks = 100, xlab = "NA Anteil", main = "Histogramm der NA Anteile")
+```
+
+```{r}
+library(pheatmap)
+prism[is.na(prism)] <- 0
+pheatmap(prism[, -rem.NAcol], show_rownames = FALSE, show_colnames = FALSE,
+        color = colorRampPalette(c("blue", "white", "red"))(100))
 ```
 
 ```{r}
