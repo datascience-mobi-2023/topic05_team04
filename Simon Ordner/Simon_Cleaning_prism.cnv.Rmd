@@ -1,0 +1,51 @@
+---
+title: "Cleaning prism.cnv - team04"
+author: "Simon Westermann"
+date: "02.May 2023"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heidelberg/Module/BioInfo/BioInfoProjekt/prism_datasets.rda")
+load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heidelberg/Module/BioInfo/BioInfoProjekt/cellline_datasets.rda")
+rm(prism, prism.achilles, prism.exp, prism.snv, prism.treat)
+```
+
+**Prism.cl:** contains information about the different celllines    
+*if we search after "breast" in the column lineage we get our 22 celllines*
+
+**Prism.cnv:** contains copy number levels of genes. Normal is CN = 2. Gene names (rows) and celllines (columns)
+
+## Clean up of the data
+
+```{r Search cells in prism.cl}
+rows_breast_prism.cl <- which(prism.cl$lineage == 'breast') #filter out our cells 
+breast_prism.cl <- prism.cl[c(rows_breast_prism.cl), ]  #df with just breast cell lines
+
+breast_prism.cl <- replace(breast_prism.cl, breast_prism.cl =='NA', NA) #replaces all 'NA' with real NA
+rm.NA.col_breast_prism.cl <- which(colSums(is.na(breast_prism.cl)) == 22 )#removes NA columns
+breast_prism.cl <- breast_prism.cl[ ,-rm.NA.col_breast_prism.cl] #df without NA columns
+ID_breast_prism.cl <- breast_prism.cl$DepMap_ID #extract Cell names 
+```
+
+```{r Search for cells in prism.cnv}
+rows_breast_prism.cnv <- which(rownames(prism.cnv) %in% c(ID_breast_prism.cl)) #extract breast rows from prism.cnv
+breast_prism.cnv <- prism.cnv[rows_breast_prism.cnv, ] #df prism.cnv with just breast rows
+
+sum(is.na(breast_prism.cnv)) #0 -> no NA value
+
+
+```
+```{r}
+library(pheatmap)
+my_breaks <- seq(min(breast_prism.cnv), max(breast_prism.cnv))
+my_palette <- colorRampPalette(c("yellow", "green", "red"), space = "rgb")(6)
+pheatmap(breast_prism.cnv, show_rownames = FALSE, show_colnames = FALSE, cluster_cols = FALSE, cluster_rows = FALSE, col = my_palette, breaks = my_breaks)
+#heatmap does not work yet; i copied a lot from luigis "blau"
+```
+
