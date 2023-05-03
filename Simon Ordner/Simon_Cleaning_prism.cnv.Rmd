@@ -50,4 +50,10 @@ my_palette <- colorRampPalette(c("yellow", "green", "red"), space = "rgb")(6)
 pheatmap(breast_prism.cnv, show_rownames = FALSE, show_colnames = FALSE, cluster_cols = FALSE, cluster_rows = FALSE, col = my_palette, breaks = my_breaks)
 #heatmap does not work yet; i copied a lot from luigis "blau"
 ```
+```{r}
+library(pheatmap)
+my_breaks_prism.cnv <- seq(min(prism.cnv), max(prism.cnv))
+my_palette <- colorRampPalette(c("yellow", "green", "red"), space = "rgb")(6)
+pheatmap(prism.cnv, show_rownames = FALSE, show_colnames = FALSE, cluster_cols = FALSE, cluster_rows = FALSE, col = my_palette, breaks = my_breaks)
+```
 
