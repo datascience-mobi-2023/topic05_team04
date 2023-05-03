@@ -2,8 +2,8 @@
 load("/Users/luisherfurth/Codenmachtspass/prism_datasets.rda")
 load("/Users/luisherfurth/Codenmachtspass/cellline_datasets.rda")
 ```
-
-Checkt wie viele Zeilen und Spalten NA`s drin haben
+#### prism_datasets.rda
+## Checkt wie viele Zeilen und Spalten NA`s drin haben
 ```{r}
 sum(is.na(prism)) ##432639
 sum(apply(prism, 1, function(x){any(is.na(x))})) ##481
@@ -11,32 +11,40 @@ sum(apply(prism, 2, function(x){any(is.na(x))})) ##11168
 ```
 --> Macht kein Sinn dies Spalten mit NA`s zu löschen, weil es zu viele sind
 
+## Min und Max Werte
 ```{r}
 min(prism, na.rm = TRUE) ##-12.06536
 max(prism, na.rm = TRUE) ##5.007653
 length(which(prism == "0")) ## 0 => keine mit genau 0
 ```
 
+## Entfernen der Spalten mit nur NA`s
 ```{r}
 sum(apply(prism, 2, function(x){all(is.na(x))})) ## 43 Spalten mit nur NA`s
-NA.col <- colnames(prism[which(sapply(prism, class) == "logical")]) ## Die 43 Spalten mit nur NA`s
-rem.NAcol <- which(colnames(prism) %in% NA.col)
-sum(is.na(prism[,-rem.NAcol])) ## 411956
+p_onlyNA.col <- colnames(prism[which(sapply(prism, class) == "logical")]) ## Die 43 Spalten mit nur NA`s
+rem.pNAcol <- which(colnames(prism) %in% p_onlyNA.col)
+sum(is.na(prism[,-rem.pNAcol])) ## 411956
 ```
 --> 411956 NA`s in den restlichen Spalten
 
-
+## Verteilung der NA`s
 ```{r}
-mean(colMeans(is.na(prism[,-rem.NAcol]))) #0.07698 => 7.7% NA`s in jeder Spalte
-hist(colMeans(is.na(prism[,-rem.NAcol])), breaks = 100, xlab = "NA Anteil", main = "Histogramm der NA Anteile")
+mean(colMeans(is.na(prism[,-rem.pNAcol]))) #0.07698 => 7.7% NA`s in jeder Spalte
+hist(colMeans(is.na(prism[,-rem.pNAcol])), breaks = 100, xlab = "NA Anteil", main = "Histogramm der NA Anteile")
 ```
 
+
+## NA zu Nullen machen und in prismNAO speichern
 ```{r}
 library(pheatmap)
 sum(is.na(replace(prism, prism == "NA", NA)))
-prismNA0 <- prism[, -rem.NAcol]
-prismNA0 <- prismNA0[is.na(prismNA0)] <- 0
+prismNA <- prism[, -rem.pNAcol]
+prismNA0 <- prismNA[is.na(prismNA)] <- 0
+```
+--> Frage ist wie sinnvoll das ist, eher durch Mittelwert der Spalte ersetzen?
 
+## Versuch es in einer heatmap darzustellen
+#```{r}
 # Erstellen einer benutzerdefinierten Farbpalette mit schwarzer Farbe für Null-Werte und einer normalen Farbskala für alle anderen Werte
 my_palette <- colorRampPalette(c("white", "red"), space = "rgb")(16)
 my_palette <- c(my_palette, "black")
@@ -45,11 +53,36 @@ my_breaks <- seq(min(prismNA0, na.rm = TRUE), max(prismNA0, na.rm = TRUE), 17)
 # Verwenden der benutzerdefinierte Farbpalette und Breaks in der heatmap
 pheatmap(prismNA0, show_rownames = FALSE, show_colnames = FALSE, cluster_cols = FALSE, cluster_rows = FALSE,
          col = my_palette, breaks = my_breaks)
-```
+#```
 
+#### subset breastcancer celllines
+## Auswählen des Brustkrebs Datensatzes
 ```{r}
-
+breast_prism <- prism[which(prism.cl$lineage ==  "breast"), ]
+sum(is.na(breast_prism)) ## 26045 NA´s
+sum(apply(breast_prism, 2, function(x){any(is.na(x))})) #9673 Spalten mit NA`s
+mean(colMeans(is.na(breast_prism))) #0.106 => 10.6% NA`s in jeder Spalte
 ```
+--> NA`s müssen vermutlich ersetzt werden
 
+## Imputation of NA`s durch Mittwert der Spalte
 ```{r}
+bp_onlyNA.col <- colnames(breast_prism[which(colSums(is.na(breast_prism)) == 22)]) 
+rem.bpNAcol <- which(colnames(breast_prism) %in% bp_onlyNA.col)
+breast_prism_imp <- breast_prism[, -rem.bpNAcol] ## --> entfernen der Spalten mit nur NA`s
+
+breast_prism_imp <- as.data.frame(apply(breast_prism_imp, 2, function(x) {
+    is_na <- is.na(x)
+    x[is_na] <- mean(x, na.rm = TRUE)
+    return(x)
+})) ## --> ersetzen der NA`s mit dem Mittelwert der Spalte
+
+sum(is.na(breast_prism_imp)) #0 NA´s => hat funktioniert
+```
+--> Neuer Dataframe mit ersetzen NA`s durch Mittelwert der Spalte
+
+## Versuch es in einer heatmap darzustellen
+```{r}
+library(pheatmap)
+pheatmap(breast_prism_imp, show_rownames = FALSE, show_colnames = FALSE)
 ```
