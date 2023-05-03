@@ -84,5 +84,6 @@ sum(is.na(breast_prism_imp)) #0 NA´s => hat funktioniert
 ## Versuch es in einer heatmap darzustellen
 ```{r}
 library(pheatmap)
-pheatmap(breast_prism_imp, show_rownames = FALSE, show_colnames = FALSE)
+heatmapbreast <- pheatmap(breast_prism_imp, show_rownames = FALSE, show_colnames = FALSE)
+heatmapbreast
 ```
