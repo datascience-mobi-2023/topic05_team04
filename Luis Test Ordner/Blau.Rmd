@@ -38,9 +38,9 @@ prismNA0 <- prism[, -rem.NAcol]
 prismNA0 <- prismNA0[is.na(prismNA0)] <- 0
 
 # Erstellen einer benutzerdefinierten Farbpalette mit schwarzer Farbe für Null-Werte und einer normalen Farbskala für alle anderen Werte
-my_palette <- colorRampPalette(c("white", "red"), space = "rgb")(99)
+my_palette <- colorRampPalette(c("white", "red"), space = "rgb")(16)
 my_palette <- c(my_palette, "black")
-my_breaks <- seq(min(prismNA0, na.rm = TRUE), max(prismNA0, na.rm = TRUE), length.out = length(my_palette))
+my_breaks <- seq(min(prismNA0, na.rm = TRUE), max(prismNA0, na.rm = TRUE), 17)
 
 # Verwenden der benutzerdefinierte Farbpalette und Breaks in der heatmap
 pheatmap(prismNA0, show_rownames = FALSE, show_colnames = FALSE, cluster_cols = FALSE, cluster_rows = FALSE,
