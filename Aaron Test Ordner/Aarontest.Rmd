@@ -1,1 +1,65 @@
-#hello
+```{r}
+load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/prism_datasets.rda")
+load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/cellline_datasets.rda")
+
+```
+
+```{r}
+sum(is.na(prism.achilles))
+dim(prism.achilles)
+
+```
+```{r}
+sum(apply(prism.achilles, 1, function(x){any(is.na(x))})) #3
+sum(apply(prism.achilles, 2, function(x){any(is.na(x))})) #1936
+
+#Only three cell lines have NA values. But which?
+
+na.celllines <- which(apply(prism.achilles, 1, function(row) any(is.na(row))))
+#ACH-000836 ACH-000901 ACH-000939 
+   #    277        309        323 
+prism.cl[na.celllines,]
+#SUIT2_PANCREAS pancreas cancer
+#TCCSUP_URINARY_TRACT urinary tract cancer
+#NCIH1703_LUNG lung cancer
+
+#Which percentage of values are NA values?
+na.amount <- apply(prism.achilles[na.celllines,],1, function(x) {
+  sum(is.na(x))
+})
+(na.amount)/(ncol(prism.achilles))
+
+#ACH-000836 ACH-000901 ACH-000939 
+#0.07163751 0.03896462 0.07163751
+
+```
+The percentage is about 3%-7% of all genes for these cell lines.
+To investigate how to imputate we will have to look at the median and mean
+
+```{r}
+apply(prism.achilles[na.celllines,],1 ,function(x){
+mean(x,na.rm=TRUE)  
+} )
+#ACH-000836 ACH-000901 ACH-000939 
+#-0.1623019 -0.1582249 -0.1437818
+apply(prism.achilles[na.celllines,],1 ,function(x){
+median(x,na.rm=TRUE)  
+} )
+#ACH-000836  ACH-000901  ACH-000939 
+#-0.06607414 -0.06220032 -0.05627875 
+
+```
+The median and mean differ. We try to imputate the median as the NA values
+```{r}
+
+prism.achilles.rm <-apply(prism.achilles, 1, function(x) {
+  x[which(is.na(x))] <- median(x, na.rm = TRUE)
+  return(x)
+})
+
+head(prism.achilles.rm)
+
+library(pheatmap)
+pheatmap(prism.achilles.rm, show_rownames=FALSE, show_colnames= FALSE)
+```
+
