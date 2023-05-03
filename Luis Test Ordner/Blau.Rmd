@@ -34,26 +34,24 @@ hist(colMeans(is.na(prism[,-rem.pNAcol])), breaks = 100, xlab = "NA Anteil", mai
 ```
 
 
-## NA zu Nullen machen und in prismNAO speichern
+## Imputation of the NA`s with the colMeans
 ```{r}
-library(pheatmap)
-sum(is.na(replace(prism, prism == "NA", NA)))
 prismNA <- prism[, -rem.pNAcol]
-prismNA0 <- prismNA[is.na(prismNA)] <- 0
+prism_imp <- as.data.frame(apply(prismNA, 2, function(x) {
+    is_na <- is.na(x)
+    x[is_na] <- mean(x, na.rm = TRUE)
+    return(x)
+})) ## --> ersetzen der NA`s mit dem Mittelwert der Spalte
+
+sum(is.na(prism_imp))
 ```
 --> Frage ist wie sinnvoll das ist, eher durch Mittelwert der Spalte ersetzen?
 
 ## Versuch es in einer heatmap darzustellen
-#```{r}
-# Erstellen einer benutzerdefinierten Farbpalette mit schwarzer Farbe für Null-Werte und einer normalen Farbskala für alle anderen Werte
-my_palette <- colorRampPalette(c("white", "red"), space = "rgb")(16)
-my_palette <- c(my_palette, "black")
-my_breaks <- seq(min(prismNA0, na.rm = TRUE), max(prismNA0, na.rm = TRUE), 17)
-
-# Verwenden der benutzerdefinierte Farbpalette und Breaks in der heatmap
-pheatmap(prismNA0, show_rownames = FALSE, show_colnames = FALSE, cluster_cols = FALSE, cluster_rows = FALSE,
-         col = my_palette, breaks = my_breaks)
-#```
+```{r}
+library(pheatmap)
+pheatmap(prism_imp, show_rownames = FALSE, show_colnames = FALSE)
+```
 
 #### subset breastcancer celllines
 ## Auswählen des Brustkrebs Datensatzes
