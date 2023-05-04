@@ -83,33 +83,27 @@ sum(is.na(breast_prism_imp)) #0 NA´s => hat funktioniert
 ```{r}
 library(pheatmap)
 heatmapbreast <- pheatmap(breast_prism_imp, show_rownames = FALSE, show_colnames = FALSE)
-heatmapbreast
+#heatmapbreast
 ```
 
 ## Correlation between the drugs (columns) and celllines (rows)
 ```{r}
 ### For the drugs (columns)
-breast_col_cor <- cor(breast_prism_imp, method = "pearson", use = "pairwise.complete.obs")
-pheatmap(breast_col_cor, show_rownames = FALSE, show_colnames = FALSE) ## --> zu groß
+breast_col_cor <- cor(breast_prism_imp, method = "pearson")
+#pheatmap(breast_col_cor, show_rownames = FALSE, show_colnames = FALSE) ## --> zu groß
 
 ### For the celllines (rows)
-breast_row_cor <- cor(t(breast_prism_imp), method = "pearson", use = "pairwise.complete.obs")
-pheatmap(breast_row_cor, show_rownames = FALSE, show_colnames = FALSE)
+breast_row_cor <- cor(t(breast_prism_imp), method = "pearson")
+#pheatmap(breast_row_cor, show_rownames = FALSE, show_colnames = FALSE)
 
 ### Filter drugs that have a high correlation
 breast_col_cor_df <- as.data.frame(breast_col_cor)
 high_breast_cor <- which(breast_col_cor_df > 0.9, arr.ind = TRUE) ## Achtung jedes Paar 2x drin (Spalte und Zeile)
 
 ## Dopplungen?
-length(which(breast_col_cor_df == 1, arr.ind = TRUE)) ## 16654
+length(which(breast_col_cor_df == 1, arr.ind = TRUE)) ## 22248
 dim(breast_col_cor_df) ## 11124 x 11124
 ```
---> Es gibt mehr drugs mit cor = 1, als die auf Diagonalen => Dopplungen oder?
+--> Keine Dopplungen
 
-## Dopplungen finden
-```{r}
-breast_cor_double <- which(breast_col_cor_df == 1 & upper.tri(breast_col_cor_df), arr.ind = TRUE) 
-## schaut nur in der oberen Dreiecksmatrix nach Werten = 1 -> Dopplungen
-length(breast_cor_double) ## 0 ??? => keine Dopplungen
-```
---> Bruv, was ist da los? Warum gibt es keine Dopplungen?
+
