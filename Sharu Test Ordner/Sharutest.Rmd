@@ -1,0 +1,117 @@
+---
+title: "Drug repurposing for breast cancer treatment - team04"
+author: "Simon Westermann, Luis Herfurth, Aaron Eidenmüller, Sharujan Suthakaran"
+date: "29.April 2023"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Information about the data
+
+I just loaded the rda files in here. If you moved the rda files and this rmd in the same working directory, than the load command will work for you aswell.
+
+```{r}
+load("prism_datasets.rda")
+load("celllines_datasets.rda")
+
+library(knitr)
+library(rmdformats)
+
+```
+
+### Prism Datasets
+
+**Prism:** effect of the treatment (columns) on cell growth of the cell lines (rows); includes drug, dosage and assay used
+
+**Prism.treat:** for each treatment (rows) further information on the treatment and drug
+
+**Prism.cl:** contains information about the different celllines\
+*if we search after "breast" in the column lineage we get our 22 celllines*
+
+### Cellline Datasets
+
+**Prism.exp:** contains levels of gene expression. Celllines (rows) and genes (columns)
+
+**Prism.cnv:** contains copy number levels of genes. Normal is CN = 2. Gene names (rows) and celllines (columns).pr
+
+**Prism.snv:** marks mutation in the different celllines als functional or nonfunctional to the cancer.
+
+**Prism.achilles:** has information on how important a gene is for cell survival. Was generated using knockdown celllines. Gene names (rows) and celllines (colums)
+
+## Clean up of the data
+
+```{r}
+
+View(prism.exp)
+
+class(prism.exp)
+
+plot(prism.exp) #too many numbers for R to plot
+
+#dimension and column number available in environment
+
+getOption("max.print") 
+
+dim(prism.exp)
+
+
+
+
+
+####general info
+min(prism.exp, na.rm = T) # 0
+max(prism.exp, na.rm = T). # 17.25397
+
+###cleaning NAs
+sum(is.na(prism.exp)) #non or NA=0, no expression
+
+### checking for zeros instead of NA
+sum(which(prism.exp == 0)). #8,2244 x 10^12 zeros = not detected
+
+deviation <- apply(prism.exp, 2, function(x) sum(x == 0)/length(x))
+
+mean(apply(prism.exp, 2, function(x) sum(x == 0)/length(x))) #0.1531 => 15,3 % of each column is zero
+
+zeros.exp<- mean(apply(prism.exp, 2, function(x) sum(x == 0)/length(x)))
+
+deviation.exp <- deviation - zeros.exp
+
+hist(deviation.exp, breaks = 20)
+
+colzero.exp <- apply(prism.exp, 2, function(x) all(x == 0))
+
+which(colzero.exp) # 6 Genes not expressed in any cell
+
+#--> delete these columns?
+
+
+
+###breast cancer <> gene expression
+
+View(prism.cl)
+
+breast_prism.exp <- prism.exp[which(prism.cl$lineage == "breast"),]
+
+View(breast_prism.exp)
+
+sum(which(breast_prism.exp == 0))
+
+mean(apply(breast_prism.exp, 2, function(x) sum(x == 0)/length(x))) #0.1549 => 15,5 % of each column is zero
+
+breastzero.col <- apply(breast_prism.exp, 2, function(x) all(x == 0))
+
+sum(breastzero.col) # 449 Genes are not expressed in breast cancer cells
+
+#--> delete these columns?
+
+
+## next: correlation between cell lines (expressing same genes?), clustering by genom similiarities
+
+
+
+
+
+```
