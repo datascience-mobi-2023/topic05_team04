@@ -85,3 +85,10 @@ library(pheatmap)
 heatmapbreast <- pheatmap(breast_prism_imp, show_rownames = FALSE, show_colnames = FALSE)
 heatmapbreast
 ```
+
+## Correlation between the drugs (columns)
+```{r}
+breast_col_cor <- cor(breast_prism_imp, method = "pearson", use = "pairwise.complete.obs")
+dim(breast_col_cor)
+pheatmap(breast_col_cor, show_rownames = FALSE, show_colnames = FALSE)
+```
