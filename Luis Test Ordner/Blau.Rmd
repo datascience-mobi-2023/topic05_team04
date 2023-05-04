@@ -105,3 +105,11 @@ length(which(breast_col_cor_df == 1, arr.ind = TRUE)) ## 16654
 dim(breast_col_cor_df) ## 11124 x 11124
 ```
 --> Es gibt mehr drugs mit cor = 1, als die auf Diagonalen => Dopplungen oder?
+
+## Dopplungen finden
+```{r}
+breast_cor_double <- which(breast_col_cor_df == 1 & upper.tri(breast_col_cor_df), arr.ind = TRUE) 
+## schaut nur in der oberen Dreiecksmatrix nach Werten = 1 -> Dopplungen
+length(breast_cor_double) ## 0 ??? => keine Dopplungen
+```
+--> Bruv, was ist da los? Warum gibt es keine Dopplungen?
