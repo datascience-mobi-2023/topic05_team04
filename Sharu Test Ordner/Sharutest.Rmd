@@ -89,9 +89,9 @@ which(colzero.exp) # 6 Genes not expressed in any cell
 
 #--> delete these columns? Yes
 
+PRISM.exp <- prism.exp[, !colzero.exp]
 
-
-
+View(PRISM.exp)
 
 ###breast cancer <> gene expression
 
@@ -113,10 +113,26 @@ sum(breastzero.col) # 449 Genes are not expressed in breast cancer cells
 
 #--> delete these columns?
 
+breast_PRISM.exp <- breast_prism.exp[, !breastzero.col]
 
-## next: correlation between cell lines (expressing same genes?), clustering by genome similarities
+View(breast_PRISM.exp)
 
 
+
+#### next: correlation between cell lines (expressing same genes?), clustering by genome similarities
+
+##correlation between genes
+breast_PRISMexp.cor <- cor(breast_PRISM.exp, method = "pearson", use = "pairwise.complete.obs")
+
+dim(breast_PRISMexp.cor) # 18728 x 18728
+
+pheatmap(breast_PRISMexp.cor, show_rownames = F , show_colnames = F) #too big
+
+##kmeans
+
+wss <- sapply(1:10, function(x) kmeans(breast_PRISM.exp, x)$tot.withinss)
+
+plot(1:10, wss, type = "b", xlab = "N of clusters", ylab = "Total within sum of square") #very strange hahah
 
 
 
