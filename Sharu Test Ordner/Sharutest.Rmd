@@ -14,11 +14,13 @@ knitr::opts_chunk$set(echo = TRUE)
 I just loaded the rda files in here. If you moved the rda files and this rmd in the same working directory, than the load command will work for you aswell.
 
 ```{r}
-load("prism_datasets.rda")
-load("celllines_datasets.rda")
+load("~/Downloads/prism_datasets.rda")
+load("~/Downloads/cellline_datasets.rda")
+
 
 library(knitr)
 library(rmdformats)
+library(pheatmap)
 
 ```
 
@@ -63,13 +65,13 @@ dim(prism.exp)
 
 ####general info
 min(prism.exp, na.rm = T) # 0
-max(prism.exp, na.rm = T). # 17.25397
+max(prism.exp, na.rm = T) # 17.25397
 
 ###cleaning NAs
 sum(is.na(prism.exp)) #non or NA=0, no expression
 
 ### checking for zeros instead of NA
-sum(which(prism.exp == 0)). #8,2244 x 10^12 zeros = not detected
+sum(which(prism.exp == 0)) #8,2244 x 10^12 zeros = not detected
 
 deviation <- apply(prism.exp, 2, function(x) sum(x == 0)/length(x))
 
@@ -85,7 +87,9 @@ colzero.exp <- apply(prism.exp, 2, function(x) all(x == 0))
 
 which(colzero.exp) # 6 Genes not expressed in any cell
 
-#--> delete these columns?
+#--> delete these columns? Yes
+
+
 
 
 
@@ -96,6 +100,8 @@ View(prism.cl)
 breast_prism.exp <- prism.exp[which(prism.cl$lineage == "breast"),]
 
 View(breast_prism.exp)
+
+pheatmap(breast_prism.exp, show_rownames = F, show_colnames = F) # many Genes not detected (middle)
 
 sum(which(breast_prism.exp == 0))
 
@@ -108,7 +114,7 @@ sum(breastzero.col) # 449 Genes are not expressed in breast cancer cells
 #--> delete these columns?
 
 
-## next: correlation between cell lines (expressing same genes?), clustering by genom similiarities
+## next: correlation between cell lines (expressing same genes?), clustering by genome similarities
 
 
 
