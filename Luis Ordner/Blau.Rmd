@@ -105,5 +105,25 @@ length(which(breast_col_cor_df == 1, arr.ind = TRUE)) ## 22248
 dim(breast_col_cor_df) ## 11124 x 11124
 ```
 --> Keine Dopplungen
+```{r}
+pca_breast_p <- prcomp(t(breast_prism_imp), center = TRUE, scale = TRUE)
 
+## Plot the variance explained by the PCs
+variance = (pca_breast_p$sdev)^2
+prop.variance = variance/sum(variance)
+names(prop.variance) = 1:length(prop.variance)
+barplot(prop.variance[1:20],ylab='Proportion of variance') ## --> PC1 erklärt ~85% # --> PC2 erklärt ~2%
+
+## Filter the Lineage Subtypes
+breast_prism_cl <- prism.cl[which(prism.cl$lineage ==  "breast"), ]
+breast_subtype_p_cl <- as.factor(breast_prism_cl$lineage_subtype)
+
+## Plot the PCA
+color = c('green','red','blue')
+cb = color[breast_subtype_p_cl]
+plot(pca_breast_p$x[,1], pca_breast_p$x[,2],
+     col= cb, pch=19,
+     xlab='PC1',ylab='PC2');
+legend('bottomleft',legend=levels(breast_subtype_p_cl),pch=19,col=color)
+```
 
