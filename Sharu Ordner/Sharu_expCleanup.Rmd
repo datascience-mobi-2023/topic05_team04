@@ -118,6 +118,8 @@ breast_PRISM.exp <- breast_prism.exp[, !breastzero.col]
 View(breast_PRISM.exp)
 
 
+pheatmap(breast_PRISM.exp, show_rownames = T, show_colnames = F)
+
 
 #### next: correlation between cell lines (expressing same genes?), clustering by genome similarities
 
