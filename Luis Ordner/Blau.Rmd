@@ -79,18 +79,19 @@ sum(is.na(breast_prism_imp)) #0 NA´s => hat funktioniert
 ```
 --> Neuer Dataframe mit ersetzen NA`s durch Mittelwert der Spalte
 
-## Versuch es in einer heatmap darzustellen
+## Cell Growth dargstellt mit heatmap und Histogramm
 ```{r}
 library(pheatmap)
-heatmapbreast <- pheatmap(breast_prism_imp, show_rownames = FALSE, show_colnames = FALSE)
+heatmapbreast <- pheatmap(breast_prism_imp, show_rownames = TRUE, show_colnames = FALSE)
 heatmapbreast
+
+## Histogramm for the cell growth
 vec_breast <- unlist(sapply(breast_prism, function(x) x[is.numeric(x)]))
 vec_breast <- na.omit(vec_breast)
-hist(vec_breast, breaks = 100, xlab = "Cell Growth", main = "Overview of the Cell Growth")#;abline(v = mean(vec_breast, na.rm = TRUE), col = "red", lwd = 2, lty = 3);abline(v = quantile(breast_prism, probs = c(0.25, 0.5, 0.75), na.rm = TRUE), col = "blue", lwd = 2, lty= 3)
-```
+hist(vec_breast, breaks = 80, xlab = "Cell Growth", main = "Overview of the Cell Growth", xlim = c(-8, 2));abline(v = mean(vec_breast, na.rm = TRUE), col = "red", lwd = 2, lty = 3);abline(v = median(vec_breast, na.rm = TRUE), col = "blue", lwd = 2, lty= 3);legend("topleft", legend = c("mean", "median"), col = c("red", "blue"), lwd = 2, lty = 3)
 ```
 
-```
+
 
 ## Correlation between the drugs (columns) and celllines (rows)
 ```{r}
