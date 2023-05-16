@@ -82,8 +82,8 @@ sum(is.na(breast_prism_imp)) #0 NA´s => hat funktioniert
 ## Versuch es in einer heatmap darzustellen
 ```{r}
 library(pheatmap)
-#heatmapbreast <- pheatmap(breast_prism_imp, show_rownames = FALSE, show_colnames = FALSE)
-#heatmapbreast
+heatmapbreast <- pheatmap(breast_prism_imp, show_rownames = FALSE, show_colnames = FALSE)
+heatmapbreast
 vec_breast <- unlist(sapply(breast_prism, function(x) x[is.numeric(x)]))
 vec_breast <- na.omit(vec_breast)
 hist(vec_breast, breaks = 100, xlab = "Cell Growth", main = "Overview of the Cell Growth")#;abline(v = mean(vec_breast, na.rm = TRUE), col = "red", lwd = 2, lty = 3);abline(v = quantile(breast_prism, probs = c(0.25, 0.5, 0.75), na.rm = TRUE), col = "blue", lwd = 2, lty= 3)
