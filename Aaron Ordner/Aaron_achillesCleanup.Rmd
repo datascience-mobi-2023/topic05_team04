@@ -52,14 +52,11 @@ median(x,na.rm=TRUE)
 The median and mean differ. We try to imputate the median as the NA values
 ```{r}
 
-prism.achilles.rm <-apply(prism.achilles, 1, function(x) {
+prism.achilles.rm <-apply(prism.achilles, 2, function(x) {
   x[which(is.na(x))] <- median(x, na.rm = TRUE)
   return(x)
 })
 
-head(prism.achilles.rm)
 
-library(pheatmap)
-pheatmap(prism.achilles.rm, show_rownames=FALSE, show_colnames= FALSE)
 ```
 
