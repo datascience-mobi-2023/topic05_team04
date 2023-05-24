@@ -59,4 +59,53 @@ prism.achilles.rm <-apply(prism.achilles, 2, function(x) {
 
 
 ```
+Now we will calculate the mean, median, standard deviation, minimum and maximum of each gene
+```{r}
+prism.achilles.mean <- apply(prism.achilles.rm, 2, mean)
+
+prism.achilles.median <- apply(prism.achilles.rm, 2, median)
+
+prism.achilles.sd <- apply(prism.achilles.rm, 2, sd)
+
+prism.achilles.min <- apply(prism.achilles.rm, 2, min)
+
+prism.achilles.max <- apply(prism.achilles.rm, 2, max)
+```
+Now we try to put all of this information in a data frame
+
+```{r}
+prism.achilles.overview <- cbind(prism.achilles.mean, prism.achilles.median, prism.achilles.sd, prism.achilles.min, prism.achilles.max)
+colnames(prism.achilles.overview) <- c("mean", "median", "standard deviation", "minimum", "maximum")
+```
+The data frame "prism.achilles.overview" now contains all the above mentioned characteristics. Now we will look at the histogramms.
+
+```{r}
+hist(prism.achilles.overview[,1], main = "mean of all the prism.achilles genes", xlab = "mean")
+
+hist(prism.achilles.overview[,2], main = "median of all the prism.achilles genes", xlab = "median")
+
+hist(prism.achilles.overview[,3], main = "standard deviation of all the prism.achilles genes", xlab = "standard deviation")
+
+hist(prism.achilles.overview[,4], main = "minimum of all the prism.achilles genes", xlab = "minimum")
+
+hist(prism.achilles.overview[,5], main = "maximum of all the prism.achilles genes", xlab = "maximum")
+```
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
