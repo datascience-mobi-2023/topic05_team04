@@ -145,4 +145,53 @@ View(pca)
 
 plot(pca$x[,1],pca$x[,2], col= as.integer(breast_PRISM.exp$DPM1), pch=19 ,xlab = "PC1", ylab = "PC2") 
 
+View(prism.achilles) 
+
+
+class(breast_prism.exp)
+
+#k-means prism.exp mit Varianz
+
+breast_sd.exp <- apply(breast_prism.exp, 2, sd)
+
+min(breast_sd.exp)
+
+max(breast_sd.exp)
+
+hist(breast_sd.exp)
+
+test.exp <- breast_prism.exp[, which(breast_sd.exp > 2)]
+
+View(breast_big1.exp)
+
+View(test.exp)
+
+wss.exp <- sapply(1:10, function(x) kmeans(test.exp, x)$tot.withinss)
+
+plot(1:10, wss.exp, type = "b", xlab = "N of clusters", ylab = "Total within sum of square")
+
+
+#silhouette
+
+library(cluster)
+
+silhouette(test.integer) #does not work yet
+
+sum(is.na(breast_prism.exp))
+
+class(breast_prism.exp)
+
+test.integer <- apply(breast_prism.exp, 2, as.integer)
+
+rm(test.integer)
+
+
+D = dist(t(breast_prism.exp))
+
+km = kmeans(x=t(breast_prism.exp), centers = 2, nstart = 10)
+
+s = silhouette(km$cluster,D)
+
+plot(s)
+
 ```
