@@ -8,6 +8,41 @@ load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/cellline_datasets.rda")
 
 ```
 
+How about a kmeans clustering? (cell lines)
+```{r}
+wss.prism <- sapply(1:10, function(x) kmeans(breast_prism_imp, x)$tot.withinss)
+
+plot(1:10, wss.prism, type = "b", xlab = "N of clusters", ylab = "Total within sum of square")
+```
+
+```{r}
+wss.prism <- sapply(1:10, function(x) kmeans(t(breast_prism_imp), x)$tot.withinss)
+
+plot(1:10, wss.prism, type = "b", xlab = "N of clusters", ylab = "Total within sum of square")
+
+```
+not very helpful...
+
+```{r}
+D = dist(t(breast_prism_imp))
+library(cluster)
+
+km = kmeans(x=t(breast_prism_imp), centers = 2, nstart = 10)
+s = silhouette(km$cluster,D)
+plot(s)
+```
+```{r}
+library(cluster)
+
+silhouette_results <- vector("list", length = 10)  # Create an empty list to store silhouette results
+
+for (k in 1:6) {
+  km <- kmeans(t(breast_prism_imp), centers = k, nstart = 10)
+  silhouette_results[[k]] <- silhouette(km$cluster, D)
+}
+
+```
+
 
 
 
