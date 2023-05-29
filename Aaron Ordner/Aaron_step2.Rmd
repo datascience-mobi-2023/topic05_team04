@@ -24,25 +24,26 @@ plot(1:10, wss.prism, type = "b", xlab = "N of clusters", ylab = "Total within s
 not very helpful...
 
 ```{r}
-D = dist(t(breast_prism_imp))
+
+D <- dist(t(breast_prism_imp))
 library(cluster)
+sil <- vector()
 
-km = kmeans(x=t(breast_prism_imp), centers = 2, nstart = 10)
-s = silhouette(km$cluster,D)
-plot(s)
-```
-```{r}
-library(cluster)
-
-silhouette_results <- vector("list", length = 10)  # Create an empty list to store silhouette results
-
-for (k in 1:6) {
-  km <- kmeans(t(breast_prism_imp), centers = k, nstart = 10)
-  silhouette_results[[k]] <- silhouette(km$cluster, D)
+for (k in 1:12) {
+  km <- kmeans(x = t(breast_prism_imp), centers = k, iter.max = 10)
+  s <- silhouette(km$cluster, D)
+  sil <- c(sil, mean(s))
 }
+plot(1:12,sil)
+```
+The maximal QTR stage has been exceeded. This means we have to reduce the data.
+
+```{r}
+
+
+
 
 ```
-
 
 
 
