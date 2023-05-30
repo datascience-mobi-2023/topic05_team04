@@ -187,17 +187,22 @@ hist(lowest_mean_duplicate$colMeans_breast)
 library(umap)
 pref_drug_con_combo <- rownames(lowest_mean_duplicate)
 ## UMAP
-breast_cancer_umap <- umap(t(breast_prism_imp[,pref_drug_con_combo]), n_neighbors = 15, n_components = 2)
+breast_cancer_umap <- umap(t(breast_prism_imp[,pref_drug_con_combo]), n_neighbors = 15, n_components = 4)
 
 ## color regarding MOA
 imp_treat <- prism.treat[pref_drug_con_combo,]
 imp_treat_moa <- imp_treat$moa
 level_counts <- table(imp_treat_moa)
 sorted_levels <- names(sort(level_counts, decreasing = TRUE))
-top_10_levels <- sorted_levels[1:10]
+top_10_levels <- sorted_levels[1:20]
+color <- factor(imp_treat$moa, levels = top_10_levels)
+cb <- rainbow(length(top_10_levels))
+cb <- cb[color]
+imp_treat$color <- cb
+imp_treat$color[which(imp_treat$color == NA)] <- "grey"
 
 ## Plot the UMAP
-plot(breast_cancer_umap$layout, main = "UMAP of the Breastcancer celllines")
+plot(breast_cancer_umap$layout, main = "UMAP of the Breastcancer celllines", col = imp_treat$color, pch = 19)
 ```
 ```{r}
 #ggplot(breast_cancer_umap, aes(x = V1, y = V2)) + geom_point(size = 0.1) + theme_bw() + ggtitle("UMAP of the Breastcancer celllines")
