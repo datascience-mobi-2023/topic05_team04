@@ -136,15 +136,6 @@ plot(pca_breast_p$x[,1], pca_breast_p$x[,2],
 legend('bottomleft',legend=levels(breast_subtype_p_cl),pch=19,col=color)
 ```
 
-## UMAP für den Breastcancer teil
-```{r}
-library(umap)
-breast_cancer_umap <- umap(breast_prism_imp)
-colorumap <- as.factor(prism.treat$moa)
-#ggplot(breast_cancer_umap, aes(x = V1, y = V2)) + geom_point(size = 0.1) + theme_bw() + ggtitle("UMAP of the Breastcancer celllines")
-
-```
-
 ## checking for same drug different concentration
 ```{r}
 drugnames <- sub("::.*", "", colnames(breast_prism_imp))
@@ -185,11 +176,29 @@ for(i in 1:length(duplicate_drugs)) {
 head(lowest_mean_duplicate)
 ```
 
-## Finding what the most effective concentration is for each drug
+## Hier kann man sich bisschen die Verteilungen anchauen
 ```{r}
 hist(as.numeric(lowest_mean_duplicate$concentration))
 hist(lowest_mean_duplicate$colMeans_breast)
-
 ```
 
+## UMAP für den Breastcancer teil
+```{r}
+library(umap)
+pref_drug_con_combo <- rownames(lowest_mean_duplicate)
+## UMAP
+breast_cancer_umap <- umap(t(breast_prism_imp[,pref_drug_con_combo]), n_neighbors = 15, n_components = 2)
+
+## color regarding MOA
+imp_treat <- prism.treat[pref_drug_con_combo,]
+imp_treat_moa <- imp_treat$moa
+level_counts <- table(imp_treat_moa)
+sorted_levels <- names(sort(level_counts, decreasing = TRUE))
+top_10_levels <- sorted_levels[1:10]
+
+## Plot the UMAP
+plot(breast_cancer_umap$layout, main = "UMAP of the Breastcancer celllines")
+```
+```{r}
+#ggplot(breast_cancer_umap, aes(x = V1, y = V2)) + geom_point(size = 0.1) + theme_bw() + ggtitle("UMAP of the Breastcancer celllines")
 ```
