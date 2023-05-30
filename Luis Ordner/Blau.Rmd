@@ -185,25 +185,38 @@ hist(lowest_mean_duplicate$colMeans_breast)
 ## UMAP für den Breastcancer teil
 ```{r}
 library(umap)
+library(ggplot2)
 pref_drug_con_combo <- rownames(lowest_mean_duplicate)
-## UMAP
-breast_cancer_umap <- umap(t(breast_prism_imp[,pref_drug_con_combo]), n_neighbors = 15, n_components = 4)
 
-## color regarding MOA
+##### Perform UMAP
+breast_cancer_umap <- umap(t(breast_prism_imp[,pref_drug_con_combo]), n_neighbors = 15, n_components = 2) # <-- How many dimensions is best?
+umap_layout_breast <- as.data.frame(breast_cancer_umap$layout)
+
+## Create levels for differentiation
 imp_treat <- prism.treat[pref_drug_con_combo,]
-imp_treat_moa <- imp_treat$moa
-level_counts <- table(imp_treat_moa)
+
+# Find the Top MOA 
+level_counts <- table(imp_treat$moa)
 sorted_levels <- names(sort(level_counts, decreasing = TRUE))
 top_10_levels <- sorted_levels[1:20]
-color <- factor(imp_treat$moa, levels = top_10_levels)
-cb <- rainbow(length(top_10_levels))
-cb <- cb[color]
-imp_treat$color <- cb
-imp_treat$color[which(imp_treat$color == NA)] <- "grey"
 
-## Plot the UMAP
-plot(breast_cancer_umap$layout, main = "UMAP of the Breastcancer celllines", col = imp_treat$color, pch = 19)
-```
-```{r}
-#ggplot(breast_cancer_umap, aes(x = V1, y = V2)) + geom_point(size = 0.1) + theme_bw() + ggtitle("UMAP of the Breastcancer celllines")
+# Create a factor with the top 10 MOA levels
+levels <- factor(imp_treat$moa, levels = c(top_10_levels, "Other"))
+imp_treat$levels <- levels
+
+# Make the MOA levels that are not in the top "Other"
+imp_treat$levels[is.na(imp_treat$clevels)] <- "Other"
+
+# Define the colors for each level (excluding "Other")
+level_colors <- rainbow(length(top_10_levels))
+
+# Create a named vector of colors including "Other"
+color_palette <- c(setNames(level_colors, top_10_levels), Other = "grey")
+
+##### Plot the UMAP
+ggplot(umap_layout_breast, aes(x = V1, y = V2, colour = imp_treat$levels)) +
+    geom_point(, size = 3, alpha = 0.5) +
+    scale_color_manual(values = color_palette) +
+    theme_bw() +
+    ggtitle("UMAP of the Breastcancer celllines") 
 ```
