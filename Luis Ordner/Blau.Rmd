@@ -112,6 +112,8 @@ length(which(breast_col_cor_df == 1, arr.ind = TRUE)) ## 22248
 dim(breast_col_cor_df) ## 11124 x 11124
 ```
 --> Keine Dopplungen
+
+## PCA aber hat wenig Sinn
 ```{r}
 pca_breast_p <- prcomp(t(breast_prism_imp), center = TRUE, scale = TRUE)
 
@@ -134,3 +136,60 @@ plot(pca_breast_p$x[,1], pca_breast_p$x[,2],
 legend('bottomleft',legend=levels(breast_subtype_p_cl),pch=19,col=color)
 ```
 
+## UMAP für den Breastcancer teil
+```{r}
+library(umap)
+breast_cancer_umap <- umap(breast_prism_imp)
+colorumap <- as.factor(prism.treat$moa)
+#ggplot(breast_cancer_umap, aes(x = V1, y = V2)) + geom_point(size = 0.1) + theme_bw() + ggtitle("UMAP of the Breastcancer celllines")
+
+```
+
+## checking for same drug different concentration
+```{r}
+drugnames <- sub("::.*", "", colnames(breast_prism_imp))
+drug_counts <- table(drugnames) 
+filtered_counts <- drug_counts[drug_counts > 1] 
+sum(filtered_counts) ## --> 1396
+hist(filtered_counts)
+duplicate_drugs <- unique(drugnames[duplicated(drugnames)]) ## --> 1396
+#duplicate_columns <- grepl(paste(duplicate_drugs, collapse = "|"), colnames(df)) 
+```
+
+## finding the drug - concentration pairs with the biggest influence on the cell growth
+```{r}
+# drugnames
+drugnames <- sub("::.*", "", colnames(breast_prism_imp))
+# concentration
+concentration <- sub(".*::(.*?)::.*", "\\1", colnames(breast_prism_imp))
+# drugname:concentration 
+names_conc_drug <- sub("::.*", "", sub("::", ":", colnames(breast_prism_imp))) ## --> hier gibt es keine Duplicate
+#column Means
+colMeans_breast <- apply(breast_prism_imp, 2, mean)
+# 
+duplicate_drugs <- unique(drugnames[duplicated(drugnames)])
+# create dataframe with drugname, concentration and colmean
+df_nam_con_mean <- data.frame(colMeans_breast, drugnames, concentration, names_conc_drug)
+
+#####Finding the duplicate with the lowest colmean
+# create empty dataframe
+lowest_mean_duplicate <- data.frame()
+#iterate over the duplicated drugs
+for(i in 1:length(duplicate_drugs)) {
+    act_rows <- which(df_nam_con_mean$drugnames == duplicate_drugs[i])
+    act_df <- df_nam_con_mean[act_rows,]
+    lowest_colmean <- min(act_df$colMeans_breast, na.rm = TRUE)
+    lowest_mean_duplicate <- rbind(lowest_mean_duplicate, act_df[which(act_df$colMeans_breast == lowest_colmean),])
+}
+#lowest_mean_duplicate  # <--- with rownames - u can get the prism colname for the drug::conc combination with the lowest colmean
+head(lowest_mean_duplicate)
+```
+
+## Finding what the most effective concentration is for each drug
+```{r}
+hist(as.numeric(lowest_mean_duplicate$concentration))
+hist(lowest_mean_duplicate$colMeans_breast)
+
+```
+
+```
