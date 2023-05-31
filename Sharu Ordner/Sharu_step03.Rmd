@@ -1,0 +1,39 @@
+```{r}
+
+##trying to integrate achilles data info with .exp (until 4, but from where?)
+
+View(prism.achilles.rm)
+
+min(prism.achilles.rm) #-4,495
+
+max(prism.achilles.rm) #4,874
+
+View(prism.achilles.rm)
+
+important_genes <- rownames(prism.achilles.breast[,which(prism.achilles. <= 0)]) # does not work
+
+prism.achilles_mean <- apply(prism.achilles.breast, 2, mean)
+
+important_genes <- colnames(prism.achilles.breast[,which(prism.achilles_mean <= -1)])
+
+View(prism.achilles_mean)
+
+View(important_genes)
+
+important_gene_exp <- prism.exp[, colnames(prism.exp) %in% important_genes]
+
+dim(important_gene_exp)
+
+View(important_gene_exp)
+
+important_gene_list <- colnames(important_gene_exp)
+
+View(important_gene_list)
+
+print(important_gene_list)
+
+sum(which(prism.achilles_mean < -1))
+
+sum(important_genes %in% colnames(prism.exp))
+
+```
