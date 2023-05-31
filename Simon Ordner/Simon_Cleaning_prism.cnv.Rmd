@@ -30,7 +30,8 @@ breast_prism.cl <- prism.cl[c(rows_breast_prism.cl), ]  #df with just breast cel
 breast_prism.cl <- replace(breast_prism.cl, breast_prism.cl =='NA', NA) #replaces all 'NA' with real NA
 rm.NA.col_breast_prism.cl <- which(colSums(is.na(breast_prism.cl)) == 22 )#removes NA columns
 breast_prism.cl <- breast_prism.cl[ ,-rm.NA.col_breast_prism.cl] #df without NA columns
-ID_breast_prism.cl <- breast_prism.cl$DepMap_ID #extract Cell names 
+ID_breast_prism.cl <- breast_prism.cl$DepMap_ID #extract Cell names
+
 ```
 
 ```{r Search for cells in prism.cnv}
@@ -43,6 +44,15 @@ sum(is.na(breast_prism.cnv)) #0 -> no NA values
 sum(is.na(prism.cnv)) #0 -> no NA values
 
 ```
+
+```{r Overwiew over breast_prism.cnv}
+par(mfrow = c(1,2));plot(sapply(breast_prism.cnv, mean)); plot(sapply(breast_prism.cnv, median))
+sapply(breast_prism.cnv, min)
+sapply(breast_prism.cnv, max)
+sapply(breast_prism.cnv, sd)
+```
+
+
 ```{r}
 library(pheatmap)
 my_breaks <- seq(min(breast_prism.cnv), max(breast_prism.cnv))
