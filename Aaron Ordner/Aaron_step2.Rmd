@@ -29,29 +29,50 @@ D <- dist(t(breast_prism_imp))
 library(cluster)
 sil <- vector()
 
-for (k in 1:12) {
-  km <- kmeans(x = t(breast_prism_imp), centers = k, iter.max = 10)
+for (k in 1:20) {
+  km <- kmeans(x = t(breast_prism_imp), centers = k, iter.max = 20)
   s <- silhouette(km$cluster, D)
   sil <- c(sil, mean(s))
 }
-plot(1:12,sil)
+plot(1:20,sil)
 ```
 The maximal QTR stage has been exceeded. This means we have to reduce the data.
 
+```{r} 
+#trying to do the clustering on the whole prism data
+wss.prism <- sapply(1:10, function(x) kmeans(t(prism_imp), x)$tot.withinss)
+
+plot(1:10, wss.prism, type = "b", xlab = "N of clusters", ylab = "Total within sum of square")
+
+
+
+```
+
 ```{r}
+unique(prism.cl$lineage)
+```
 
 
 
+```{r}
+#try to identify the treatments with low sd
 
+prism.sd <- apply(breast_prism_imp, 2, sd)
+
+prism.rel <- breast_prism_imp[, which(prism.sd>0.5)]# relevant treatments
+
+wss.prism <- sapply(1:10, function(x) kmeans(breast_prism_imp, x)$tot.withinss)
+
+plot(1:10, wss.prism, type = "b", xlab = "N of clusters", ylab = "Total within sum of square")
 ```
 
 
 
 
 
-
-
-
+```{r}
+km.test <- kmeans(x = t(breast_prism_imp), centers = 11, iter.max = 20)
+```
 
 
 
