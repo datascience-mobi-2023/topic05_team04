@@ -30,7 +30,7 @@ library(cluster)
 sil <- vector()
 
 for (k in 1:20) {
-  km <- kmeans(x = t(breast_prism_imp), centers = k, iter.max = 20)
+  km <- kmeans(x = t(breast_prism_imp), centers = k, iter.max = 40)
   s <- silhouette(km$cluster, D)
   sil <- c(sil, mean(s))
 }
