@@ -1,0 +1,157 @@
+---
+title: "Second Milestone"
+author: "Simon Westermann"
+date: "4. Juli 2023"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r Load Data}
+load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heidelberg/Module/BioInfo/BioInfoProjekt/prism_datasets.rda")
+load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heidelberg/Module/BioInfo/BioInfoProjekt/cellline_datasets.rda")
+```
+
+```{r Prism Cleaning from Luis}
+sum(apply(prism, 2, function(x){all(is.na(x))})) ## 43 Spalten mit nur NA`s
+p_onlyNA.col <- colnames(prism[which(sapply(prism, class) == "logical")]) ## Die 43 Spalten mit nur NA`s
+rem.pNAcol <- which(colnames(prism) %in% p_onlyNA.col)
+breast_prism <- prism[which(prism.cl$lineage ==  "breast"), ]
+bp_onlyNA.col <- colnames(breast_prism[which(colSums(is.na(breast_prism)) == 22)]) 
+rem.bpNAcol <- which(colnames(breast_prism) %in% bp_onlyNA.col)
+breast_prism_imp <- breast_prism[, -rem.bpNAcol] ## --> entfernen der Spalten mit nur NA`s
+
+breast_prism_imp <- as.data.frame(apply(breast_prism_imp, 2, function(x) {
+    is_na <- is.na(x)
+    x[is_na] <- mean(x, na.rm = TRUE)
+    return(x)
+})) ## --> ersetzen der NA`s mit dem Mittelwert der Spalte
+```
+
+```{r PCA für Prism von Luis}
+pca_breast_p <- prcomp(t(breast_prism_imp), center = TRUE, scale = TRUE)
+
+## Plot the variance explained by the PCs
+variance = (pca_breast_p$sdev)^2
+prop.variance = variance/sum(variance)
+names(prop.variance) = 1:length(prop.variance)
+barplot(prop.variance[1:20],ylab='Proportion of variance') ## --> PC1 erklärt ~85% # --> PC2 erklärt ~2%
+
+## Filter the Lineage Subtypes
+breast_prism_cl <- prism.cl[which(prism.cl$lineage ==  "breast"), ]
+breast_subtype_p_cl <- as.factor(breast_prism_cl$lineage_subtype)
+
+## Plot the PCA
+color = c('green','red','blue')
+cb = color[breast_subtype_p_cl]
+plot(pca_breast_p$x[,1], pca_breast_p$x[,2],
+     col= cb, pch=19,
+     xlab='PC1',ylab='PC2');
+legend('bottomleft',legend=levels(breast_subtype_p_cl),pch=19,col=color)
+```
+
+```{r Filtering Drugs/Conc. with Effect from Luis}
+# drugnames
+drugnames <- sub("::.*", "", colnames(breast_prism_imp))
+# concentration
+concentration <- sub(".*::(.*?)::.*", "\\1", colnames(breast_prism_imp))
+# drugname:concentration 
+names_conc_drug <- sub("::.*", "", sub("::", ":", colnames(breast_prism_imp))) ## --> hier gibt es keine Duplicate
+#column Means
+colMeans_breast <- apply(breast_prism_imp, 2, mean)
+# 
+duplicate_drugs <- unique(drugnames[duplicated(drugnames)])
+# create dataframe with drugname, concentration and colmean
+df_nam_con_mean <- data.frame(colMeans_breast, drugnames, concentration, names_conc_drug)
+
+#####Finding the duplicate with the lowest colmean
+# create empty dataframe
+lowest_mean_duplicate <- data.frame()
+#iterate over the duplicated drugs
+for(i in 1:length(duplicate_drugs)) {
+    act_rows <- which(df_nam_con_mean$drugnames == duplicate_drugs[i])
+    act_df <- df_nam_con_mean[act_rows,]
+    lowest_colmean <- min(act_df$colMeans_breast, na.rm = TRUE)
+    lowest_mean_duplicate <- rbind(lowest_mean_duplicate, act_df[which(act_df$colMeans_breast == lowest_colmean),])
+}
+#lowest_mean_duplicate  # <--- with rownames - u can get the prism colname for the drug::conc combination with the lowest colmean
+head(lowest_mean_duplicate)
+```
+
+```{r UMAP from Luis}
+library(umap)
+library(ggplot2)
+pref_drug_con_combo <- rownames(lowest_mean_duplicate)
+
+##### Perform UMAP
+breast_cancer_umap <- umap(t(breast_prism_imp[,pref_drug_con_combo]), n_neighbors = 15, n_components = 2) # <-- How many dimensions is best?
+umap_layout_breast <- as.data.frame(breast_cancer_umap$layout)
+
+## Create levels for differentiation
+imp_treat <- prism.treat[pref_drug_con_combo,]
+
+# Find the Top MOA 
+level_counts <- table(imp_treat$moa)
+sorted_levels <- names(sort(level_counts, decreasing = TRUE))
+top_10_levels <- sorted_levels[1:20]
+
+# Create a factor with the top 10 MOA levels
+levels <- factor(imp_treat$moa, levels = c(top_10_levels, "Other"))
+imp_treat$levels <- levels
+
+# Make the MOA levels that are not in the top "Other"
+imp_treat$levels[is.na(imp_treat$levels)] <- "Other"
+
+# Define the colors for each level (excluding "Other")
+level_colors <- rainbow(length(top_10_levels))
+
+#Create transparent color to remove not named dots
+t_col <- function(color, percent, name = NULL) {
+  #      color = color name
+  #    percent = % transparency
+  #       name = an optional name for the color
+
+  ## Get RGB values for named color
+  rgb.val <- col2rgb(color)
+
+  ## Make new color using input color as base and alpha set by transparency
+  t.col <- rgb(rgb.val[1], rgb.val[2], rgb.val[3],
+             max = 255,
+             alpha = (100 - percent) * 255 / 10000,
+             name = name)
+
+## Save the color
+invisible(t.col)
+}
+mycol <- t_col(color = 'white', percent = 99.999, name = 'transparent')
+
+# Create a named vector of colors including "Other"
+color_palette <- c(setNames(level_colors, top_10_levels), Other = 'transparent')
+```
+
+```{r UMAP Plot by Simon}
+##### Plot the UMAP
+library(dplyr)
+ggplot(umap_layout_breast %>% arrange(imp_treat[order(imp_treat$levels), ]), aes(x = V1, y = V2, colour = imp_treat$levels)) +
+    geom_point(size = 3, alpha = 0.5) +
+    scale_color_manual(values = color_palette) +
+    theme_bw() +
+    ggtitle("UMAP of the Breastcancer celllines") +
+    geom_vline(xintercept = 0, color = 'red') +
+    geom_hline(yintercept = 0, color = 'red')
+```
+
+```{r kmeans of UMAP with elbow}
+wss = sapply(2:20,function(k) { 
+  kmeans(breast_cancer_umap$layout, centers =k)$tot.withinss
+})
+plot(2:20,wss,type='b',pch=19,xlab="Number of clusters K",
+     ylab="Total within-clusters sum of squares")
+```
+
+```{r}
+sapply(2:20,function(k){kmeans(breast_cancer_umap$layout, centers =k)$tot.withinss})
+```
+
