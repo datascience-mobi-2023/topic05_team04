@@ -178,7 +178,7 @@ silhouette_score <- function(k){
 k <- 2:20
 avg_s <- sapply(k, silhouette_score)
 #best cluster size through silhouette method -> size 3 works best
-plot(k, type = 'b', avg_s,xlim = c(2,20), ylim = c(0.39,0.57), xlab='Number of clusters', ylab='Average Silhouette Scores'); abline(h = max(avg_s), col = 'red')
+plot(k, type = 'b', avg_s,xlim = c(2,20), ylim = c(0.34,0.59), xlab='Number of clusters', ylab='Average Silhouette Scores'); abline(h = max(avg_s), col = 'red')
 
 ## plotting the clusters
 breast_km <- kmeans(breast_cancer_umap$layout, centers = 3)
