@@ -16,7 +16,7 @@ plot(1:10, wss.prism, type = "b", xlab = "N of clusters", ylab = "Total within s
 ```
 
 ```{r}
-wss.prism <- sapply(1:10, function(x) kmeans(t(breast_prism_imp), x)$tot.withinss)
+wss.prism <- sapply(1:10, function(x) kmeans(t(breast_prism_lowest), x)$tot.withinss)
 
 plot(1:10, wss.prism, type = "b", xlab = "N of clusters", ylab = "Total within sum of square")
 
@@ -40,12 +40,12 @@ for (k in 1:60) {
 plot(1:60,sil)
 ```
 ```{r}
-D <- dist(breast_prism_imp)
+D <- dist(t(breast_prism_lowest))
 library(cluster)
 sil <- vector()
 
 for (k in 1:20) {
-  km <- kmeans(x = breast_prism_imp, centers = k, iter.max = 40)
+  km <- kmeans(x = t(breast_prism_lowest), centers = k, iter.max = 40)
   s <- silhouette(km$cluster, D)
   sil <- c(sil, mean(s))
 }
@@ -66,7 +66,10 @@ plot(1:10, wss.prism, type = "b", xlab = "N of clusters", ylab = "Total within s
 ```
 
 ```{r}
-unique(prism.cl$lineage)
+unique(prism.treat$phase)
+
+
+
 ```
 
 
@@ -91,10 +94,16 @@ plot(1:10, wss.prism, type = "b", xlab = "N of clusters", ylab = "Total within s
 km.test <- kmeans(x = t(breast_prism_imp), centers = 11, iter.max = 20)
 ```
 
+
+Now I will try something. I want to know drugs that show a high effect on some cell lines. For this I will firstly delete the columns of oncological drugs as there were shown to have a effect on cancer
 ```{r}
 
-```
+lowest_cl <- colnames(breast_prism_imp)%in%rownames(lowest_mean_duplicate)
+breast_prism_lowest <- breast_prism_imp[,lowest_cl]
 
+dim(breast_prism_lowest)
+
+```
 
 
 
