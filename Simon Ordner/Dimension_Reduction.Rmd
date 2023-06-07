@@ -97,7 +97,7 @@ sorted_levels <- names(sort(level_counts, decreasing = TRUE))
 top_10_levels <- sorted_levels[1:20]
 
 # Create a factor with the top 10 MOA levels
-levels <- factor(imp_treat$moa, levels = c(top_10_levels, "Other"))
+levels <- factor(imp_treat$moa, levels = c("Other", top_10_levels))
 imp_treat$levels <- levels
 
 # Make the MOA levels that are not in the top "Other"
@@ -122,13 +122,13 @@ t_col <- function(color, name = NULL) {
   ## Make new color using input color as base and alpha set by transparency
   t.col <- rgb(rgb.val[1], rgb.val[2], rgb.val[3],
              max = 255,
-             alpha = 0,
+             alpha = 0.001,
              name = name)
 
 ## Save the color
 invisible(t.col)
 }
-mycol <- t_col(color = 'white', name = 'transparent')
+mycol <- t_col(color = 'grey', name = 'transparent')
 
 # Create a named vector of colors including "Other"
 color_palette1 <- c(setNames(level_colors, top_10_levels), Other = 'transparent')
@@ -138,6 +138,7 @@ color_palette2 <- c(setNames(level_colors, top_10_levels), Other = 'grey')
 ```{r UMAP Plot by Simon}
 ##### Plot the UMAP
 library(dplyr)
+library(ggplot2)
 ggplot(umap_layout_breast %>% arrange(imp_treat[order(imp_treat$levels), ]), aes(x = V1, y = V2, colour = imp_treat$levels)) +
     geom_point(size = 3, alpha = 0.5) +
     scale_color_manual(values = color_palette1) +
