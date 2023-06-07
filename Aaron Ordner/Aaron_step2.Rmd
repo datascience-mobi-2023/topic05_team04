@@ -67,9 +67,10 @@ plot(1:10, wss.prism, type = "b", xlab = "N of clusters", ylab = "Total within s
 
 ```{r}
 unique(prism.treat$phase)
-
-
-
+```
+```{r}
+install.packages("readxl")
+load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/Mappe2.xlsx")
 ```
 
 
