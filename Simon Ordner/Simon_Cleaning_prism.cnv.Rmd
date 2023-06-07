@@ -2,7 +2,7 @@
 title: "Cleaning prism.cnv - team04"
 author: "Simon Westermann"
 date: "02.May 2023"
-output: pdf_document
+output: html_document
 ---
 
 ```{r setup, include=FALSE}

@@ -15,19 +15,19 @@ load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heid
 ```
 
 ```{r Prism Cleaning from Luis}
-sum(apply(prism, 2, function(x){all(is.na(x))})) ## 43 Spalten mit nur NA`s
-p_onlyNA.col <- colnames(prism[which(sapply(prism, class) == "logical")]) ## Die 43 Spalten mit nur NA`s
+sum(apply(prism, 2, function(x){all(is.na(x))})) ## 43 row with only NA`s
+p_onlyNA.col <- colnames(prism[which(sapply(prism, class) == "logical")]) ## those rows with NA`s
 rem.pNAcol <- which(colnames(prism) %in% p_onlyNA.col)
 breast_prism <- prism[which(prism.cl$lineage ==  "breast"), ]
 bp_onlyNA.col <- colnames(breast_prism[which(colSums(is.na(breast_prism)) == 22)]) 
 rem.bpNAcol <- which(colnames(breast_prism) %in% bp_onlyNA.col)
-breast_prism_imp <- breast_prism[, -rem.bpNAcol] ## --> entfernen der Spalten mit nur NA`s
+breast_prism_imp <- breast_prism[, -rem.bpNAcol] ## --> removal of rows with just NA`s
 
 breast_prism_imp <- as.data.frame(apply(breast_prism_imp, 2, function(x) {
     is_na <- is.na(x)
     x[is_na] <- mean(x, na.rm = TRUE)
     return(x)
-})) ## --> ersetzen der NA`s mit dem Mittelwert der Spalte
+})) ## --> NA's are replaced with the mean
 ```
 
 ```{r PCA für Prism von Luis}
@@ -37,7 +37,7 @@ pca_breast_p <- prcomp(t(breast_prism_imp), center = TRUE, scale = TRUE)
 variance = (pca_breast_p$sdev)^2
 prop.variance = variance/sum(variance)
 names(prop.variance) = 1:length(prop.variance)
-barplot(prop.variance[1:20],ylab='Proportion of variance') ## --> PC1 erklärt ~85% # --> PC2 erklärt ~2%
+barplot(prop.variance[1:20],ylab='Proportion of variance') ## --> PC1 explains ~85% # --> PC2 explains ~2%
 
 ## Filter the Lineage Subtypes
 breast_prism_cl <- prism.cl[which(prism.cl$lineage ==  "breast"), ]
@@ -58,7 +58,7 @@ drugnames <- sub("::.*", "", colnames(breast_prism_imp))
 # concentration
 concentration <- sub(".*::(.*?)::.*", "\\1", colnames(breast_prism_imp))
 # drugname:concentration 
-names_conc_drug <- sub("::.*", "", sub("::", ":", colnames(breast_prism_imp))) ## --> hier gibt es keine Duplicate
+names_conc_drug <- sub("::.*", "", sub("::", ":", colnames(breast_prism_imp))) ## --> no duplicates
 #column Means
 colMeans_breast <- apply(breast_prism_imp, 2, mean)
 # 
@@ -107,6 +107,42 @@ imp_treat$levels[is.na(imp_treat$levels)] <- "Other"
 level_colors <- rainbow(length(top_10_levels))
 
 
+```
+
+```{r UMAP by Simon}
+library(ggplot2)
+#I created this UMAP with the parameters mentioned in the Paper from Corsello
+breast_umap <- umap(t(breast_prism_imp[,pref_drug_con_combo]), n_neighbors = 7, min_dist = 0.5, n_epochs = 200, n_components = 2)
+
+umap_layout_mamma <- as.data.frame(breast_umap$layout)
+
+## Create levels for differentiation
+imp_treat2 <- prism.treat[pref_drug_con_combo,]
+
+# Find the Top MOA 
+level_counters <- table(imp_treat2$moa)
+sorted_bylevel <- names(sort(level_counters, decreasing = TRUE))
+top_10_level <- sorted_bylevel[1:20]
+
+# Create a factor with the top 10 MOA levels
+level <- factor(imp_treat2$moa, level = c("Other", top_10_level))
+imp_treat2$levels <- level
+
+# Make the MOA levels that are not in the top "Other"
+imp_treat2$levels[is.na(imp_treat2$levels)] <- "Other"
+
+# Define the colors for each level (excluding "Other")
+levels_colors <- rainbow(length(top_10_level))
+
+# Colors for "Other"
+color_palette3 <- c(setNames(levels_colors, top_10_level), Other = 'grey')
+
+# Umap Plot with breast_umap
+ggplot(umap_layout_mamma, aes(x = V1, y = V2, colour = imp_treat2$levels)) +
+    geom_point(size = 3, alpha = 0.5) +
+    scale_color_manual(values = color_palette3) +
+    theme_bw() +
+    ggtitle("UMAP of the Breastcancer celllines")
 ```
 
 ```{r Trying to solve grey dots with white color by Simon}
