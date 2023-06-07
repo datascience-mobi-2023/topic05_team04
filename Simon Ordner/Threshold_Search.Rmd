@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 Clustering (formed around same MOAs) with UMAP (10% der Zelllinien wurden nicht dargestellt dadurch; Parameter der UMAP: 7 nearest neighbors, 0.5 minimum distance, 2 components, and 200 training epochs)  -> dann wurde die maximale Bimodualität berechnet (Maß für die selektivität einer drug?) 
 
 ###Prediction Model
-random forest (one-liner package)[hier waren Pearson P-values von bis zu 0.2 zulässig -> ich schätze damit alpha = 0.1]
+random forest (one-liner package)[hier waren Pearson von bis zu 0.2 zulässig -> ich schätze damit alpha = 0.1]
 
 ####Daten, Code u.ä.
 https://depmap.org/repurposing/
