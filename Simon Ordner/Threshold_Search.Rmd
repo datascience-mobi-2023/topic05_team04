@@ -1,0 +1,31 @@
+---
+title: "Search for a Threshold"
+author: "Simon Westermann"
+date: "2023-06-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Corsello
+
+###Clustering
+Clustering (formed around same MOAs) with UMAP (10% der Zelllinien wurden nicht dargestellt dadurch; Parameter der UMAP: 7 nearest neighbors, 0.5 minimum distance, 2 components, and 200 training epochs)  -> dann wurde die maximale Bimodualität berechnet (Maß für die selektivität einer drug?) 
+
+###Prediction Model
+random forest (one-liner package)[hier waren Pearson P-values von bis zu 0.2 zulässig -> ich schätze damit alpha = 0.1]
+
+####Daten, Code u.ä.
+https://depmap.org/repurposing/
+doi:10.6084/ m9.figshare.9393293
+doi:10.6084/m9.figshare.10277810
+https://github.com/broadinstitute/repurposing
+
+
+##Goncalves
+Die haben python verwendet
+
+###PCA
+Die haben mit dem mean für fehlende Werte gearbeitet und für 10 components gesucht
