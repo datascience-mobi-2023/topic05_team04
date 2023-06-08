@@ -1,3 +1,9 @@
+---
+title: "gene list - step 03"
+author: "Sharujan Suthakaran"
+date: "01.Juni 2023"
+---
+
 ```{r}
 
 ##trying to integrate achilles data info with .exp (until 4, but from where?)
@@ -14,7 +20,7 @@ important_genes <- rownames(prism.achilles.breast[,which(prism.achilles. <= 0)])
 
 prism.achilles_mean <- apply(prism.achilles.breast, 2, mean)
 
-important_genes <- colnames(prism.achilles.breast[,which(prism.achilles_mean <= -1)])
+important_genes <- colnames(prism.achilles.breast[,which(prism.achilles_mean >= 2)])
 
 View(prism.achilles_mean)
 
@@ -39,4 +45,80 @@ sum(important_genes %in% colnames(prism.exp))
 
 ```
 
-mcdb
+
+
+```{r}
+min(prism.achilles.breast) #-2.749
+
+max(prism.achilles.breast) #2.649
+
+min(prism.achilles_mean) #-2.37806
+
+max(prism.achilles_mean) #0.751765
+
+important_genes <- colnames(prism.achilles.breast[,which(prism.achilles_mean >= 0)])
+
+important_gene_exp <- prism.exp[, colnames(prism.exp) %in% important_genes]
+
+dim(important_gene_exp)
+
+important_gene_list <- colnames(important_gene_exp)
+
+print(important_gene_list)
+
+sum(important_genes %in% colnames(prism.exp))
+```
+
+https://www.gsea-msigdb.org/gsea/msigdb
+
+**Hallmark gene sets (H): These gene sets represent well-defined biological states or processes that are coherently expressed. They can provide insights into common pathways and functions associated with breast cancer.**
+
+Downloaded the gene sets as a JSON Bundle
+
+```{r}
+
+library(jsonlite)
+
+hallmarks <- fromJSON("~/Downloads/h.all.v2023.1.Hs.json.txt")
+
+View(hallmarks)
+
+class(hallmarks)
+
+```
+
+*The hallmark gene set is a list divided into 50 different tumor influenced biological states*
+
+**C6: oncogenic signature gene sets defined directly from microarray gene expression data from cancer gene perturbations.**
+
+```{r}
+
+C6.gene <- fromJSON("~/Downloads/c6.all.v2023.1.Hs.json.txt")
+
+View(C6.gene)
+
+```
+
+**C8: cell type signature gene sets curated from cluster markers identified in single-cell sequencing studies of human tissue.**
+
+```{r}
+
+C8.cluster <- fromJSON("~/Downloads/c8.all.v2023.1.Hs.json.txt")
+
+View(C8.cluster)
+
+```
+
+***C6 fits very good for our purpose, because it contains the genes for our filtration process and additionally has already clustered the genes by common function.***
+
+C6 is a list containing 189 smaller lists named as abbreviations for different biological processes. These lists have different subrows with values, the important row: 'geneSymbols'
+
+```{r}
+lapply(C6.gene, function(x) x$geneSymbols)
+
+View(C6.geneSym)
+
+C6.geneSym <- unlist(lapply(C6.gene, function(x) x$geneSymbols)) #single vector
+
+
+```
