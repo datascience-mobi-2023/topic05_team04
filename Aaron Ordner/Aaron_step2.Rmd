@@ -105,6 +105,15 @@ breast_prism_lowest <- breast_prism_imp[,lowest_cl]
 dim(breast_prism_lowest)
 
 ```
+```{r}
+library(readxl)
+cancer.therapy <- readxl::excel_sheets("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/Mappe3.xlsx")
+
+read_excel("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/Mappe3.xlsx")
+
+print(cancer.therapy)
+```
+
 
 
 
