@@ -4,17 +4,19 @@ load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/cellline_datasets.rda")
 
 ```
 
-```{r}
 
-```
 
-How about a kmeans clustering? (cell lines)
+How about a kmeans clustering? 
+
+(cell lines)
 ```{r}
 wss.prism <- sapply(1:10, function(x) kmeans(breast_prism_imp, x)$tot.withinss)
 
 plot(1:10, wss.prism, type = "b", xlab = "N of clusters", ylab = "Total within sum of square")
+
 ```
 
+(treaments)
 ```{r}
 wss.prism <- sapply(1:10, function(x) kmeans(t(breast_prism_lowest), x)$tot.withinss)
 
@@ -23,6 +25,8 @@ plot(1:10, wss.prism, type = "b", xlab = "N of clusters", ylab = "Total within s
 ```
 not very helpful...
 
+As a diferent way to look at the amounts of clusters. silhouette plots.
+(cell lines)
 ```{r}
 prism.sd <- apply(breast_prism_imp, 2, sd)
 
@@ -39,6 +43,7 @@ for (k in 1:60) {
 }
 plot(1:60,sil)
 ```
+(treatments)
 ```{r}
 D <- dist(t(breast_prism_lowest))
 library(cluster)
@@ -65,13 +70,7 @@ plot(1:10, wss.prism, type = "b", xlab = "N of clusters", ylab = "Total within s
 
 ```
 
-```{r}
-unique(prism.treat$phase)
-```
-```{r}
-install.packages("readxl")
-load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/Mappe2.xlsx")
-```
+This needs too much computational power
 
 
 
@@ -90,111 +89,71 @@ plot(1:10, wss.prism, type = "b", xlab = "N of clusters", ylab = "Total within s
 
 
 
-
-```{r}
-km.test <- kmeans(x = t(breast_prism_imp), centers = 11, iter.max = 20)
-```
-
-
 Now I will try something. I want to know drugs that show a high effect on some cell lines. For this I will firstly delete the columns of oncological drugs as there were shown to have a effect on cancer
 ```{r}
 
 lowest_cl <- colnames(breast_prism_imp)%in%rownames(lowest_mean_duplicate)
 breast_prism_lowest <- breast_prism_imp[,lowest_cl]
-
+#breast_prism_lowest has now only the cell lines from lowest_mean_duplicate
 dim(breast_prism_lowest)
-
+lowest_cl_prism <- colnames(prism_imp)%in%rownames(lowest_mean_duplicate)
+prism_lowest <- prism_imp[,lowest_cl_prism]
 ```
+
+```{r}
+sum(is.na(prism.treat$disease.area))/dim(prism.treat)[1]
+#This means 64,7% of disease areas are unknown
+sum(which("oncology"%in%prism.treat$disease.area))/dim(prism.treat)[1]
+```
+As not every drug has a specific disease area, we will try to eliminate the oncological drugs via their names.For this we will compare the drugs in prism.treat and in two cancer treatment list, cancer national institute (https://www.cancer.gov/about-cancer/treatment/drugs) and cancer research UK (https://www.cancerresearchuk.org/about-cancer/treatment/drugs) 
 ```{r}
 library(readxl)
-cancer.therapy <- readxl::excel_sheets("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/Mappe3.xlsx")
+cancer.therapy <- read_excel("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/oncological_treatments.xlsx")
+treat.names <- as.character(prism.treat$name)
+sum(treat.names%in%"fulvestrant ")
+print(cancer.therapy[309,])
+print(as.character(prism.treat[74,]$name))
 
-read_excel("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/Mappe3.xlsx")
-
-print(cancer.therapy)
 ```
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Now we will look at which group of cancers has the highest variance in their treatment response. This will help with the Dimension reduction and the clustering.
+```{r}
+prism_var <- apply(prism_lowest, 1, var)
+lineages <- unique(prism.cl$lineage)
+lineages <- as.data.frame(lineages)
+lineages.distribution <- apply(lineages, 1, function(x) {
+  sum(prism.cl$lineage%in%x)
+})
+rel.cl <- as.data.frame(lineages[which(lineages.distribution >= 10), ])
+prism.all.var <- apply(prism_lowest, 1, var)
+prism.all.var <- as.data.frame(prism.all.var)
+apply(rel.cl, 1, function(x){
+  mean(prism.all.var[which(rownames(prism.all.var)%in%prism.cl$DepMap_ID[prism.cl$lineage%in%x])])
+})
+
+prism.all.var[which(rownames(prism.all.var)%in%prism.cl$DepMap_ID[prism.cl$lineage%in%rel.cl[1,]])]
+
+
+which(rownames(prism.all.var)%in%prism.cl$DepMap_ID[prism.cl$lineage%in%rel.cl[1,]])
+```
+
+```{r}
+
+apply(prism_lowest, 1, function(y) {
+  var(prism_lowest[y, ] %in% rownames(prism.cl[which(prism.cl$lineage %in% rel.cl[1,], )])
+})
+  rel.cl <- as.data.frame(lineages[which(lineages.distribution>=10),])
+apply(rel.cl, 1, function(x){
+  apply(prism_lowest, 1, function(y){
+    var(prism_lowest%in%(rownames(prism.cl%in%x)))
+  })
+})
+rel.cl <- as.data.frame(lineages[which(lineages.distribution>=10),])
+prism.all.var <- apply(prism_lowest, 1, var)
+
+```
 
 
 
