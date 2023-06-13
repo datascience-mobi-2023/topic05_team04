@@ -1,0 +1,173 @@
+#############################
+## CODE DESCRIPTION IN BLAU##
+#############################
+
+# -------------------------------- #
+### Data cleanup and preparation ###
+# -------------------------------- #
+```{r}
+#####################################
+###### IMPORT LIBRARIES & DATA ######
+#####################################
+library(ggplot2)
+library(umap)
+# --------------------------------- #
+load("/Users/luisherfurth/Codenmachtspass/prism_datasets.rda")
+load("/Users/luisherfurth/Codenmachtspass/cellline_datasets.rda")
+###############################
+###### PRISM IMPUTATION #######
+###############################
+p_onlyNA.col <- colnames(prism[which(sapply(prism, class) == "logical")]) 
+rem.pNAcol <- which(colnames(prism) %in% p_onlyNA.col)
+prismNA <- prism[, -rem.pNAcol]
+prism_imp <- as.data.frame(apply(prismNA, 2, function(x) {
+    is_na <- is.na(x)
+    x[is_na] <- mean(x, na.rm = TRUE)
+    return(x)
+})) 
+######################################
+###### BREAST PRISM IMPUTATION #######
+######################################
+breast_prism <- prism[which(prism.cl$lineage ==  "breast"), ]
+bp_onlyNA.col <- colnames(breast_prism[which(colSums(is.na(breast_prism)) == 22)]) 
+rem.bpNAcol <- which(colnames(breast_prism) %in% bp_onlyNA.col)
+breast_prism_imp <- breast_prism[, -rem.bpNAcol] 
+
+breast_prism_imp <- as.data.frame(apply(breast_prism_imp, 2, function(x) {
+    is_na <- is.na(x)
+    x[is_na] <- mean(x, na.rm = TRUE)
+    return(x)
+}))
+#########################################
+###### SELECT MOST EFFIZIENT DRUGS ######
+#########################################
+##############
+### BREAST ###
+##############
+drugnames_b <- sub("::.*", "", colnames(breast_prism_imp))
+concentration_b <- sub(".*::(.*?)::.*", "\\1", colnames(breast_prism_imp))
+names_conc_drug_b <- sub("::.*", "", sub("::", ":", colnames(breast_prism_imp)))
+colMeans_breast <- apply(breast_prism_imp, 2, mean)
+duplicate_drugs_b <- unique(drugnames_b[duplicated(drugnames_b)])
+df_nam_con_mean_b <- data.frame(colMeans_breast, drugnames_b, concentration_b, names_conc_drug_b)
+lowest_mean_duplicate_b <- data.frame()
+for(i in 1:length(duplicate_drugs_b)) {
+    act_rows_b <- which(df_nam_con_mean_b$drugnames_b == duplicate_drugs_b[i])
+    act_df_b <- df_nam_con_mean_b[act_rows_b,]
+    lowest_colmean_b <- min(act_df_b$colMeans_breast, na.rm = TRUE)
+    lowest_mean_duplicate_b <- rbind(lowest_mean_duplicate_b, act_df_b[which(act_df_b$colMeans_breast == lowest_colmean_b),])
+}
+pref_drug_con_combo_breast <- rownames(lowest_mean_duplicate_b)
+##############
+### PRISM ###
+##############
+drugnames <- sub("::.*", "", colnames(prism_imp))
+drugnames <- sub("::.*", "", colnames(prism_imp))
+concentration <- sub(".*::(.*?)::.*", "\\1", colnames(prism_imp))
+names_conc_drug <- sub("::.*", "", sub("::", ":", colnames(prism_imp)))
+colMeans <- apply(prism_imp, 2, mean)
+duplicate_drugs <- unique(drugnames[duplicated(drugnames)])
+df_nam_con_mean <- data.frame(colMeans, drugnames, concentration, names_conc_drug)
+lowest_mean_duplicate <- data.frame()
+for(i in 1:length(duplicate_drugs)) {
+    act_rows <- which(df_nam_con_mean$drugnames == duplicate_drugs[i])
+    act_df <- df_nam_con_mean[act_rows,]
+    lowest_colmean <- min(act_df$colMeans, na.rm = TRUE)
+    lowest_mean_duplicate <- rbind(lowest_mean_duplicate, act_df[which(act_df$colMeans == lowest_colmean),])
+}
+pref_drug_con_combo <- rownames(lowest_mean_duplicate)
+########################################
+###### FACTOR FOR THE TOP (X) MOA ######
+########################################
+##############
+### BREAST ###
+##############
+meta_eff_treat_b <- prism.treat[pref_drug_con_combo_breast,]
+level_counts_b <- table(meta_eff_treat_b$moa)
+sorted_levels_b <- names(sort(level_counts_b, decreasing = TRUE))
+top_x_levels_b <- sorted_levels_b[1:20] ### <---! USER INPUT --->
+levels_b <- factor(meta_eff_treat_b$moa, levels = c("Other", top_x_levels_b))
+meta_eff_treat_b$levels_b <- levels_b
+meta_eff_treat_b$levels_b[is.na(meta_eff_treat_b$levels_b)] <- "Other"
+level_colors_b <- rainbow(length(top_x_levels_b))
+color_palette_b <- c(setNames(level_colors_b, top_x_levels_b), Other = "grey")
+#############
+### PRISM ###
+#############
+meta_eff_treat <- prism.treat[pref_drug_con_combo,]
+level_counts <- table(meta_eff_treat$moa)
+sorted_levels <- names(sort(level_counts, decreasing = TRUE))
+top_x_levels <- sorted_levels[1:20]  ### <---! USER INPUT --->
+levels <- factor(meta_eff_treat$moa, levels = c("Other", top_x_levels))
+meta_eff_treat$levels <- levels
+meta_eff_treat$levels[is.na(meta_eff_treat$clevels)] <- "Other"
+level_colors <- rainbow(length(top_x_levels))
+color_palette <- c(setNames(level_colors, top_x_levels), Other = "grey")
+```
+
+# --------------------------- #
+### Variables and their use ###
+# --------------------------- #
+```{r}
+#############
+# IMPORTANT #
+#############
+prism_imp #<--! prism with NA´s imputed -->
+breast_prism_imp #<--! subset breast cancer with NA´s imputed -->
+lowest_mean_duplicate #<--! drug, conc, colMean for the most effizient drugs -->
+pref_drug_con_combo_breast #<--! most efficient drugs for breast cellines-->
+pref_drug_con_combo #<--! most efficient drugs for all cellines-->
+################
+# NICE TO HAVE #
+################
+meta_eff_treat_b #<--! meta data for most effizient drugs breast -->
+meta_eff_treat #<--! same for all cellines -->
+top_x_levels_b #<--! top x moa for breast -->
+top_x_levels #<--! same all cellines -->
+```
+
+# -------------------------------------- #
+### Basic statistics and Visualisation ###
+# -------------------------------------- #
+```{r}
+################################
+###### NA ANALYSIS #############
+################################
+sum(is.na(prism))
+min(prism, na.rm = TRUE) ##-12.06536
+max(prism, na.rm = TRUE) ##5.007653
+hist(colMeans(is.na(prism[,-rem.pNAcol])), breaks = 100, xlab = "NA Anteil", main = "Histogramm der NA Anteile")
+################################
+###### CELL GROWTH BREAST ######
+################################
+vec_breast <- unlist(sapply(breast_prism, function(x) x[is.numeric(x)]))
+vec_breast <- na.omit(vec_breast)
+hist(vec_breast, breaks = 80, xlab = "Cell Growth", main = "Overview of the Cell Growth", xlim = c(-8, 2));abline(v = mean(vec_breast, na.rm = TRUE), col = "red", lwd = 2, lty = 3);abline(v = median(vec_breast, na.rm = TRUE), col = "blue", lwd = 2, lty= 3);legend("topleft", legend = c("mean", "median"), col = c("red", "blue"), lwd = 2, lty = 3)
+heatmapbreast <- pheatmap(breast_prism_imp, show_rownames = TRUE, show_colnames = FALSE)
+#################################
+###### DIMENSION REDUCTION ######
+#################################
+############
+### UMAP ###
+############
+# ------
+# BREAST
+breast_cancer_umap <- umap(t(breast_prism_imp[,pref_drug_con_combo_breast]), n_neighbors = 7, min_dist = 0.5, n_epochs = 200, n_components = 2) 
+umap_layout_breast <- as.data.frame(breast_cancer_umap$layout)
+ggplot(umap_layout_breast, aes(x = V1, y = V2, colour = meta_eff_treat_b$levels_b)) +
+    geom_point(size = 3, alpha = 0.5) +
+    scale_color_manual(values = color_palette_b) +
+    theme_bw() +
+    ggtitle("UMAP of the Breastcancer celllines")
+# ------
+# PRISM
+cancer_umap <- umap(t(prism_imp), n_neighbors = 7, min_dist = 0.5, n_epochs = 200, n_components = 2) 
+umap_layout_prism <- as.data.frame(cancer_umap$layout)
+ggplot(umap_layout_prism, aes(x = V1, y = V2, colour = meta_eff_treat$levels)) +
+    geom_point(size = 3, alpha = 0.5) +
+    scale_color_manual(values = color_palette) +
+    theme_bw() +
+    ggtitle("UMAP of all celllines")
+# -----
+
+```

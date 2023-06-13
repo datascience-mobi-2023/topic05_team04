@@ -5,7 +5,7 @@ date: "01.Juni 2023"
 ---
 
 ```{r}
-
+##junk
 ##trying to integrate achilles data info with .exp (until 4, but from where?)
 
 View(prism.achilles.rm)
@@ -116,9 +116,49 @@ C6 is a list containing 189 smaller lists named as abbreviations for different b
 ```{r}
 lapply(C6.gene, function(x) x$geneSymbols)
 
-View(C6.geneSym)
 
 C6.geneSym <- unlist(lapply(C6.gene, function(x) x$geneSymbols)) #single vector
 
 
+View(C6.geneSym)
+
+View(important_gene_list)
+
+```
+
+Looking for overlaps to proceed with filter.
+```{r}
+
+sum(important_gene_list %in% C6.geneSym) #3843
+
+
+breast_gene <- intersect(C6.geneSym, important_gene_list)
+
+print(breast_gene)
+
+
+```
+
+```{r}
+
+View(prism.treat)
+
+
+
+geneSearchEngine <- function(query) {
+  matchingRows <- which(prism.treat$target == query)
+  if (length(matchingRows) == 0) {
+    cat("No matching treatment found.\n")
+  } else {
+    cat("Matching treatment(s):\n")
+    for (row in matchingRows) {
+      rowName <- row.names(prism.treat)[row]
+      rowValue <- prism.treat$name[row]
+      cat("Row Name:", rowName, "\tTreatment:", rowValue, "\n")
+    }
+  }
+}
+
+
+geneSearchEngine("CYP19A1")
 ```
