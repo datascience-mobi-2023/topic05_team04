@@ -103,16 +103,39 @@ prism_lowest <- prism_imp[,lowest_cl_prism]
 ```{r}
 sum(is.na(prism.treat$disease.area))/dim(prism.treat)[1]
 #This means 64,7% of disease areas are unknown
-sum(which("oncology"%in%prism.treat$disease.area))/dim(prism.treat)[1]
+
+
+sum(na.omit("oncology"==prism.treat$disease.area))/dim(prism.treat)[1]
 ```
 As not every drug has a specific disease area, we will try to eliminate the oncological drugs via their names.For this we will compare the drugs in prism.treat and in two cancer treatment list, cancer national institute (https://www.cancer.gov/about-cancer/treatment/drugs) and cancer research UK (https://www.cancerresearchuk.org/about-cancer/treatment/drugs) 
 ```{r}
 library(readxl)
 cancer.therapy <- read_excel("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/oncological_treatments.xlsx")
-treat.names <- as.character(prism.treat$name)
-sum(treat.names%in%"fulvestrant ")
-print(cancer.therapy[309,])
-print(as.character(prism.treat[74,]$name))
+cancer.therapy <- as.data.frame(cancer.therapy)
+treat.names <- as.data.frame(prism.treat$name)
+#treat.list <- as.character(cancer.therapy)
+
+#cancer.therapy <- unique(cancer.therapy)
+#drug.overlap <- apply(cancer.therapy, 1, function(x){
+ # sum(treat.names==x)
+#})
+drug.overlap <- apply(treat.names, 1, function(x){
+  sum(cancer.therapy==x)
+})
+which(drug.overlap>0)
+
+non.onco.treat <- prism.treat[-which(drug.overlap>0),]
+non.onco.treat <- non.onco.treat[-which("oncology"==non.onco.treat$disease.area),]
+dim(non.onco.treat)
+#sum(drug.overlap > 0)/dim(prism.treat)[1]
+#which(drug.overlap)
+
+
+
+#View(cancer.therapy)
+
+#treat.names==cancer.therapy[3,]
+#cancer.therapy[309,] == as.character(prism.treat[74,]$name)
 
 ```
 
