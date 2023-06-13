@@ -178,7 +178,7 @@ head(lowest_mean_duplicate)
 
 ## Hier kann man sich bisschen die Verteilungen anchauen
 ```{r}
-hist(as.numeric(lowest_mean_duplicate$concentration))
+#hist(as.numeric(lowest_mean_duplicate$concentration))
 hist(lowest_mean_duplicate$colMeans_breast)
 ```
 
@@ -189,7 +189,7 @@ library(ggplot2)
 pref_drug_con_combo <- rownames(lowest_mean_duplicate)
 
 ##### Perform UMAP
-breast_cancer_umap <- umap(t(breast_prism_imp[,pref_drug_con_combo]), n_neighbors = 15, n_components = 2) # <-- How many dimensions is best?
+breast_cancer_umap <- umap(t(breast_prism_imp[,pref_drug_con_combo]), n_neighbors = 7, min_dist = 0.5, n_epochs = 200, n_components = 2) # <-- How many dimensions is best?
 umap_layout_breast <- as.data.frame(breast_cancer_umap$layout)
 
 ## Create levels for differentiation
@@ -201,11 +201,11 @@ sorted_levels <- names(sort(level_counts, decreasing = TRUE))
 top_10_levels <- sorted_levels[1:20]
 
 # Create a factor with the top 10 MOA levels
-levels <- factor(imp_treat$moa, levels = c(top_10_levels, "Other"))
+levels <- factor(imp_treat$moa, levels = c("Other", top_10_levels))
 imp_treat$levels <- levels
 
 # Make the MOA levels that are not in the top "Other"
-imp_treat$levels[is.na(imp_treat$clevels)] <- "Other"
+imp_treat$levels[is.na(imp_treat$levels)] <- "Other"
 
 # Define the colors for each level (excluding "Other")
 level_colors <- rainbow(length(top_10_levels))
@@ -218,5 +218,5 @@ ggplot(umap_layout_breast, aes(x = V1, y = V2, colour = imp_treat$levels)) +
     geom_point(, size = 3, alpha = 0.5) +
     scale_color_manual(values = color_palette) +
     theme_bw() +
-    ggtitle("UMAP of the Breastcancer celllines") 
+    ggtitle("UMAP of the Breastcancer celllines")
 ```
