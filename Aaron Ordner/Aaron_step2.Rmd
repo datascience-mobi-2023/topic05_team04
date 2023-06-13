@@ -103,16 +103,39 @@ prism_lowest <- prism_imp[,lowest_cl_prism]
 ```{r}
 sum(is.na(prism.treat$disease.area))/dim(prism.treat)[1]
 #This means 64,7% of disease areas are unknown
-sum(which("oncology"%in%prism.treat$disease.area))/dim(prism.treat)[1]
+
+
+sum(na.omit("oncology"==prism.treat$disease.area))/dim(prism.treat)[1]
 ```
 As not every drug has a specific disease area, we will try to eliminate the oncological drugs via their names.For this we will compare the drugs in prism.treat and in two cancer treatment list, cancer national institute (https://www.cancer.gov/about-cancer/treatment/drugs) and cancer research UK (https://www.cancerresearchuk.org/about-cancer/treatment/drugs) 
 ```{r}
 library(readxl)
 cancer.therapy <- read_excel("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/oncological_treatments.xlsx")
-treat.names <- as.character(prism.treat$name)
-sum(treat.names%in%"fulvestrant ")
-print(cancer.therapy[309,])
-print(as.character(prism.treat[74,]$name))
+cancer.therapy <- as.data.frame(cancer.therapy)
+treat.names <- as.data.frame(prism.treat$name)
+#treat.list <- as.character(cancer.therapy)
+
+#cancer.therapy <- unique(cancer.therapy)
+#drug.overlap <- apply(cancer.therapy, 1, function(x){
+ # sum(treat.names==x)
+#})
+drug.overlap <- apply(treat.names, 1, function(x){
+  sum(cancer.therapy==x)
+})
+which(drug.overlap>0)
+
+non.onco.treat <- prism.treat[-which(drug.overlap>0),]
+non.onco.treat <- non.onco.treat[-which("oncology"==non.onco.treat$disease.area),]
+dim(non.onco.treat)
+#sum(drug.overlap > 0)/dim(prism.treat)[1]
+#which(drug.overlap)
+
+
+
+#View(cancer.therapy)
+
+#treat.names==cancer.therapy[3,]
+#cancer.therapy[309,] == as.character(prism.treat[74,]$name)
 
 ```
 
@@ -129,31 +152,56 @@ lineages.distribution <- apply(lineages, 1, function(x) {
 rel.cl <- as.data.frame(lineages[which(lineages.distribution >= 10), ])
 prism.all.var <- apply(prism_lowest, 1, var)
 prism.all.var <- as.data.frame(prism.all.var)
-apply(rel.cl, 1, function(x){
-  mean(prism.all.var[which(rownames(prism.all.var)%in%prism.cl$DepMap_ID[prism.cl$lineage%in%x])])
-})
-
-prism.all.var[which(rownames(prism.all.var)%in%prism.cl$DepMap_ID[prism.cl$lineage%in%rel.cl[1,]])]
 
 
-which(rownames(prism.all.var)%in%prism.cl$DepMap_ID[prism.cl$lineage%in%rel.cl[1,]])
 ```
+
+In "prism.all.var are now the variances of all rows of "prism_lowest". Now we will create a data frame that contains the means of the variances of all the lineage with more than 9 cell lines. 
 
 ```{r}
+prism.var.mean <- apply(rel.cl, 1, function(x){
+  test <- c(which(rownames(prism.all.var)%in%prism.cl$DepMap_ID[prism.cl$lineage%in%x]))
+  mean(prism.all.var[test,])
+})
+prism.var.mean <- as.data.frame(prism.var.mean)
+rownames(prism.var.mean) <- as.character(rel.cl[,1])
 
-apply(prism_lowest, 1, function(y) {
-  var(prism_lowest[y, ] %in% rownames(prism.cl[which(prism.cl$lineage %in% rel.cl[1,], )])
-})
-  rel.cl <- as.data.frame(lineages[which(lineages.distribution>=10),])
-apply(rel.cl, 1, function(x){
-  apply(prism_lowest, 1, function(y){
-    var(prism_lowest%in%(rownames(prism.cl%in%x)))
-  })
-})
-rel.cl <- as.data.frame(lineages[which(lineages.distribution>=10),])
-prism.all.var <- apply(prism_lowest, 1, var)
+lineage.amount <- lineages.distribution[which(lineages.distribution >= 10)]
+prism.var.mean$LineageAmount <- lineage.amount
+colnames(prism.var.mean)[1] <- "VarMeans"
+View(prism.var.mean)
 
 ```
+
+
+
+
+
+
+
+
+
+```{r}
+#junkyard
+
+#prism.all.var[which(rownames(prism.all.var)%in%prism.cl$DepMap_ID[prism.cl$lineage%in%rel.cl[1,]])]
+
+#mean(prism.all.var[test,])
+#test <- c(which(rownames(prism.all.var)%in%prism.cl$DepMap_ID[prism.cl$lineage%in%rel.cl[1,]]))
+#apply(prism_lowest, 1, function(y) {
+ # var(prism_lowest[y, ] %in% rownames(prism.cl[which(prism.cl$lineage %in% rel.cl[1,], )])
+#})
+ # rel.cl <- as.data.frame(lineages[which(lineages.distribution>=10),])
+#apply(rel.cl, 1, function(x){
+ # apply(prism_lowest, 1, function(y){
+  #  var(prism_lowest%in%(rownames(prism.cl%in%x)))
+  #})
+#})
+#rel.cl <- as.data.frame(lineages[which(lineages.distribution>=10),])
+#prism.all.var <- apply(prism_lowest, 1, var)
+
+```
+
 
 
 
