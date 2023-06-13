@@ -125,7 +125,7 @@ drug.overlap <- apply(treat.names, 1, function(x){
 which(drug.overlap>0)
 
 non.onco.treat <- prism.treat[-which(drug.overlap>0),]
-non.onco.treat <- non.onco.treat[-which("oncology"==non.onco.treat$disease.area),]
+non.onco.treat <- non.onco.treat[-which("oncology"==non.onco.treat$disease.area),]   #### Kommentar von Luis - da werden keine mehr raussortiert
 dim(non.onco.treat)
 #sum(drug.overlap > 0)/dim(prism.treat)[1]
 #which(drug.overlap)

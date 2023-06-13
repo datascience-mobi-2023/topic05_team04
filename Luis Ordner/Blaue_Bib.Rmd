@@ -9,13 +9,14 @@
 #####################################
 ###### IMPORT LIBRARIES & DATA ######
 #####################################
-library(ggplot2)
-library(umap)
+library(ggplot2) #install.packages("ggplot2")
+library(umap) #install.packages("umap")
+library(readxl) #install.packages("readxl")
 # --------------------------------- #
-load("/Users/luisherfurth/Codenmachtspass/prism_datasets.rda")
-load("/Users/luisherfurth/Codenmachtspass/cellline_datasets.rda")
+load("/Users/luisherfurth/Codenmachtspass/Data/prism_datasets.rda")
+load("/Users/luisherfurth/Codenmachtspass/Data/cellline_datasets.rda")
 ###############################
-###### PRISM IMPUTATION #######
+###### PRISM IMPUTATION ####### Luis
 ###############################
 p_onlyNA.col <- colnames(prism[which(sapply(prism, class) == "logical")]) 
 rem.pNAcol <- which(colnames(prism) %in% p_onlyNA.col)
@@ -26,7 +27,7 @@ prism_imp <- as.data.frame(apply(prismNA, 2, function(x) {
     return(x)
 })) 
 ######################################
-###### BREAST PRISM IMPUTATION #######
+###### BREAST PRISM IMPUTATION ####### Luis
 ######################################
 breast_prism <- prism[which(prism.cl$lineage ==  "breast"), ]
 bp_onlyNA.col <- colnames(breast_prism[which(colSums(is.na(breast_prism)) == 22)]) 
@@ -39,7 +40,7 @@ breast_prism_imp <- as.data.frame(apply(breast_prism_imp, 2, function(x) {
     return(x)
 }))
 #########################################
-###### SELECT MOST EFFIZIENT DRUGS ######
+###### SELECT MOST EFFIZIENT DRUGS ###### Luis
 #########################################
 ##############
 ### BREAST ###
@@ -58,8 +59,9 @@ for(i in 1:length(duplicate_drugs_b)) {
     lowest_mean_duplicate_b <- rbind(lowest_mean_duplicate_b, act_df_b[which(act_df_b$colMeans_breast == lowest_colmean_b),])
 }
 pref_drug_con_combo_breast <- rownames(lowest_mean_duplicate_b)
+breast_prism_lowest <- breast_prism_imp[,pref_drug_con_combo_b]
 ##############
-### PRISM ###
+### PRISM ### 
 ##############
 drugnames <- sub("::.*", "", colnames(prism_imp))
 drugnames <- sub("::.*", "", colnames(prism_imp))
@@ -76,8 +78,36 @@ for(i in 1:length(duplicate_drugs)) {
     lowest_mean_duplicate <- rbind(lowest_mean_duplicate, act_df[which(act_df$colMeans == lowest_colmean),])
 }
 pref_drug_con_combo <- rownames(lowest_mean_duplicate)
+prism_lowest <- prism_imp[,pref_drug_con_combo]
+##########################################
+###### FILTERING NON-ONCOLOGY DRUGS ###### Aaron
+##########################################
+cancer.therapy <- read_excel("/Users/luisherfurth/Codenmachtspass/Data/oncological_treatments.xlsx")
+cancer.therapy <- as.data.frame(cancer.therapy)
+treat.names <- as.data.frame(prism.treat$name)
+drug.overlap <- apply(treat.names, 1, function(x){
+  sum(cancer.therapy==x)
+})
+non.onco.treat <- prism.treat[-which(drug.overlap>0),]
+###########################################
+###### VARIANCE TREATMENT ALL CANCER ###### Aaron
+###########################################
+lineages <- unique(prism.cl$lineage)
+lineages <- as.data.frame(lineages)
+lineages.distribution <- apply(lineages, 1, function(x) {
+    sum(prism.cl$lineage%in%x)
+    })
+rel.cl <- as.data.frame(lineages[which(lineages.distribution >= 10), ])
+prism_var <- apply(prism_lowest, 1, var)
+prism.var.mean <- sapply(rel.cl$lineages, function(x) {
+    mean(prism_var[prism.cl$lineage %in% x])
+    })
+prism.var.mean <- as.data.frame(prism.var.mean)
+names(prism.var.mean) <- "mean_of_variance"
+number_of_cellines <- lineages.distribution[lineages.distribution >= 10]
+prism.var.mean$Number_of_cellines <- number_of_cellines
 ########################################
-###### FACTOR FOR THE TOP (X) MOA ######
+###### FACTOR FOR THE TOP (X) MOA ###### Luis
 ########################################
 ##############
 ### BREAST ###
@@ -115,8 +145,8 @@ color_palette <- c(setNames(level_colors, top_x_levels), Other = "grey")
 prism_imp #<--! prism with NA´s imputed -->
 breast_prism_imp #<--! subset breast cancer with NA´s imputed -->
 lowest_mean_duplicate #<--! drug, conc, colMean for the most effizient drugs -->
-pref_drug_con_combo_breast #<--! most efficient drugs for breast cellines-->
-pref_drug_con_combo #<--! most efficient drugs for all cellines-->
+breast_prism_lowest #<--! most efficient drugs for breast cellines-->
+prism_lowest #<--! most efficient drugs for all cellines-->
 ################
 # NICE TO HAVE #
 ################
@@ -169,5 +199,4 @@ ggplot(umap_layout_prism, aes(x = V1, y = V2, colour = meta_eff_treat$levels)) +
     theme_bw() +
     ggtitle("UMAP of all celllines")
 # -----
-
 ```
