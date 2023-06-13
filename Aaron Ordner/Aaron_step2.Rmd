@@ -113,12 +113,8 @@ library(readxl)
 cancer.therapy <- read_excel("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/oncological_treatments.xlsx")
 cancer.therapy <- as.data.frame(cancer.therapy)
 treat.names <- as.data.frame(prism.treat$name)
-#treat.list <- as.character(cancer.therapy)
 
-#cancer.therapy <- unique(cancer.therapy)
-#drug.overlap <- apply(cancer.therapy, 1, function(x){
- # sum(treat.names==x)
-#})
+
 drug.overlap <- apply(treat.names, 1, function(x){
   sum(cancer.therapy==x)
 })
@@ -126,17 +122,15 @@ which(drug.overlap>0)
 
 non.onco.treat <- prism.treat[-which(drug.overlap>0),]
 non.onco.treat <- non.onco.treat[-which("oncology"==non.onco.treat$disease.area),]
-dim(non.onco.treat)
-#sum(drug.overlap > 0)/dim(prism.treat)[1]
-#which(drug.overlap)
+dim(non.onco.treat)[1]/dim(prism.treat)[1]
+#The data frame "non.onco.treat" is now the same as prism.treat but without known oncological drugs
 
+```
 
+```{r}
+non_onco_prism <- prism_lowest[,colnames(prism_lowest)%in%rownames(non.onco.treat)]
 
-#View(cancer.therapy)
-
-#treat.names==cancer.therapy[3,]
-#cancer.therapy[309,] == as.character(prism.treat[74,]$name)
-
+                              
 ```
 
 
@@ -184,21 +178,6 @@ View(prism.var.mean)
 ```{r}
 #junkyard
 
-#prism.all.var[which(rownames(prism.all.var)%in%prism.cl$DepMap_ID[prism.cl$lineage%in%rel.cl[1,]])]
-
-#mean(prism.all.var[test,])
-#test <- c(which(rownames(prism.all.var)%in%prism.cl$DepMap_ID[prism.cl$lineage%in%rel.cl[1,]]))
-#apply(prism_lowest, 1, function(y) {
- # var(prism_lowest[y, ] %in% rownames(prism.cl[which(prism.cl$lineage %in% rel.cl[1,], )])
-#})
- # rel.cl <- as.data.frame(lineages[which(lineages.distribution>=10),])
-#apply(rel.cl, 1, function(x){
- # apply(prism_lowest, 1, function(y){
-  #  var(prism_lowest%in%(rownames(prism.cl%in%x)))
-  #})
-#})
-#rel.cl <- as.data.frame(lineages[which(lineages.distribution>=10),])
-#prism.all.var <- apply(prism_lowest, 1, var)
 
 ```
 
