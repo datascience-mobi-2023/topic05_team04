@@ -59,7 +59,7 @@ for(i in 1:length(duplicate_drugs_b)) {
     lowest_mean_duplicate_b <- rbind(lowest_mean_duplicate_b, act_df_b[which(act_df_b$colMeans_breast == lowest_colmean_b),])
 }
 pref_drug_con_combo_breast <- rownames(lowest_mean_duplicate_b)
-breast_prism_lowest <- breast_prism_imp[,pref_drug_con_combo_b]
+breast_prism_lowest <- breast_prism_imp[,pref_drug_con_combo_breast]
 ##############
 ### PRISM ### 
 ##############
