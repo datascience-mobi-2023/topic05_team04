@@ -153,12 +153,39 @@ geneSearchEngine <- function(query) {
     cat("Matching treatment(s):\n")
     for (row in matchingRows) {
       rowName <- row.names(prism.treat)[row]
-      rowValue <- prism.treat$name[row]
+      rowValue <- as.character(prism.treat$name[row])
       cat("Row Name:", rowName, "\tTreatment:", rowValue, "\n")
     }
   }
 }
 
 
-geneSearchEngine("CYP19A1")
+geneSearchEngine("ADRB2")
+
+
+
+```
+
+
+```{r}
+
+treatmentSearchEngine <- function(query) {
+  matchingRows <- which(prism.treat$name == query)
+  if (length(matchingRows) == 0) {
+    cat("No matching target found.\n")
+  } else {
+    cat("Matching target(s):\n")
+    for (row in matchingRows) {
+      rowName <- row.names(prism.treat)[row]
+      rowValue <- as.character(prism.treat$target[row])
+      cat("Row Name:", rowName, "\tTarget:", rowValue, "\n")
+    }
+  }
+}
+
+
+treatmentSearchEngine("noretynodrel")
+
+sum(is.na(prism.treat$target))
+
 ```
