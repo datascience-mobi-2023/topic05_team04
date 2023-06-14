@@ -115,9 +115,11 @@ lineages.distribution <- apply(lineages, 1, function(x) {
     })
 rel.cl <- as.data.frame(lineages[which(lineages.distribution >= 10), ])
 prism_var <- apply(prism_lowest, 1, var)
-prism.var.mean <- sapply(rel.cl$lineages, function(x) {
-    mean(prism_var[prism.cl$lineage %in% x])
-    })
+prism.var.mean <- apply(rel.cl, 1, function(x){
+  DepMap_ID <- prism.cl$DepMap_ID[prism.cl$lineage%in%x]
+  test <- c(which(rownames(prism.all.var)%in%DepMap_ID))
+  mean(prism.all.var[test,])
+})
 prism.var.mean <- as.data.frame(prism.var.mean)
 names(prism.var.mean) <- "mean_of_variance"
 number_of_cellines <- lineages.distribution[lineages.distribution >= 10]

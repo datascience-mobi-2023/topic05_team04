@@ -137,7 +137,7 @@ non_onco_prism <- prism_lowest[,colnames(prism_lowest)%in%rownames(non.onco.trea
 
 Now we will look at which group of cancers has the highest variance in their treatment response. This will help with the Dimension reduction and the clustering.
 ```{r}
-prism_var <- apply(prism_lowest, 1, var)
+
 lineages <- unique(prism.cl$lineage)
 lineages <- as.data.frame(lineages)
 lineages.distribution <- apply(lineages, 1, function(x) {
@@ -154,7 +154,8 @@ In "prism.all.var are now the variances of all rows of "prism_lowest". Now we wi
 
 ```{r}
 prism.var.mean <- apply(rel.cl, 1, function(x){
-  test <- c(which(rownames(prism.all.var)%in%prism.cl$DepMap_ID[prism.cl$lineage%in%x]))
+  DepMap_ID <- prism.cl$DepMap_ID[prism.cl$lineage%in%x]
+  test <- c(which(rownames(prism.all.var)%in%DepMap_ID))
   mean(prism.all.var[test,])
 })
 prism.var.mean <- as.data.frame(prism.var.mean)
