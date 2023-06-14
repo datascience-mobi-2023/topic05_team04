@@ -5,9 +5,24 @@
 # -------------------------------- #
 ### Data cleanup and preparation ###
 # -------------------------------- #
-```{r}
+```{r Trust me run it}
+# ----------- #
+### Legende ###
+# ----------- #
+### 1. Librairies and Data
+### 2. PRISM Imputation
+### 3. Breast PRISM Imputation
+### 4. Select most effizient drugs
+####### 4.1 Breast
+####### 4.2 PRISM
+### 5. Filtering non-oncology drugs
+### 6. Variance treatment all cancer
+### 7. TOP (x) MOA
+####### 4.1 Breast
+####### 4.2 PRISM
+# ----------- #
 #####################################
-###### IMPORT LIBRARIES & DATA ######
+# 1. # IMPORT LIBRARIES & DATA ######
 #####################################
 library(ggplot2) #install.packages("ggplot2")
 library(umap) #install.packages("umap")
@@ -16,7 +31,7 @@ library(readxl) #install.packages("readxl")
 load("/Users/luisherfurth/Codenmachtspass/Data/prism_datasets.rda")
 load("/Users/luisherfurth/Codenmachtspass/Data/cellline_datasets.rda")
 ###############################
-###### PRISM IMPUTATION ####### Luis
+# 2. # PRISM IMPUTATION ####### Luis
 ###############################
 p_onlyNA.col <- colnames(prism[which(sapply(prism, class) == "logical")]) 
 rem.pNAcol <- which(colnames(prism) %in% p_onlyNA.col)
@@ -27,7 +42,7 @@ prism_imp <- as.data.frame(apply(prismNA, 2, function(x) {
     return(x)
 })) 
 ######################################
-###### BREAST PRISM IMPUTATION ####### Luis
+# 3. # BREAST PRISM IMPUTATION ####### Luis
 ######################################
 breast_prism <- prism[which(prism.cl$lineage ==  "breast"), ]
 bp_onlyNA.col <- colnames(breast_prism[which(colSums(is.na(breast_prism)) == 22)]) 
@@ -40,7 +55,7 @@ breast_prism_imp <- as.data.frame(apply(breast_prism_imp, 2, function(x) {
     return(x)
 }))
 #########################################
-###### SELECT MOST EFFIZIENT DRUGS ###### Luis
+# 4. # SELECT MOST EFFIZIENT DRUGS ###### Luis
 #########################################
 ##############
 ### BREAST ###
@@ -80,7 +95,7 @@ for(i in 1:length(duplicate_drugs)) {
 pref_drug_con_combo <- rownames(lowest_mean_duplicate)
 prism_lowest <- prism_imp[,pref_drug_con_combo]
 ##########################################
-###### FILTERING NON-ONCOLOGY DRUGS ###### Aaron
+# 5. # FILTERING NON-ONCOLOGY DRUGS ###### Aaron
 ##########################################
 cancer.therapy <- read_excel("/Users/luisherfurth/Codenmachtspass/Data/oncological_treatments.xlsx")
 cancer.therapy <- as.data.frame(cancer.therapy)
@@ -89,8 +104,9 @@ drug.overlap <- apply(treat.names, 1, function(x){
   sum(cancer.therapy==x)
 })
 non.onco.treat <- prism.treat[-which(drug.overlap>0),]
+non.onco.treat <- non.onco.treat[-which("oncology"==non.onco.treat$disease.area),]
 ###########################################
-###### VARIANCE TREATMENT ALL CANCER ###### Aaron
+# 6. # VARIANCE TREATMENT ALL CANCER ###### Aaron
 ###########################################
 lineages <- unique(prism.cl$lineage)
 lineages <- as.data.frame(lineages)
@@ -107,7 +123,7 @@ names(prism.var.mean) <- "mean_of_variance"
 number_of_cellines <- lineages.distribution[lineages.distribution >= 10]
 prism.var.mean$Number_of_cellines <- number_of_cellines
 ########################################
-###### FACTOR FOR THE TOP (X) MOA ###### Luis
+# 7. # FACTOR FOR THE TOP (X) MOA ###### Luis
 ########################################
 ##############
 ### BREAST ###
