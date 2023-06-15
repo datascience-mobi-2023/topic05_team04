@@ -169,10 +169,48 @@ View(prism.var.mean)
 ```
 
 
+How about we make a data frame with only the treatments with high variance so that the dimension reduction is easier.
+```{r}
+treat.var <- apply(prism_lowest, 2, var)
+
+rel.treat <- prism_lowest[,treat.var>=1]
+
+```
 
 
 
 
+We test whether there are differences in the prism scores between oncological and non-oncological drugs.
+
+```{r}
+onco.all.treat <- prism.treat[which(drug.overlap>0),]
+
+onco.treat <- prism.treat[which("oncology"==prism.treat$disease.area),]
+
+all_onco_prism <- prism_lowest[,colnames(prism_lowest)%in%rownames(onco.all.treat)]
+
+onco_prism <- prism_lowest[,colnames(prism_lowest)%in%rownames(onco.treat)]
+
+non.onco.mean <- apply(non_onco_prism, 2, mean)
+
+all.onco.mean <- apply(all_onco_prism, 2, mean)
+
+onco.mean <- apply(onco_prism, 2, mean)
+
+prism.mean <- apply(prism_lowest, 2, mean)
+
+non.onco.var <- apply(non_onco_prism, 2, var)
+
+onco.var <- apply(onco_prism, 2, var)
+
+mean(onco.var)
+mean(non.onco.var)
+
+hist(onco.mean)
+hist(all.onco.mean)
+hist(non.onco.mean)
+hist(prism.mean)
+```
 
 
 
