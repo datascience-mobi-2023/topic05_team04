@@ -56,6 +56,8 @@ min(prism.achilles_mean) #-2.37806
 
 max(prism.achilles_mean) #0.751765
 
+hist(prism.achilles_mean)
+
 important_genes <- colnames(prism.achilles.breast[,which(prism.achilles_mean >= 0)])
 
 important_gene_exp <- prism.exp[, colnames(prism.exp) %in% important_genes]
@@ -187,5 +189,37 @@ treatmentSearchEngine <- function(query) {
 treatmentSearchEngine("noretynodrel")
 
 sum(is.na(prism.treat$target))
+
+```
+
+***I will try to integrate cell line specific targets in order to get possible treatments for best response.***
+
+```{r}
+
+View(breast_prism_cl)
+
+#manuell clustering
+
+breast_carcinoma <- (breast_prism_cl[which(breast_prism_cl$lineage_subtype == "breast_carcinoma"),])$DepMap_ID
+
+print(breast_carcinoma)
+
+breast_ductal_carcinoma <- (breast_prism_cl[which(breast_prism_cl$lineage_subtype == "breast_ductal_carcinoma"),])$DepMap_ID
+
+breast_adenocarcinoma <- (breast_prism_cl[which(breast_prism_cl$lineage_subtype == "breast_adenocarcinoma"),])$DepMap_ID
+
+View(breast_adenocarcinoma)
+
+
+
+class(breast_adenocarcinoma)
+
+prism.achilles.breast_adenocarcinoma <- prism.achilles.breast[breast_adenocarcinoma,] #does NOT WORKKKKKK
+
+View(prism.achilles.breast_adenocarcinoma)
+
+class(row.names(prism.achilles.breast))
+
+
 
 ```
