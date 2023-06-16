@@ -213,13 +213,30 @@ hist(prism.mean)
 ```
 
 
+trying to calculate the correlation between treatment response and gene expression. I'm very unsure if this will work in any way but here we go...
 
+```{r}
+exp.treat.cor <- data.frame()  
 
-
-
-
-
-
+for (y in 1:ncol(breast_prism_lowest)) {
+  correlation <- c()
+  
+  for (x in 1:ncol(breast_PRISM.exp)) {
+    gene.expression <- breast_PRISM.exp[, x]
+    correlation[x] <- cor(breast_prism_lowest[, y], gene.expression)
+  }
+  
+  
+  
+  if (y == 1) {
+    exp.treat.cor <- correlation  
+  } else {
+    exp.treat.cor <- cbind(exp.treat.cor, correlation)  
+  }
+}
+#colnames(exp.treat.cor) <- colnames(breast_prism_lowest)
+#rownames(exp.treat.cor) <- colnames(breast_PRISM.exp)
+```
 
 
 
@@ -238,47 +255,34 @@ hist(prism.mean)
 
 ```{r}
 #junkyard
+exp.treat.cor <- data.frame()
+for (y in range(1:ncol(breast_prism_lowest))){
+  for (x in range(1:ncol(breast_PRISM.exp))){
+    gene.expression <- breast_PRISM.exp[,x]
+    correlation[x] <- cor(breast_prism_lowest[,y], gene.expression)
+  }
+  exp.treat.cor <- gene_expression
+}
 
+exp.treat.cor <- data.frame()
 
+for (y in 1:50) {
+  correlation <- c()
+  
+  for (x in 1:50) {
+    gene.expression <- breast_PRISM.exp[, x]
+    correlation[x] <- cor(breast_prism_lowest[, y], gene.expression)
+  }
+  
+  result <- data.frame(Treatment_Column = names(breast_prism_lowest)[y], Correlation = correlation)
+  exp.treat.cor <- cbind(exp.treat.cor, result)
+}
+
+for (x in range(1:ncol(breast_PRISM.exp))){
+  gene.expression <- breast_PRISM.exp[,x]
+  correlation[x] <- cor(breast_prism_lowest[,1], gene.expression)
+}
+  
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
