@@ -195,34 +195,24 @@ sum(is.na(prism.treat$target))
 ***I will try to integrate cell line specific targets in order to get possible treatments for best response.***
 
 ```{r}
-
-View(breast_prism_cl)
-
 ###manuell clustering
 
-breast_carcinoma <- (breast_prism_cl[which(breast_prism_cl$lineage_subtype == "breast_carcinoma"),])$DepMap_ID
+breast_carcinoma <- c(breast_prism_cl[which(breast_prism_cl$lineage_subtype == "breast_carcinoma"),])$DepMap_ID
 
 print(breast_carcinoma)
 
-breast_ductal_carcinoma <- (breast_prism_cl[which(breast_prism_cl$lineage_subtype == "breast_ductal_carcinoma"),])$DepMap_ID
+breast_ductal_carcinoma <- c(breast_prism_cl[which(breast_prism_cl$lineage_subtype == "breast_ductal_carcinoma"),])$DepMap_ID
 
-breast_adenocarcinoma <- (breast_prism_cl[which(breast_prism_cl$lineage_subtype == "breast_adenocarcinoma"),])$DepMap_ID
+#breast_adenocarcinoma <- c(breast_prism_cl[which(breast_prism_cl$lineage_subtype == "breast_adenocarcinoma"),])$DepMap_ID
+```
 
-View(breast_adenocarcinoma)
+```{r}
+#prism.achilles.breast_adenocarcinoma <- prism.achilles.rm[which(rownames(prism.achilles.breast)%in%breast_adenocarcinoma),]
 
-View(breast_carcinoma)
+prism.achilles.breast_carcinoma <- prism.achilles.breast[which(rownames(prism.achilles.breast)%in%breast_carcinoma),]
 
-class(breast_adenocarcinoma)
+prism.achilles.breast_ductal_carcinoma <- prism.achilles.breast[which(rownames(prism.achilles.breast)%in%breast_ductal_carcinoma),]
 
-prism.achilles.breast_adenocarcinoma <- which(prism.achilles.breast[prism.achilles.breast == "breast_adenocarcinoma"] #does NOT WORKKKKKK
-
-View(prism.achilles.breast_adenocarcinoma)
-
-print(prism.achilles.breast_adenocarcinoma)
-
-class(row.names(prism.achilles.breast))
-
-prism.achilles.breast_carcinoma <- (prism.achilles.breast, rownames(prism.achilles.breast) == breast_carcinoma)
 
 
 ```
