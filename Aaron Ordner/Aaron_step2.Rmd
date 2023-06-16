@@ -214,6 +214,28 @@ hist(prism.mean)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ```{r}
 #junkyard
 

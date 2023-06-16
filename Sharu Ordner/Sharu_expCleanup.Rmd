@@ -47,11 +47,11 @@ library(pheatmap)
 
 ```{r}
 
-View(prism.exp)
+#View(prism.exp)
 
 class(prism.exp)
 
-plot(prism.exp) #too many numbers for R to plot
+#plot(prism.exp) #too many numbers for R to plot
 
 #dimension and column number available in environment
 
@@ -60,9 +60,9 @@ getOption("max.print")
 dim(prism.exp)
 
 
+```
 
-
-
+```{r}
 ####general info
 min(prism.exp, na.rm = T) # 0
 max(prism.exp, na.rm = T) # 17.25397
@@ -91,15 +91,18 @@ which(colzero.exp) # 6 Genes not expressed in any cell
 
 PRISM.exp <- prism.exp[, !colzero.exp]
 
-View(PRISM.exp)
+#View(PRISM.exp)
 
+```
+
+```{r}
 ###breast cancer <> gene expression
 
-View(prism.cl)
+#View(prism.cl)
 
 breast_prism.exp <- prism.exp[which(prism.cl$lineage == "breast"),]
 
-View(breast_prism.exp)
+#View(breast_prism.exp)
 
 pheatmap(breast_prism.exp, show_rownames = F, show_colnames = F) # many Genes not detected (middle)
 
@@ -115,12 +118,14 @@ sum(breastzero.col) # 449 Genes are not expressed in breast cancer cells
 
 breast_PRISM.exp <- breast_prism.exp[, !breastzero.col]
 
-View(breast_PRISM.exp)
+#View(breast_PRISM.exp)
 
 
 pheatmap(breast_PRISM.exp, show_rownames = T, show_colnames = F)
 
+```
 
+```{r}
 #### next: correlation between cell lines (expressing same genes?), clustering by genome similarities
 
 ##correlation between genes
@@ -136,20 +141,25 @@ wss <- sapply(1:10, function(x) kmeans(breast_PRISM.exp, x)$tot.withinss)
 
 plot(1:10, wss, type = "b", xlab = "N of clusters", ylab = "Total within sum of square") #very strange hahah
 
+```
+
+```{r}
 ##pca without thinking
 pca <- prcomp(breast_PRISM.exp, center = T, scale. = T)
 
 summary(pca)
 
-View(pca)
+#View(pca)
 
 plot(pca$x[,1],pca$x[,2], col= as.integer(breast_PRISM.exp$DPM1), pch=19 ,xlab = "PC1", ylab = "PC2") 
 
-View(prism.achilles) 
+#View(prism.achilles) 
 
 
 class(breast_prism.exp)
+```
 
+```{r}
 #k-means prism.exp mit Varianz
 
 breast_sd.exp <- apply(breast_prism.exp, 2, sd)
@@ -162,15 +172,17 @@ hist(breast_sd.exp)
 
 test.exp <- breast_prism.exp[, which(breast_sd.exp > 2)]
 
-View(breast_big1.exp)
+#View(breast_big1.exp)
 
-View(test.exp)
+#View(test.exp)
 
 wss.exp <- sapply(1:10, function(x) kmeans(test.exp, x)$tot.withinss)
 
 plot(1:10, wss.exp, type = "b", xlab = "N of clusters", ylab = "Total within sum of square")
 
+```
 
+```{r}
 #silhouette
 
 library(cluster)
