@@ -162,7 +162,7 @@ geneSearchEngine <- function(query) {
 }
 
 
-geneSearchEngine("ADRB2")
+geneSearchEngine("PDF")
 
 
 
@@ -213,6 +213,70 @@ prism.achilles.breast_carcinoma <- prism.achilles.breast[which(rownames(prism.ac
 
 prism.achilles.breast_ductal_carcinoma <- prism.achilles.breast[which(rownames(prism.achilles.breast)%in%breast_ductal_carcinoma),]
 
+View(prism.achilles.breast_carcinoma)
+```
+
+**threshold for breast carcinoma subtype**
+```{r}
+
+imp.carcinoma <- apply(prism.achilles.breast_carcinoma, 2, mean)
+
+#View(imp.carcinoma)
+
+max(imp.carcinoma)
+
+min(imp.carcinoma)
+
+```
+
+**threshold for breast ductal carcinoma subtype**
+```{r}
+
+imp.ductal_carcinoma <- apply(prism.achilles.breast_ductal_carcinoma, 2, mean)
+
+#View(imp.ductal_carcinoma)
+
+max(imp.ductal_carcinoma)
+
+min(imp.ductal_carcinoma)
+
+```
+
+***integrate prism.snv for easier gene/cell line filter***
+```{r}
+
+PRISM.snv.breast <- prism.snv[prism.snv$DepMap_ID %in% breast_prism_cl$DepMap_ID,]
+
+#View(PRISM.snv.breast)
+
+prism.snv.breast <- PRISM.snv.breast[PRISM.snv.breast$Variant_Classification != "Silent",]
+
+#View(prism.snv.breast)
+```
+
+*focus on damaging variants*
+```{r}
+
+prism.snv.breast_damage <- prism.snv.breast[prism.snv.breast$Variant_annotation == "damaging",]
+
+View(prism.snv.breast_damage)
+
+##for breast carcinoma
+
+prism.snv.breast_carcinoma <- prism.snv.breast_damage[prism.snv.breast_damage$DepMap_ID %in% breast_carcinoma,]
+
+##for breast ductal carcinoma
+
+prism.snv.breast_ductal_carcinoma <- prism.snv.breast_damage[prism.snv.breast_damage$DepMap_ID %in% breast_ductal_carcinoma,]
+
+View(prism.snv.breast_ductal_carcinoma)
 
 
+###expression level, copy number and importance of these genes
+
+View(breast_prism.exp) #cell line abbrev. are different
+
+View(breast_prism.cnv)
+
+View(prism.achilles.breast)
 ```
