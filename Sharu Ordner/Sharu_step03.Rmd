@@ -280,3 +280,16 @@ prism.snv.breast_ductal_carcinoma <- prism.snv.breast_damage[prism.snv.breast_da
 
 #View(prism.achilles.breast)
 ```
+
+```{r}
+
+achilles.exp_breast <- data.frame(row.names = rownames(breast_prism.exp), stringsAsFactors = FALSE)
+
+
+for (gene_name in colnames(prism.achilles.breast)) {
+  achilles_value <- prism.achilles.breast[, gene_name]
+  exp_value <- breast_prism.exp[, gene_name]
+  achilles.exp_breast <- cbind(achilles.exp_breast, achilles_value, exp_value)
+}
+
+```
