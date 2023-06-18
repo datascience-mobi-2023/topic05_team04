@@ -245,7 +245,7 @@ min(imp.ductal_carcinoma)
 ***integrate prism.snv for easier gene/cell line filter***
 ```{r}
 
-PRISM.snv.breast <- prism.snv[prism.snv$DepMap_ID %in% breast_prism_cl$DepMap_ID,]
+PRISM.snv.breast <- prism.snv[which(as.character(prism.snv$DepMap_ID) %in% breast_prism_cl$DepMap_ID),]
 
 #View(PRISM.snv.breast)
 
@@ -259,7 +259,7 @@ prism.snv.breast <- PRISM.snv.breast[PRISM.snv.breast$Variant_Classification != 
 
 prism.snv.breast_damage <- prism.snv.breast[prism.snv.breast$Variant_annotation == "damaging",]
 
-View(prism.snv.breast_damage)
+#View(prism.snv.breast_damage)
 
 ##for breast carcinoma
 
@@ -269,37 +269,14 @@ prism.snv.breast_carcinoma <- prism.snv.breast_damage[prism.snv.breast_damage$De
 
 prism.snv.breast_ductal_carcinoma <- prism.snv.breast_damage[prism.snv.breast_damage$DepMap_ID %in% breast_ductal_carcinoma,]
 
-View(prism.snv.breast_ductal_carcinoma)
+#View(prism.snv.breast_ductal_carcinoma)
 
 
 ###expression level, copy number and importance of these genes
 
-View(breast_prism.exp) #cell line abbrev. are different
+#View(breast_prism.exp) #cell line abbrev. are different
 
-dim(prism.achilles.breast) #17 cell lines???
+#View(breast_prism.cnv)
 
-View(breast_prism.cnv)
-
-View(prism.achilles.breast)
-
-barcodes <- intersect(rownames(prism.achilles.breast), rownames(breast_prism.exp))
-
-View(barcodes) #one code is the same, rest differs
-
-barcodes1 <- intersect(rownames(prism.achilles.breast), rownames(breast_prism.cnv))
-
-View(barcodes1)
-```
-
-```{r}
-
-achilles.exp_breast <- data.frame(row.names = rownames(breast_prism.exp), stringsAsFactors = FALSE)
-
-
-for (gene_name in colnames(prism.achilles.breast)) {
-  achilles_value <- prism.achilles.breast[, gene_name]
-  exp_value <- breast_prism.exp[, gene_name]
-  achilles.exp_breast <- cbind(achilles.exp_breast, achilles_value, exp_value)
-}
-
+#View(prism.achilles.breast)
 ```
