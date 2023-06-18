@@ -102,7 +102,7 @@ PRISM.exp <- prism.exp[, !colzero.exp]
 
 breast_prism.exp <- prism.exp[which(prism.cl$lineage == "breast"),]
 
-#View(breast_prism.exp)
+View(breast_prism.exp)
 
 #pheatmap(breast_prism.exp, show_rownames = F, show_colnames = F) # many Genes not detected (middle)
 
