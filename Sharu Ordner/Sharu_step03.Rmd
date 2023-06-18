@@ -285,11 +285,25 @@ prism.snv.breast_ductal_carcinoma <- prism.snv.breast_damage[prism.snv.breast_da
 
 achilles.exp_breast <- data.frame(row.names = rownames(breast_prism.exp), stringsAsFactors = FALSE)
 
+missingrows.achilles <- matrix(0, nrow = 5, ncol = ncol(prism.achilles.breast))
 
-for (gene_name in colnames(prism.achilles.breast)) {
-  achilles_value <- prism.achilles.breast[, gene_name]
+colnames(missingrows.achilles) <- colnames(prism.achilles.breast)
+
+rownames(missingrows.achilles) <- setdiff(rownames(breast_prism.exp), rownames(prism.achilles.breast))[1:5]
+
+#View(missingrows.achilles)
+
+breast_prism.achilles <- rbind(prism.achilles.breast, missingrows.achilles)
+
+#View(breast_prism.achilles)
+
+dim(breast_prism.achilles)
+  
+for (gene_name in colnames(breast_prism.achilles)) {
+  achilles_value <- breast_prism.achilles[, gene_name]
   exp_value <- breast_prism.exp[, gene_name]
   achilles.exp_breast <- cbind(achilles.exp_breast, achilles_value, exp_value)
 }
 
+colnames(breast_prism.exp)%in%colnames(breast_prism.achilles)
 ```
