@@ -352,3 +352,26 @@ colnames(achilles.cnv.exp_breast) <- c("Gene_Name", paste0("Achilles_", colnames
 
 
 ```
+
+
+```{r}
+#achilles.cnv.exp_breast <- data.frame(row.names = rownames(breast_prism.exp), stringsAsFactors = FALSE)
+
+#for (gene_name in colnames(breast_damage.achilles)) {
+  #if (gene_name %in% colnames(breast_damage.exp) && gene_name %in% colnames(breast_damage.cnv)) {
+  #achilles_value <- breast_damage.achilles[, gene_name]
+  #exp_value <- breast_damage.exp[, gene_name]
+  #cnv_value <- breast_damage.cnv[, gene_name]
+
+  #gene_values <- data.frame(breast_damage.achilles = achilles_value, breast_damage.exp = exp_value, breast_damage.cnv = cnv_value)
+  #achilles.cnv.exp_breast <- cbind(achilles.cnv.exp_breast, gene_values)
+  }
+}
+
+
+#View(achilles.cnv.exp_breast)
+
+
+
+
+```
