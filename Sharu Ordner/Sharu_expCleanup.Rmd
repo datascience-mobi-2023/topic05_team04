@@ -100,11 +100,13 @@ PRISM.exp <- prism.exp[, !colzero.exp]
 
 #View(prism.cl)
 
-breast_prism.exp <- prism.exp[which(prism.cl$lineage == "breast"),]
+breast_prism.exp <- prism.exp[which(rownames(prism.exp) %in% lineage.breast$DepMap_ID),]
 
-View(breast_prism.exp)
+lineage.breast <- prism.cl[which(prism.cl$lineage == "breast"),]
 
-#pheatmap(breast_prism.exp, show_rownames = F, show_colnames = F) # many Genes not detected (middle)
+#View(breast_prism.exp)
+
+##pheatmap(breast_prism.exp, show_rownames = F, show_colnames = F) # many Genes not detected (middle)
 
 sum(which(breast_prism.exp == 0))
 

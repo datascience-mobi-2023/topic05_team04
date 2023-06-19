@@ -280,3 +280,75 @@ prism.snv.breast_ductal_carcinoma <- prism.snv.breast_damage[prism.snv.breast_da
 
 #View(prism.achilles.breast)
 ```
+
+```{r}
+
+
+missingrows.achilles <- matrix(0, nrow = 5, ncol = ncol(prism.achilles.breast))
+
+colnames(missingrows.achilles) <- colnames(prism.achilles.breast)
+
+rownames(missingrows.achilles) <- setdiff(rownames(breast_prism.exp), rownames(prism.achilles.breast))[1:5]
+
+#View(missingrows.achilles)
+
+breast_prism.achilles <- rbind(prism.achilles.breast, missingrows.achilles)
+
+#View(breast_prism.achilles)
+
+dim(breast_prism.achilles)
+
+
+##attach damage genes as columns
+
+colnames(breast_prism.exp)%in%colnames(breast_prism.achilles) #different column order
+
+###damage gene data frame for .exp
+
+damage.exp <- breast_prism.exp[,colnames(breast_prism.exp) %in% prism.snv.breast_damage$Hugo_Symbol]
+
+exp.sorted_col <- colnames(damage.exp)[order(colnames(damage.exp))]
+
+breast_damage.exp <- damage.exp[, exp.sorted_col]
+
+#View(breast_damage.exp)
+
+###damage gene data frame for .achilles
+
+breast_damage.achilles <- as.data.frame(breast_prism.achilles[,colnames(breast_prism.achilles) %in% prism.snv.breast_damage$Hugo_Symbol])
+
+order(colnames(breast_damage.achilles)) #in perfect order
+
+###damage gene data frame for .cnv
+
+damage.cnv <- breast_prism.cnv[,colnames(breast_prism.achilles) %in% prism.snv.breast_damage$Hugo_Symbol]
+
+cnv.sorted_col <- colnames(damage.cnv)[order(colnames(damage.cnv))]
+
+breast_damage.cnv <- damage.cnv[, cnv.sorted_col]
+
+```
+
+
+```{r}
+achilles.cnv.exp_breast <- data.frame(row.names = rownames(breast_prism.exp), stringsAsFactors = FALSE)
+
+for (gene_name in colnames(breast_damage.achilles)) {
+  if (gene_name %in% colnames(breast_damage.exp) && gene_name %in% colnames(breast_damage.cnv)) {
+  achilles_value <- breast_damage.achilles[, gene_name]
+  exp_value <- breast_damage.exp[, gene_name]
+  cnv_value <- breast_damage.cnv[, gene_name]
+  achilles.cnv.exp_breast <- cbind(achilles.cnv.exp_breast, achilles_value, exp_value, cnv_value)
+}
+else {
+    warning(paste("Column", gene_name, "does not exist in breast_damage.exp. Skipping."))
+  }
+}
+
+View(achilles.cnv.exp_breast)
+
+# Rename the columns
+colnames(achilles.cnv.exp_breast) <- c("Gene_Name", paste0("Achilles_", colnames(breast_damage.achilles)), paste0("Exp_", colnames(breast_damage.exp)))
+
+
+```
