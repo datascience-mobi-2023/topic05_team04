@@ -242,7 +242,7 @@ for (y in 1:ncol(breast_prism_lowest)) {
 
 
 ```{r}
-rownames(prism.achilles)%in%rownames(prism.exp)
+rownames(breast_prism.cnv)%in%rownames(breast_prism.exp)
 rownames(prism.exp[which(rownames(prism.exp)%in%rownames(prism.achilles)),])%in%rownames(prism.cnv)
 
 ```
