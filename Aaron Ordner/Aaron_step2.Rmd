@@ -216,6 +216,8 @@ hist(prism.mean)
 trying to calculate the correlation between treatment response and gene expression. I'm very unsure if this will work in any way but here we go...
 
 ```{r}
+##Run this code once, trust me it will take a while...
+
 exp.treat.cor <- data.frame()  
 
 for (y in 1:ncol(breast_prism_lowest)) {
@@ -234,21 +236,35 @@ for (y in 1:ncol(breast_prism_lowest)) {
     exp.treat.cor <- cbind(exp.treat.cor, correlation)  
   }
 }
-#colnames(exp.treat.cor) <- colnames(breast_prism_lowest)
-#rownames(exp.treat.cor) <- colnames(breast_PRISM.exp)
+colnames(exp.treat.cor) <- colnames(breast_prism_lowest)
+rownames(exp.treat.cor) <- colnames(breast_PRISM.exp)
 ```
+
+
 
 
 
 
 ```{r}
-rownames(prism.achilles)%in%rownames(prism.exp)
-rownames(prism.exp[which(rownames(prism.exp)%in%rownames(prism.achilles)),])%in%rownames(prism.cnv)
+test.exp.treat.cor <- data.frame()  
 
+for (y in 1:ncol(breast_prism_lowest)) {
+  correlation <- c()
+  
+  for (x in 1:100) {
+    gene.expression <- breast_PRISM.exp[, x]
+    correlation[x] <- cor(breast_prism_lowest[, y], gene.expression)
+  }
+  
+  
+  
+  if (y == 1) {
+    test.exp.treat.cor <- correlation  
+  } else {
+    test.exp.treat.cor <- cbind(test.exp.treat.cor, correlation)  
+  }
+}
 ```
-
-
-
 
 
 
