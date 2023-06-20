@@ -4,6 +4,8 @@ author: "Sharujan Suthakaran"
 date: "01.Juni 2023"
 ---
 
+# 1. threshold for gene importance
+
 ```{r}
 ##junk
 ##trying to integrate achilles data info with .exp (until 4, but from where?)
@@ -45,8 +47,6 @@ sum(important_genes %in% colnames(prism.exp))
 
 ```
 
-
-
 ```{r}
 min(prism.achilles.breast) #-2.749
 
@@ -71,7 +71,10 @@ print(important_gene_list)
 sum(important_genes %in% colnames(prism.exp))
 ```
 
-https://www.gsea-msigdb.org/gsea/msigdb
+
+# 2. Biomarker gene sets
+
+<https://www.gsea-msigdb.org/gsea/msigdb>
 
 **Hallmark gene sets (H): These gene sets represent well-defined biological states or processes that are coherently expressed. They can provide insights into common pathways and functions associated with breast cancer.**
 
@@ -129,6 +132,7 @@ View(important_gene_list)
 ```
 
 Looking for overlaps to proceed with filter.
+
 ```{r}
 
 sum(important_gene_list %in% C6.geneSym) #3843
@@ -140,6 +144,10 @@ print(breast_gene)
 
 
 ```
+
+# 3. Search Engine
+
+***This is a gene Search Engine, which prints out treatments for the selected gene.***
 
 ```{r}
 
@@ -187,6 +195,7 @@ geneSearchEngine("GOLGA4")
 intersect(colnames(breast_damage.achilles), colnames(breast_damage.cnv))
 ```
 
+***This function undergoes printing out values of .exp/.achilles and.cnv of damaging genes. Additionally, it prints possible treatments, if the gene is a target in prism.treat.***
 
 ```{r}
 
@@ -246,6 +255,7 @@ for (gene_name in prism.snv.breast_damage$Hugo_Symbol) {
 
 ```
 
+***Search engine for treatments, needs further improvement***
 
 ```{r}
 
@@ -269,6 +279,8 @@ treatmentSearchEngine("noretynodrel")
 sum(is.na(prism.treat$target))
 
 ```
+
+# 4. Manuell clustering
 
 ***I will try to integrate cell line specific targets in order to get possible treatments for best response.***
 
@@ -295,6 +307,7 @@ View(prism.achilles.breast_carcinoma)
 ```
 
 **threshold for breast carcinoma subtype**
+
 ```{r}
 
 imp.carcinoma <- apply(prism.achilles.breast_carcinoma, 2, mean)
@@ -308,6 +321,7 @@ min(imp.carcinoma)
 ```
 
 **threshold for breast ductal carcinoma subtype**
+
 ```{r}
 
 imp.ductal_carcinoma <- apply(prism.achilles.breast_ductal_carcinoma, 2, mean)
@@ -320,7 +334,11 @@ min(imp.ductal_carcinoma)
 
 ```
 
+
+# 5. damaging Genes
+
 ***integrate prism.snv for easier gene/cell line filter***
+
 ```{r}
 
 PRISM.snv.breast <- prism.snv[which(as.character(prism.snv$DepMap_ID) %in% breast_prism_cl$DepMap_ID),]
@@ -333,6 +351,7 @@ prism.snv.breast <- PRISM.snv.breast[PRISM.snv.breast$Variant_Classification != 
 ```
 
 *focus on damaging variants*
+
 ```{r}
 
 prism.snv.breast_damage <- prism.snv.breast[prism.snv.breast$Variant_annotation == "damaging",]
@@ -407,7 +426,6 @@ breast_damage.cnv <- damage.cnv[, cnv.sorted_col]
 
 ```
 
-
 ```{r}
 achilles.cnv.exp_breast <- data.frame(row.names = rownames(breast_prism.exp), stringsAsFactors = FALSE)
 
@@ -430,7 +448,6 @@ colnames(achilles.cnv.exp_breast) <- c("Gene_Name", paste0("Achilles_", colnames
 
 
 ```
-
 
 ```{r}
 #achilles.cnv.exp_breast <- data.frame(row.names = rownames(breast_prism.exp), stringsAsFactors = FALSE)
