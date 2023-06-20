@@ -246,12 +246,6 @@ rownames(exp.treat.cor) <- colnames(breast_PRISM.exp)
 
 
 ```{r}
-<<<<<<< HEAD
-test.exp.treat.cor <- data.frame()  
-=======
-rownames(breast_prism.cnv)%in%rownames(breast_prism.exp)
-rownames(prism.exp[which(rownames(prism.exp)%in%rownames(prism.achilles)),])%in%rownames(prism.cnv)
->>>>>>> 0d2bb41e0bc5f60d9ed4c91b68eab366f0313bdd
 
 for (y in 1:ncol(breast_prism_lowest)) {
   correlation <- c()
