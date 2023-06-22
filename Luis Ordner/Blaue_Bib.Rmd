@@ -7,12 +7,12 @@
 # -------------------------------- #
 ```{r Trust me run it}
 # ----------- #
-### Legende ###
+### Legend ###
 # ----------- #
-### 1. Librairies and Data
+### 1. Libraries and Data
 ### 2. PRISM Imputation
 ### 3. Breast PRISM Imputation
-### 4. Select most effizient drugs
+### 4. Select most efficient drugs
 ####### 4.1 Breast
 ####### 4.2 PRISM
 ### 5. Filtering non-oncology drugs
