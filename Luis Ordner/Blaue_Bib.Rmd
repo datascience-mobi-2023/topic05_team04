@@ -1,6 +1,6 @@
-#############################
-## CODE DESCRIPTION IN BLAU##
-#############################
+###################################
+## CODE DESCRIPTION IN USER FILES##
+###################################
 
 # -------------------------------- #
 ### Data cleanup and preparation ###
@@ -28,6 +28,7 @@
 library(ggplot2) #install.packages("ggplot2")
 library(umap) #install.packages("umap")
 library(readxl) #install.packages("readxl")
+#library(tidyverse) #install.packages("tidyverse")
 # --------------------------------- #
 load("/Users/luisherfurth/Codenmachtspass/Data/prism_datasets.rda")
 load("/Users/luisherfurth/Codenmachtspass/Data/cellline_datasets.rda")
@@ -66,10 +67,31 @@ breast_prism.cnv <- prism.cnv[rows_breast_prism.cnv, ]
 ##############################
 # 4. # PRISM.EXP BREAST ###### Sharu
 ##############################
-breast_prism.exp <- prism.exp[which(rownames(prism.exp) %in% lineage.breast$DepMap_ID),]
 lineage.breast <- prism.cl[which(prism.cl$lineage == "breast"),]
+breast_prism.exp <- prism.exp[which(rownames(prism.exp) %in% lineage.breast$DepMap_ID),]
 breastzero.col <- apply(breast_prism.exp, 2, function(x) all(x == 0))
 breast_PRISM.exp <- breast_prism.exp[, !breastzero.col]
+#############################
+# 5. # PRISM.ACHILLES ####### Aaron
+#############################
+###########################
+### IMPUTATION & BREAST ###
+###########################
+prism.achilles.rm <-apply(prism.achilles, 2, function(x) {
+  x[which(is.na(x))] <- median(x, na.rm = TRUE)
+  return(x)
+})
+prism.achilles.breast <- prism.achilles.rm[rownames(prism.achilles.rm) %in% breast_prism.cl, ]
+################
+### Overview ###
+################
+prism.achilles.mean <- apply(prism.achilles.rm, 2, mean)
+prism.achilles.median <- apply(prism.achilles.rm, 2, median)
+prism.achilles.sd <- apply(prism.achilles.rm, 2, sd)
+prism.achilles.min <- apply(prism.achilles.rm, 2, min)
+prism.achilles.max <- apply(prism.achilles.rm, 2, max)
+prism.achilles.overview <- cbind(prism.achilles.mean, prism.achilles.median, prism.achilles.sd, prism.achilles.min, prism.achilles.max)
+colnames(prism.achilles.overview) <- c("mean", "median", "standard deviation", "minimum", "maximum")
 #########################################
 # 5. # SELECT MOST EFFIZIENT DRUGS ###### Luis
 #########################################
@@ -172,6 +194,29 @@ meta_eff_treat$levels <- levels
 meta_eff_treat$levels[is.na(meta_eff_treat$clevels)] <- "Other"
 level_colors <- rainbow(length(top_x_levels))
 color_palette <- c(setNames(level_colors, top_x_levels), Other = "transparent")
+################ Sharu
+PRISM.snv.breast <- prism.snv[which(as.character(prism.snv$DepMap_ID) %in% breast_prism.cl$DepMap_ID),]
+prism.snv.breast <- PRISM.snv.breast[PRISM.snv.breast$Variant_Classification != "Silent",]
+prism.snv.breast_damage <- prism.snv.breast[prism.snv.breast$Variant_annotation == "damaging",]
+#
+missingrows.achilles <- matrix(0, nrow = 5, ncol = ncol(prism.achilles.breast))
+colnames(missingrows.achilles) <- colnames(prism.achilles.breast)
+rownames(missingrows.achilles) <- setdiff(rownames(breast_prism.exp), rownames(prism.achilles.breast))[1:5]
+breast_prism.achilles <- rbind(prism.achilles.breast, missingrows.achilles)
+#
+damage.exp <- breast_prism.exp[,colnames(breast_prism.exp) %in% prism.snv.breast_damage$Hugo_Symbol]
+exp.sorted_col <- colnames(damage.exp)[order(colnames(damage.exp))]
+breast_damage.exp <- damage.exp[, exp.sorted_col]
+#
+breast_damage.achilles <- as.data.frame(breast_prism.achilles[,colnames(breast_prism.achilles) %in% prism.snv.breast_damage$Hugo_Symbol])
+#
+damage.cnv <- breast_prism.cnv[,colnames(breast_prism.achilles) %in% prism.snv.breast_damage$Hugo_Symbol]
+cnv.sorted_col <- colnames(damage.cnv)[order(colnames(damage.cnv))]
+breast_damage.cnv <- damage.cnv[, cnv.sorted_col]
+#
+
+prism.snv.breast_carcinoma <- prism.snv.breast_damage[prism.snv.breast_damage$DepMap_ID %in% breast_carcinoma,]
+prism.snv.breast_ductal_carcinoma <- prism.snv.breast_damage[prism.snv.breast_damage$DepMap_ID %in% breast_ductal_carcinoma,]
 ```
 
 # --------------------------- #
@@ -188,6 +233,8 @@ breast_prism_lowest #<--! most efficient drugs for breast cellines -->
 # -> breast_prism_lowest_ths #<--! with threshold (threshold: -2) -->
 prism_lowest #<--! most efficient drugs for all cellines -->
 # ->prism_lowest_ths #<--! with threshold (threshold: -2) -->
+prism.achilles.overview #<--! almost all celllines K.O. Score (min, max, mean, etc...) -->
+prism.achilles.breast #<--! breast cancer celllines K.O. Score -->
 ################
 # NICE TO HAVE #
 ################
