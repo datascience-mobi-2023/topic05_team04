@@ -12,14 +12,15 @@
 ### 1. Libraries and Data
 ### 2. PRISM Imputation
 ### 3. Breast PRISM Imputation
-### 4. Select most efficient drugs
-####### 4.1 Breast
-####### 4.2 PRISM
-### 5. Filtering non-oncology drugs
-### 6. Variance treatment all cancer
-### 7. TOP (x) MOA
-####### 4.1 Breast
-####### 4.2 PRISM
+### 4. Prism.cnv Breast
+### 5. Select most efficient drugs
+####### 5.1 Breast
+####### 5.2 PRISM
+### 6. Filtering non-oncology drugs
+### 7. Variance treatment all cancer
+### 8. TOP (x) MOA
+####### 8.1 Breast
+####### 8.2 PRISM
 # ----------- #
 #####################################
 # 1. # IMPORT LIBRARIES & DATA ######
@@ -41,6 +42,7 @@ prism_imp <- as.data.frame(apply(prismNA, 2, function(x) {
     x[is_na] <- mean(x, na.rm = TRUE)
     return(x)
 })) 
+
 ######################################
 # 3. # BREAST PRISM IMPUTATION ####### Luis
 ######################################
@@ -54,8 +56,22 @@ breast_prism_imp <- as.data.frame(apply(breast_prism_imp, 2, function(x) {
     x[is_na] <- mean(x, na.rm = TRUE)
     return(x)
 }))
+##############################
+# 4. # PRISM.CNV BREAST ###### Simon
+##############################
+breast_prism.cl <- prism.cl[which(prism.cl$lineage == 'breast'), ]
+ID_breast_prism.cl <- breast_prism.cl$DepMap_ID
+rows_breast_prism.cnv <- which(rownames(prism.cnv) %in% ID_breast_prism.cl)
+breast_prism.cnv <- prism.cnv[rows_breast_prism.cnv, ]
+##############################
+# 4. # PRISM.EXP BREAST ###### Sharu
+##############################
+breast_prism.exp <- prism.exp[which(rownames(prism.exp) %in% lineage.breast$DepMap_ID),]
+lineage.breast <- prism.cl[which(prism.cl$lineage == "breast"),]
+breastzero.col <- apply(breast_prism.exp, 2, function(x) all(x == 0))
+breast_PRISM.exp <- breast_prism.exp[, !breastzero.col]
 #########################################
-# 4. # SELECT MOST EFFIZIENT DRUGS ###### Luis
+# 5. # SELECT MOST EFFIZIENT DRUGS ###### Luis
 #########################################
 ##############
 ### BREAST ###
@@ -110,7 +126,7 @@ drug.overlap <- apply(treat.names, 1, function(x){
 non.onco.treat <- prism.treat[-which(drug.overlap > 0),]
 non.onco.treat <- non.onco.treat[-which("oncology" == non.onco.treat$disease.area),]
 ###########################################
-# 6. # VARIANCE TREATMENT ALL CANCER ###### Aaron
+# 7. # VARIANCE TREATMENT ALL CANCER ###### Aaron
 ###########################################
 lineages <- unique(prism.cl$lineage)
 lineages <- as.data.frame(lineages)
@@ -130,7 +146,7 @@ names(prism.var.mean) <- "mean_of_variance"
 number_of_cellines <- lineages.distribution[lineages.distribution >= 10]
 prism.var.mean$Number_of_cellines <- number_of_cellines
 ########################################
-# 7. # FACTOR FOR THE TOP (X) MOA ###### Luis
+# 8. # FACTOR FOR THE TOP (X) MOA ###### Luis
 ########################################
 ##############
 ### BREAST ###
