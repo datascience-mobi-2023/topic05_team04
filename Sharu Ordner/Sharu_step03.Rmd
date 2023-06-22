@@ -149,18 +149,25 @@ print(breast_gene)
 ***This is a gene Search Engine, which prints out treatments for the selected gene.***
 
 ```{r}
+#FOR AARON
 
-install.packages("tidyverse")
+
+#install.packages("tidyverse")
 
 library(tidyverse)
 
 prism.treat_subset <- prism.treat %>%
   separate_rows(target, sep = ",") %>%
   
-  
 #print(prism.treat_subset)
 
 #View(prism.treat_subset)
+
+treat.gene_list <- prism.treat_subset[, c(1, 7)]
+
+#View(treat.gene_list)
+
+dim(treat.gene_list)
 ```
 
 ```{r}
@@ -423,6 +430,15 @@ breast_damage.exp <- damage.exp[, exp.sorted_col]
 
 #View(breast_damage.exp)
 
+
+###damage gene data frame for .cnv
+
+damage.cnv <- breast_prism.cnv[,colnames(breast_prism.achilles) %in% prism.snv.breast_damage$Hugo_Symbol]
+
+cnv.sorted_col <- colnames(damage.cnv)[order(colnames(damage.cnv))]
+
+breast_damage.cnv <- damage.cnv[, cnv.sorted_col]
+
 ###damage gene data frame for .achilles
 
 breast_damage.achilles <- as.data.frame(breast_prism.achilles[,colnames(breast_prism.achilles) %in% prism.snv.breast_damage$Hugo_Symbol])
@@ -435,16 +451,25 @@ max(damage.achilles_mean)
 
 order(colnames(breast_damage.achilles)) #in perfect order
 
-###damage gene data frame for .cnv
-
-damage.cnv <- breast_prism.cnv[,colnames(breast_prism.achilles) %in% prism.snv.breast_damage$Hugo_Symbol]
-
-cnv.sorted_col <- colnames(damage.cnv)[order(colnames(damage.cnv))]
-
-breast_damage.cnv <- damage.cnv[, cnv.sorted_col]
-
 ```
 
+```{r}
+
+############################################################################################
+important_genes <- colnames(breast_damage.achilles[,which(damage.achilles_mean <= -0.5)])
+
+hist(damage.achilles_mean)
+
+important_gene_exp <- prism.exp[, colnames(prism.exp) %in% important_genes]
+
+dim(important_gene_exp)
+
+important_gene_list <- colnames(important_gene_exp)
+
+#print(important_gene_list)
+
+
+```
 ```{r}
 carcinoma_damage.achilles <- as.data.frame(breast_prism.achilles[rownames(prism.achilles.breast_carcinoma),colnames(breast_prism.achilles) %in% prism.snv.breast_damage$Hugo_Symbol])
 
@@ -456,6 +481,21 @@ min(carcinoma.damage.achilles_mean)
 
 max(carcinoma.damage.achilles_mean)
 
+#################
+
+important_carcinoma.genes <- colnames(carcinoma_damage.achilles[,which(carcinoma.damage.achilles_mean <= -0.5)])
+
+important_carcinoma.gene_exp <- prism.exp[, colnames(prism.exp) %in% important_carcinoma.genes]
+
+dim(important_carcinoma.gene_exp)
+
+important_carcinoma.gene_list <- colnames(important_carcinoma.gene_exp)
+
+#print(important_carcinoma.gene_list)
+
+```
+
+```{r}
 ductal_carcinoma_damage.achilles <- as.data.frame(breast_prism.achilles[rownames(prism.achilles.breast_ductal_carcinoma),colnames(breast_prism.achilles) %in% prism.snv.breast_damage$Hugo_Symbol])
 
 #View(carcinoma_damage.achilles)
@@ -466,19 +506,18 @@ min(ductal_carcinoma.damage.achilles_mean)
 
 max(ductal_carcinoma.damage.achilles_mean)
 
-############################################################################################
-important_genes <- colnames(breast_damage.achilles[,which(damage.achilles_mean >= 0)])
+########################
+important_ductal.genes <- colnames(ductal_carcinoma_damage.achilles[,which(ductal_carcinoma.damage.achilles_mean <= -0.5)])
 
-important_gene_exp <- prism.exp[, colnames(prism.exp) %in% important_genes]
+important_ductal.gene_exp <- prism.exp[, colnames(prism.exp) %in% important_ductal.genes]
 
-dim(important_gene_exp)
+dim(important_ductal.gene_exp)
 
-important_gene_list <- colnames(important_gene_exp)
+important_ductal.gene_list <- colnames(important_ductal.gene_exp)
 
-print(important_gene_list)
-
-
+#print(important_carcinoma.gene_list)
 ```
+
 
 ```{r}
 achilles.cnv.exp_breast <- data.frame(row.names = rownames(breast_prism.exp), stringsAsFactors = FALSE)
