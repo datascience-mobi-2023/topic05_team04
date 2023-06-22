@@ -74,10 +74,11 @@ for(i in 1:length(duplicate_drugs_b)) {
     lowest_mean_duplicate_b <- rbind(lowest_mean_duplicate_b, act_df_b[which(act_df_b$colMeans_breast == lowest_colmean_b),])
 }
 pref_drug_con_combo_breast <- rownames(lowest_mean_duplicate_b)
+breast_prism_lowest <- breast_prism_imp[,pref_drug_con_combo_breast]
 pref_drug_ths_b <- rownames(lowest_mean_duplicate_b[lowest_mean_duplicate_b$colMeans_breast < -2,])
-breast_prism_lowest <- breast_prism_imp[,pref_drug_ths_b]
+breast_prism_lowest_ths <- breast_prism_imp[,pref_drug_ths_b]
 ##############
-### PRISM ### 
+### PRISM ####
 ##############
 drugnames <- sub("::.*", "", colnames(prism_imp))
 drugnames <- sub("::.*", "", colnames(prism_imp))
@@ -94,8 +95,9 @@ for(i in 1:length(duplicate_drugs)) {
     lowest_mean_duplicate <- rbind(lowest_mean_duplicate, act_df[which(act_df$colMeans == lowest_colmean),])
 }
 pref_drug_con_combo <- rownames(lowest_mean_duplicate)
+prism_lowest <- prism_imp[,pref_drug_con_combo]
 pref_drug_ths <- rownames(lowest_mean_duplicate[lowest_mean_duplicate$colMeans < -2,])
-prism_lowest <- prism_imp[,pref_drug_ths]
+prism_lowest_ths <- prism_imp[,pref_drug_ths]
 ##########################################
 # 5. # FILTERING NON-ONCOLOGY DRUGS ###### Aaron
 ##########################################
@@ -141,7 +143,7 @@ levels_b <- factor(meta_eff_treat_b$moa, levels = c("Other", top_x_levels_b))
 meta_eff_treat_b$levels_b <- levels_b
 meta_eff_treat_b$levels_b[is.na(meta_eff_treat_b$levels_b)] <- "Other"
 level_colors_b <- rainbow(length(top_x_levels_b))
-color_palette_b <- c(setNames(level_colors_b, top_x_levels_b), Other = "grey")
+color_palette_b <- c(setNames(level_colors_b, top_x_levels_b), Other = "transparent")
 #############
 ### PRISM ###
 #############
@@ -153,7 +155,7 @@ levels <- factor(meta_eff_treat$moa, levels = c("Other", top_x_levels))
 meta_eff_treat$levels <- levels
 meta_eff_treat$levels[is.na(meta_eff_treat$clevels)] <- "Other"
 level_colors <- rainbow(length(top_x_levels))
-color_palette <- c(setNames(level_colors, top_x_levels), Other = "grey")
+color_palette <- c(setNames(level_colors, top_x_levels), Other = "transparent")
 ```
 
 # --------------------------- #
@@ -166,8 +168,10 @@ color_palette <- c(setNames(level_colors, top_x_levels), Other = "grey")
 prism_imp #<--! prism with NA´s imputed -->
 breast_prism_imp #<--! subset breast cancer with NA´s imputed -->
 lowest_mean_duplicate #<--! drug, conc, colMean for the most effizient drugs -->
-breast_prism_lowest #<--! most efficient drugs for breast cellines (threshold: -2)-->
-prism_lowest #<--! most efficient drugs for all cellines (threshold: -2) -->
+breast_prism_lowest #<--! most efficient drugs for breast cellines -->
+# -> breast_prism_lowest_ths #<--! with threshold (threshold: -2) -->
+prism_lowest #<--! most efficient drugs for all cellines -->
+# ->prism_lowest_ths #<--! with threshold (threshold: -2) -->
 ################
 # NICE TO HAVE #
 ################
@@ -203,19 +207,19 @@ heatmapbreast <- pheatmap(breast_prism_imp, show_rownames = TRUE, show_colnames 
 ############
 # ------
 # BREAST
-breast_cancer_umap <- umap(t(breast_prism_imp[,pref_drug_con_combo_breast]), n_neighbors = 7, min_dist = 0.5, n_epochs = 200, n_components = 2) 
+breast_cancer_umap <- umap(t(breast_prism_lowest), n_neighbors = 7, min_dist = 0.5, n_epochs = 200, n_components = 2) 
 umap_layout_breast <- as.data.frame(breast_cancer_umap$layout)
 ggplot(umap_layout_breast, aes(x = V1, y = V2, colour = meta_eff_treat_b$levels_b)) +
-    geom_point(size = 3, alpha = 0.5) +
+    geom_point(size = 3, alpha = 1) +
     scale_color_manual(values = color_palette_b) +
     theme_bw() +
     ggtitle("UMAP of the Breastcancer celllines")
 # ------
 # PRISM
-cancer_umap <- umap(t(prism_imp), n_neighbors = 7, min_dist = 0.5, n_epochs = 200, n_components = 2) 
+cancer_umap <- umap(t(prism_lowest), n_neighbors = 7, min_dist = 0.5, n_epochs = 200, n_components = 2) 
 umap_layout_prism <- as.data.frame(cancer_umap$layout)
 ggplot(umap_layout_prism, aes(x = V1, y = V2, colour = meta_eff_treat$levels)) +
-    geom_point(size = 3, alpha = 0.5) +
+    geom_point(size = 3, alpha = 1) +
     scale_color_manual(values = color_palette) +
     theme_bw() +
     ggtitle("UMAP of all celllines")
