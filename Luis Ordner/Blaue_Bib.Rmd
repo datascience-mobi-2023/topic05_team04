@@ -74,7 +74,8 @@ for(i in 1:length(duplicate_drugs_b)) {
     lowest_mean_duplicate_b <- rbind(lowest_mean_duplicate_b, act_df_b[which(act_df_b$colMeans_breast == lowest_colmean_b),])
 }
 pref_drug_con_combo_breast <- rownames(lowest_mean_duplicate_b)
-breast_prism_lowest <- breast_prism_imp[,pref_drug_con_combo_breast]
+pref_drug_ths_b <- rownames(lowest_mean_duplicate_b[lowest_mean_duplicate_b$colMeans_breast < -2,])
+breast_prism_lowest <- breast_prism_imp[,pref_drug_ths_b]
 ##############
 ### PRISM ### 
 ##############
@@ -93,7 +94,8 @@ for(i in 1:length(duplicate_drugs)) {
     lowest_mean_duplicate <- rbind(lowest_mean_duplicate, act_df[which(act_df$colMeans == lowest_colmean),])
 }
 pref_drug_con_combo <- rownames(lowest_mean_duplicate)
-prism_lowest <- prism_imp[,pref_drug_con_combo]
+pref_drug_ths <- rownames(lowest_mean_duplicate[lowest_mean_duplicate$colMeans < -2,])
+prism_lowest <- prism_imp[,pref_drug_ths]
 ##########################################
 # 5. # FILTERING NON-ONCOLOGY DRUGS ###### Aaron
 ##########################################
@@ -101,10 +103,10 @@ cancer.therapy <- read_excel("/Users/luisherfurth/Codenmachtspass/Data/oncologic
 cancer.therapy <- as.data.frame(cancer.therapy)
 treat.names <- as.data.frame(prism.treat$name)
 drug.overlap <- apply(treat.names, 1, function(x){
-  sum(cancer.therapy==x)
+  sum(cancer.therapy == x)
 })
-non.onco.treat <- prism.treat[-which(drug.overlap>0),]
-non.onco.treat <- non.onco.treat[-which("oncology"==non.onco.treat$disease.area),]
+non.onco.treat <- prism.treat[-which(drug.overlap > 0),]
+non.onco.treat <- non.onco.treat[-which("oncology" == non.onco.treat$disease.area),]
 ###########################################
 # 6. # VARIANCE TREATMENT ALL CANCER ###### Aaron
 ###########################################
@@ -115,10 +117,11 @@ lineages.distribution <- apply(lineages, 1, function(x) {
     })
 rel.cl <- as.data.frame(lineages[which(lineages.distribution >= 10), ])
 prism_var <- apply(prism_lowest, 1, var)
+prism_var <- as.data.frame(prism_var)
 prism.var.mean <- apply(rel.cl, 1, function(x){
   DepMap_ID <- prism.cl$DepMap_ID[prism.cl$lineage%in%x]
-  test <- c(which(rownames(prism.all.var)%in%DepMap_ID))
-  mean(prism.all.var[test,])
+  test <- which(rownames(prism_var)%in%DepMap_ID)
+  mean(prism_var[test,])
 })
 prism.var.mean <- as.data.frame(prism.var.mean)
 names(prism.var.mean) <- "mean_of_variance"
@@ -163,8 +166,8 @@ color_palette <- c(setNames(level_colors, top_x_levels), Other = "grey")
 prism_imp #<--! prism with NA´s imputed -->
 breast_prism_imp #<--! subset breast cancer with NA´s imputed -->
 lowest_mean_duplicate #<--! drug, conc, colMean for the most effizient drugs -->
-breast_prism_lowest #<--! most efficient drugs for breast cellines-->
-prism_lowest #<--! most efficient drugs for all cellines-->
+breast_prism_lowest #<--! most efficient drugs for breast cellines (threshold: -2)-->
+prism_lowest #<--! most efficient drugs for all cellines (threshold: -2) -->
 ################
 # NICE TO HAVE #
 ################
