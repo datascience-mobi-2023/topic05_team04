@@ -257,7 +257,10 @@ for (gene_name in prism.snv.breast_damage$Hugo_Symbol) {
       
     if (gene_name %in% colnames(breast_damage.exp)) {
       exp_value <- breast_damage.exp[rownames(breast_damage.exp), gene_name]
-      cat("Expression Level (breast_damage.exp):", rownames(breast_damage.exp),":",exp_value, "\n")
+      cat("Expression Level (breast_damage.exp):\n")
+      for (i in 1:length(rownames(breast_damage.exp))) {
+      cat(rownames(breast_damage.exp)[i], ":", exp_value[i], "\n")
+}
     }
     
     if (gene_name %in% colnames(breast_damage.achilles)) {
