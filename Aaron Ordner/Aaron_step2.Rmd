@@ -265,8 +265,38 @@ for (y in 1:ncol(breast_prism_lowest)) {
 }
 ```
 
+Finding out which gene has a high absolute correlation with the treatment response.
 
 
+```{r}
+abs.exp.treat.cor <- abs(exp.treat.cor)
+cor.test <- apply(abs.exp.treat.cor, 2, function(x){
+  sum(0.75<x)
+  
+}) #0.75 is the mean and median of the maximum absolute correlations 
+
+
+
+```
+
+```{r}
+rel.genes <- list()
+
+for (i in 1:ncol(abs.exp.treat.cor)) {
+  cor.genes <- rownames(abs.exp.treat.cor)[which(abs.exp.treat.cor[, i] > 0.75)]
+  if (length(cor.genes) > 0) {
+    rel.genes[[i]] <- setNames(list(cor.genes), colnames(abs.exp.treat.cor)[i])
+  }
+}
+
+```
+
+
+```{r}
+cor.genes <- rownames(abs.exp.treat.cor)[which(abs.exp.treat.cor[, 1] > 0.75)]
+  if (length(cor.genes) > 0) {
+    rel.genes[[1]] <- setNames(list(cor.genes), colnames(abs.exp.treat.cor)[1])}
+```
 
 
 
