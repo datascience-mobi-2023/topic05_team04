@@ -210,8 +210,7 @@ geneSearchEngine <- function(query) {
   }
 }
 
-geneSearchEngine("GOLGA4")
-
+geneSearchEngine("PRKG1")
 
 #intersect(colnames(breast_damage.achilles), colnames(breast_damage.cnv))
 ```
@@ -256,7 +255,7 @@ for (gene_name in prism.snv.breast_damage$Hugo_Symbol) {
       cat("Gene:", gene_name, "is not present in all datasets.\n\n")
       
     if (gene_name %in% colnames(breast_damage.exp)) {
-      exp_value <- breast_damage.exp[rownames(breast_damage.exp), gene_name]
+      exp_value <- breast_damage.exp[, gene_name]
       cat("Expression Level (breast_damage.exp):\n")
       for (i in 1:length(rownames(breast_damage.exp))) {
       cat(rownames(breast_damage.exp)[i], ":", exp_value[i], "\n")
@@ -264,13 +263,19 @@ for (gene_name in prism.snv.breast_damage$Hugo_Symbol) {
     }
     
     if (gene_name %in% colnames(breast_damage.achilles)) {
-      achilles_value <- breast_damage.achilles[rownames(breast_damage.achilles), gene_name]
-      cat("Achilles Value (breast_damage.achilles):", achilles_value, "\n")
+      achilles_value <- breast_damage.achilles[, gene_name]
+      cat("Achilles Value (breast_damage.achilles):\n")
+      for (j in 1:length(rownames(breast_damage.achilles))) {
+      cat(rownames(breast_damage.achilles)[j], ":", achilles_value[j], "\n")
+}
     }
     
     if (gene_name %in% colnames(breast_damage.cnv)) {
-      cnv_value <- breast_damage.cnv[rownames(breast_damage.cnv), gene_name]
-      cat("Copy Number (breast_damage.cnv):", rownames(breast_damage.cnv),":",cnv_value, "\n")
+      cnv_value <- breast_damage.cnv[, gene_name]
+      cat("Copy Number (breast_damage.cnv):\n")
+      for (z in 1:length(rownames(breast_damage.cnv))) {
+      cat(rownames(breast_damage.cnv)[z], ":", cnv_value[z], "\n")
+}
     }
     
     cat("\n")
@@ -556,8 +561,8 @@ colnames(achilles.cnv.exp_breast) <- c("Gene_Name", paste0("Achilles_", colnames
 
   #gene_values <- data.frame(breast_damage.achilles = achilles_value, breast_damage.exp = exp_value, breast_damage.cnv = cnv_value)
   #achilles.cnv.exp_breast <- cbind(achilles.cnv.exp_breast, gene_values)
-  }
-}
+#  }
+#}
 
 
 #View(achilles.cnv.exp_breast)
