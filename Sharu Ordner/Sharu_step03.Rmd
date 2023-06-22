@@ -71,7 +71,6 @@ print(important_gene_list)
 sum(important_genes %in% colnames(prism.exp))
 ```
 
-
 # 2. Biomarker gene sets
 
 <https://www.gsea-msigdb.org/gsea/msigdb>
@@ -151,12 +150,27 @@ print(breast_gene)
 
 ```{r}
 
+install.packages("tidyverse")
+
+library(tidyverse)
+
+prism.treat_subset <- prism.treat %>%
+  separate_rows(target, sep = ",") %>%
+  
+  
+#print(prism.treat_subset)
+
+#View(prism.treat_subset)
+```
+
+```{r}
+
 #View(prism.treat)
 
 
 
 geneSearchEngine <- function(query) {
-  matchingRows <- which(prism.treat$target == query)
+  matchingRows <- which(prism.treat_subset$target == query)
   if (length(matchingRows) == 0) {
     cat("No matching treatment found.\n")
   } else {
@@ -192,7 +206,7 @@ geneSearchEngine <- function(query) {
 geneSearchEngine("GOLGA4")
 
 
-intersect(colnames(breast_damage.achilles), colnames(breast_damage.cnv))
+#intersect(colnames(breast_damage.achilles), colnames(breast_damage.cnv))
 ```
 
 ***This function undergoes printing out values of .exp/.achilles and.cnv of damaging genes. Additionally, it prints possible treatments, if the gene is a target in prism.treat.***
@@ -201,7 +215,7 @@ intersect(colnames(breast_damage.achilles), colnames(breast_damage.cnv))
 
 for (gene_name in prism.snv.breast_damage$Hugo_Symbol) {
    
-    matchingRows <- which(prism.treat$target == gene_name)
+    matchingRows <- which(prism.treat_subset$target == gene_name)
     if (length(matchingRows) == 0) {
       cat("No matching treatment found for Gene:", gene_name, "\n")
     } else {
@@ -236,7 +250,7 @@ for (gene_name in prism.snv.breast_damage$Hugo_Symbol) {
       
     if (gene_name %in% colnames(breast_damage.exp)) {
       exp_value <- breast_damage.exp[rownames(breast_damage.exp), gene_name]
-      cat("Expression Level (breast_damage.exp):", exp_value, "\n")
+      cat("Expression Level (breast_damage.exp):", rownames(breast_damage.exp),":",exp_value, "\n")
     }
     
     if (gene_name %in% colnames(breast_damage.achilles)) {
@@ -246,7 +260,7 @@ for (gene_name in prism.snv.breast_damage$Hugo_Symbol) {
     
     if (gene_name %in% colnames(breast_damage.cnv)) {
       cnv_value <- breast_damage.cnv[rownames(breast_damage.cnv), gene_name]
-      cat("Copy Number (breast_damage.cnv):", cnv_value, "\n")
+      cat("Copy Number (breast_damage.cnv):", rownames(breast_damage.cnv),":",cnv_value, "\n")
     }
     
     cat("\n")
@@ -334,7 +348,6 @@ min(imp.ductal_carcinoma)
 
 ```
 
-
 # 5. damaging Genes
 
 ***integrate prism.snv for easier gene/cell line filter***
@@ -414,6 +427,12 @@ breast_damage.exp <- damage.exp[, exp.sorted_col]
 
 breast_damage.achilles <- as.data.frame(breast_prism.achilles[,colnames(breast_prism.achilles) %in% prism.snv.breast_damage$Hugo_Symbol])
 
+damage.achilles_mean <- apply(breast_damage.achilles, 2, mean)
+
+min(breast_damage.achilles)
+
+max(damage.achilles_mean)
+
 order(colnames(breast_damage.achilles)) #in perfect order
 
 ###damage gene data frame for .cnv
@@ -423,6 +442,41 @@ damage.cnv <- breast_prism.cnv[,colnames(breast_prism.achilles) %in% prism.snv.b
 cnv.sorted_col <- colnames(damage.cnv)[order(colnames(damage.cnv))]
 
 breast_damage.cnv <- damage.cnv[, cnv.sorted_col]
+
+```
+
+```{r}
+carcinoma_damage.achilles <- as.data.frame(breast_prism.achilles[rownames(prism.achilles.breast_carcinoma),colnames(breast_prism.achilles) %in% prism.snv.breast_damage$Hugo_Symbol])
+
+#View(carcinoma_damage.achilles)
+
+carcinoma.damage.achilles_mean <- apply(carcinoma_damage.achilles, 2, mean)
+
+min(carcinoma.damage.achilles_mean)
+
+max(carcinoma.damage.achilles_mean)
+
+ductal_carcinoma_damage.achilles <- as.data.frame(breast_prism.achilles[rownames(prism.achilles.breast_ductal_carcinoma),colnames(breast_prism.achilles) %in% prism.snv.breast_damage$Hugo_Symbol])
+
+#View(carcinoma_damage.achilles)
+
+ductal_carcinoma.damage.achilles_mean <- apply(ductal_carcinoma_damage.achilles, 2, mean)
+
+min(ductal_carcinoma.damage.achilles_mean)
+
+max(ductal_carcinoma.damage.achilles_mean)
+
+############################################################################################
+important_genes <- colnames(breast_damage.achilles[,which(damage.achilles_mean >= 0)])
+
+important_gene_exp <- prism.exp[, colnames(prism.exp) %in% important_genes]
+
+dim(important_gene_exp)
+
+important_gene_list <- colnames(important_gene_exp)
+
+print(important_gene_list)
+
 
 ```
 
@@ -467,6 +521,9 @@ colnames(achilles.cnv.exp_breast) <- c("Gene_Name", paste0("Achilles_", colnames
 #View(achilles.cnv.exp_breast)
 
 
+View(prism.treat)
+
+intersect(colnames(prism.exp), prism.treat$target)
 
 
 ```
