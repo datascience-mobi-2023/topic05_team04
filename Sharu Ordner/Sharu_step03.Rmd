@@ -10,13 +10,13 @@ date: "01.Juni 2023"
 ##junk
 ##trying to integrate achilles data info with .exp (until 4, but from where?)
 
-View(prism.achilles.rm)
+#View(prism.achilles.rm)
 
 min(prism.achilles.rm) #-4,495
 
 max(prism.achilles.rm) #4,874
 
-View(prism.achilles.rm)
+#View(prism.achilles.rm)
 
 important_genes <- rownames(prism.achilles.breast[,which(prism.achilles. <= 0)]) # does not work
 
@@ -24,21 +24,21 @@ prism.achilles_mean <- apply(prism.achilles.breast, 2, mean)
 
 important_genes <- colnames(prism.achilles.breast[,which(prism.achilles_mean >= 2)])
 
-View(prism.achilles_mean)
+#View(prism.achilles_mean)
 
-View(important_genes)
+#View(important_genes)
 
 important_gene_exp <- prism.exp[, colnames(prism.exp) %in% important_genes]
 
-dim(important_gene_exp)
+#dim(important_gene_exp)
 
-View(important_gene_exp)
+#View(important_gene_exp)
 
 important_gene_list <- colnames(important_gene_exp)
 
-View(important_gene_list)
+#View(important_gene_list)
 
-print(important_gene_list)
+#print(important_gene_list)
 
 sum(which(prism.achilles_mean < -1))
 
@@ -56,17 +56,17 @@ min(prism.achilles_mean) #-2.37806
 
 max(prism.achilles_mean) #0.751765
 
-hist(prism.achilles_mean)
+#hist(prism.achilles_mean)
 
 important_genes <- colnames(prism.achilles.breast[,which(prism.achilles_mean >= 0)])
 
 important_gene_exp <- prism.exp[, colnames(prism.exp) %in% important_genes]
 
-dim(important_gene_exp)
+#dim(important_gene_exp)
 
 important_gene_list <- colnames(important_gene_exp)
 
-print(important_gene_list)
+#print(important_gene_list)
 
 sum(important_genes %in% colnames(prism.exp))
 ```
@@ -85,7 +85,7 @@ library(jsonlite)
 
 hallmarks <- fromJSON("~/Downloads/h.all.v2023.1.Hs.json.txt")
 
-View(hallmarks)
+#View(hallmarks)
 
 class(hallmarks)
 
@@ -99,7 +99,7 @@ class(hallmarks)
 
 C6.gene <- fromJSON("~/Downloads/c6.all.v2023.1.Hs.json.txt")
 
-View(C6.gene)
+#View(C6.gene)
 
 ```
 
@@ -109,7 +109,7 @@ View(C6.gene)
 
 C8.cluster <- fromJSON("~/Downloads/c8.all.v2023.1.Hs.json.txt")
 
-View(C8.cluster)
+#View(C8.cluster)
 
 ```
 
@@ -124,9 +124,9 @@ lapply(C6.gene, function(x) x$geneSymbols)
 C6.geneSym <- unlist(lapply(C6.gene, function(x) x$geneSymbols)) #single vector
 
 
-View(C6.geneSym)
+#View(C6.geneSym)
 
-View(important_gene_list)
+#View(important_gene_list)
 
 ```
 
@@ -155,19 +155,18 @@ print(breast_gene)
 #install.packages("tidyverse")
 
 library(tidyverse)
-
-prism.treat_subset <- prism.treat %>%
-  separate_rows(target, sep = ",") %>%
+prism.treat.test <-cbind(prism.treat, rownames(prism.treat))
+prism.treat_subset <- prism.treat.test %>% separate_rows(target, sep = ",") 
   
 #print(prism.treat_subset)
 
-#View(prism.treat_subset)
+View(prism.treat_subset)
 
-treat.gene_list <- prism.treat_subset[, c(1, 7)]
+treat.gene_list <- prism.treat_subset[, c(7, 12)]
 
 #View(treat.gene_list)
 
-dim(treat.gene_list)
+#dim(treat.gene_list)
 ```
 
 ```{r}

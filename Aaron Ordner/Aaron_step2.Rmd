@@ -210,7 +210,25 @@ hist(onco.mean)
 hist(all.onco.mean)
 hist(non.onco.mean)
 hist(prism.mean)
+
+shapiro.test(onco.mean)
+shapiro.test(all.onco.mean)
+shapiro.test(non.onco.mean)
+shapiro.test(prism.mean)
+
+#All of those variables are not normally distributed. This means we have to use a non-parametric test.
+
 ```
+```{r}
+#alpha is equal to 5%
+wilcox.test(all.onco.mean, non.onco.mean) #p-value = 0.6546
+wilcox.test(onco.mean, non.onco.mean) #p-value = 0.3249 
+wilcox.test(onco.mean, prism.mean) #p-value = 0.322
+
+#This means that the means are not significantly different.
+
+```
+
 
 
 trying to calculate the correlation between treatment response and gene expression. I'm very unsure if this will work in any way but here we go...
@@ -291,15 +309,53 @@ for (i in 1:ncol(abs.exp.treat.cor)) {
 
 ```
 
+Testing if the correlation also means that there is a signifikant difference between the means of the treatment response in comparison to all the other treament responses.
 
 ```{r}
-cor.genes <- rownames(abs.exp.treat.cor)[which(abs.exp.treat.cor[, 1] > 0.75)]
-  if (length(cor.genes) > 0) {
-    rel.genes[[1]] <- setNames(list(cor.genes), colnames(abs.exp.treat.cor)[1])}
+
+gene_names <- sapply(rel.genes,  function(x){
+  names(x)
+})
+
+
+for (i in 1:length(gene_names)){
+  target.name <- treat.gene_list$target[which(treat.gene_list$`rownames(prism.treat)`%in%gene_names[[i]])]
+  rel.genes[[i]] <- append(rel.genes[[i]], target.name) 
+  
+  
+}
+filtered.rel.genes <- Filter(function(x) length(x) > 0, rel.genes)
+filtered.gene_names <- Filter(function(x) length(x) >0, gene_names)
+vec.filtered.gene_names <- unlist(filtered.gene_names)
+vec.filtered.gene_names <- vec.filtered.gene_names[nzchar(vec.filtered.gene_names)]
+```
+
+This is a list with combined treatment and targets, yet there are still some missing.
+
+```{r}
+breast.treat_filtered <- breast_prism_lowest[,-which(colnames(breast_prism_lowest)%in%vec.filtered.gene_names)]
+
+all.rel.genes <- filtered.rel.genes
+for (x in 1:ncol(breast.treat_filtered)){
+  target.position <- which(treat.gene_list$`rownames(prism.treat)`%in%colnames(breast.treat_filtered[x]))
+  targets <- treat.gene_list$target[target.position]
+  names(targets) <- treat.gene_list$`rownames(prism.treat)`[target.position]
+  all.rel.genes[[x+length(filtered.rel.genes)]] <- targets
+}
+
+
 ```
 
 
 
+```{r}
+all_gene_names <- sapply(all.rel.genes,  function(x){
+  names(x)
+})
+
+vec.all_gene_names <- unlist(all_gene_names)
+unique(vec.all_gene_names)
+```
 
 
 ```{r}
