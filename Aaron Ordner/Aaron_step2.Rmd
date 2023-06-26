@@ -297,7 +297,33 @@ cor.test <- apply(abs.exp.treat.cor, 2, function(x){
 
 ```
 
+Testing if the correlation also means that there is a signifikant difference between the means of the treatment response in comparison to all the other treament responses.
 ```{r}
+rel.genes <- list()
+
+for (i in 1:ncol(abs.exp.treat.cor)) {
+  cor.genes <- rownames(abs.exp.treat.cor)[which(abs.exp.treat.cor[, i] > 0.75)]
+  rel.genes[[i]] <- cor.genes
+  
+}
+names(rel.genes) <- colnames(abs.exp.treat.cor)
+all.rel.genes <- rel.genes
+for (k in 1:length(rel.genes)){
+  targets.position <- which(treat.gene_list$`rownames(prism.treat)`%in%names(rel.genes)[k])
+  targets <- treat.gene_list$target[targets.position]
+  all.rel.genes[[k]] <- append(all.rel.genes[[k]], targets)
+}
+```
+
+
+
+
+
+
+
+
+```{r}
+#junkyard
 rel.genes <- list()
 
 for (i in 1:ncol(abs.exp.treat.cor)) {
@@ -306,13 +332,7 @@ for (i in 1:ncol(abs.exp.treat.cor)) {
     rel.genes[[i]] <- setNames(list(cor.genes), colnames(abs.exp.treat.cor)[i])
   }
 }
-
-```
-
-Testing if the correlation also means that there is a signifikant difference between the means of the treatment response in comparison to all the other treament responses.
-
-```{r}
-
+names(rel.genes) <- colnames(abs.exp.treat.cor)
 gene_names <- sapply(rel.genes,  function(x){
   names(x)
 })
@@ -328,11 +348,6 @@ filtered.rel.genes <- Filter(function(x) length(x) > 0, rel.genes)
 filtered.gene_names <- Filter(function(x) length(x) >0, gene_names)
 vec.filtered.gene_names <- unlist(filtered.gene_names)
 vec.filtered.gene_names <- vec.filtered.gene_names[nzchar(vec.filtered.gene_names)]
-```
-
-This is a list with combined treatment and targets, yet there are still some missing.
-
-```{r}
 breast.treat_filtered <- breast_prism_lowest[,-which(colnames(breast_prism_lowest)%in%vec.filtered.gene_names)]
 
 all.rel.genes <- filtered.rel.genes
@@ -344,50 +359,6 @@ for (x in 1:ncol(breast.treat_filtered)){
 }
 
 
-```
-
-
-
-```{r}
-all_gene_names <- sapply(all.rel.genes,  function(x){
-  names(x)
-})
-
-vec.all_gene_names <- unlist(all_gene_names)
-unique(vec.all_gene_names)
-```
-
-
-```{r}
-#junkyard
-exp.treat.cor <- data.frame()
-for (y in range(1:ncol(breast_prism_lowest))){
-  for (x in range(1:ncol(breast_PRISM.exp))){
-    gene.expression <- breast_PRISM.exp[,x]
-    correlation[x] <- cor(breast_prism_lowest[,y], gene.expression)
-  }
-  exp.treat.cor <- gene_expression
-}
-
-exp.treat.cor <- data.frame()
-
-for (y in 1:50) {
-  correlation <- c()
-  
-  for (x in 1:50) {
-    gene.expression <- breast_PRISM.exp[, x]
-    correlation[x] <- cor(breast_prism_lowest[, y], gene.expression)
-  }
-  
-  result <- data.frame(Treatment_Column = names(breast_prism_lowest)[y], Correlation = correlation)
-  exp.treat.cor <- cbind(exp.treat.cor, result)
-}
-
-for (x in range(1:ncol(breast_PRISM.exp))){
-  gene.expression <- breast_PRISM.exp[,x]
-  correlation[x] <- cor(breast_prism_lowest[,1], gene.expression)
-}
-  
 ```
 
 
