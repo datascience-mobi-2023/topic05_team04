@@ -47,7 +47,8 @@ prism_imp <- as.data.frame(apply(prismNA, 2, function(x) {
 ######################################
 # 3. # BREAST PRISM IMPUTATION ####### Luis
 ######################################
-breast_prism <- prism[which(prism.cl$lineage ==  "breast"), ]
+breast_prism.cl <- prism.cl[which(prism.cl$lineage == 'breast'), ]
+breast_prism <- prism[which(rownames(prism) %in% breast_prism.cl$DepMap_ID), ]
 bp_onlyNA.col <- colnames(breast_prism[which(colSums(is.na(breast_prism)) == 22)]) 
 rem.bpNAcol <- which(colnames(breast_prism) %in% bp_onlyNA.col)
 breast_prism_imp <- breast_prism[, -rem.bpNAcol] 
@@ -195,39 +196,39 @@ meta_eff_treat$levels[is.na(meta_eff_treat$clevels)] <- "Other"
 level_colors <- rainbow(length(top_x_levels))
 color_palette <- c(setNames(level_colors, top_x_levels), Other = "transparent")
 ################ Sharu
-PRISM.snv.breast <- prism.snv[which(as.character(prism.snv$DepMap_ID) %in% breast_prism.cl$DepMap_ID),]
-prism.snv.breast <- PRISM.snv.breast[PRISM.snv.breast$Variant_Classification != "Silent",]
-prism.snv.breast_damage <- prism.snv.breast[prism.snv.breast$Variant_annotation == "damaging",]
+#PRISM.snv.breast <- prism.snv[which(as.character(prism.snv$DepMap_ID) %in% breast_prism.cl$DepMap_ID),]
+#prism.snv.breast <- PRISM.snv.breast[PRISM.snv.breast$Variant_Classification != "Silent",]
+#prism.snv.breast_damage <- prism.snv.breast[prism.snv.breast$Variant_annotation == "damaging",]
+##
+#missingrows.achilles <- matrix(0, nrow = 5, ncol = ncol(prism.achilles.breast))
+#colnames(missingrows.achilles) <- colnames(prism.achilles.breast)
+#rownames(missingrows.achilles) <- setdiff(rownames(breast_prism.exp), rownames(prism.achilles.breast))[1:5]
+#breast_prism.achilles <- rbind(prism.achilles.breast, missingrows.achilles)
 #
-missingrows.achilles <- matrix(0, nrow = 5, ncol = ncol(prism.achilles.breast))
-colnames(missingrows.achilles) <- colnames(prism.achilles.breast)
-rownames(missingrows.achilles) <- setdiff(rownames(breast_prism.exp), rownames(prism.achilles.breast))[1:5]
-breast_prism.achilles <- rbind(prism.achilles.breast, missingrows.achilles)
+#damage.exp <- breast_prism.exp[,colnames(breast_prism.exp) %in% prism.snv.breast_damage$Hugo_Symbol]
+#exp.sorted_col <- colnames(damage.exp)[order(colnames(damage.exp))]
+#breast_damage.exp <- damage.exp[, exp.sorted_col]
+##
+#damage.cnv <- breast_prism.cnv[,colnames(breast_prism.achilles) %in% prism.snv.breast_damage$Hugo_Symbol]
+#cnv.sorted_col <- colnames(damage.cnv)[order(colnames(damage.cnv))]
+#breast_damage.cnv <- damage.cnv[, cnv.sorted_col]
+##
+#breast_damage.achilles <- as.data.frame(breast_prism.achilles[,colnames(breast_prism.achilles) %in% prism.snv.breast_damage$Hugo_Symbol])
+#damage.achilles_mean <- apply(breast_damage.achilles, 2, mean)
+##
+#important_genes <- colnames(breast_damage.achilles[,which(damage.achilles_mean <= -0.5)])
+#important_gene_exp <- prism.exp[, colnames(prism.exp) %in% important_genes]
+#important_gene_list <- colnames(important_gene_exp)
+##
+#carcinoma_damage.achilles <- as.data.frame(breast_prism.achilles[rownames(prism.achilles.breast_carcinoma),colnames(breast_prism.achilles) %in% prism.snv.breast_damage$Hugo_Symbol])
+#arcinoma.damage.achilles_mean <- apply(carcinoma_damage.achilles, 2, mean)
+##
+#important_carcinoma.genes <- colnames(carcinoma_damage.achilles[,which(carcinoma.damage.achilles_mean <= -0.5)])
+#important_carcinoma.gene_exp <- prism.exp[, colnames(prism.exp) %in% important_carcinoma.genes]
+#important_carcinoma.gene_list <- colnames(important_carcinoma.gene_exp)
 #
-damage.exp <- breast_prism.exp[,colnames(breast_prism.exp) %in% prism.snv.breast_damage$Hugo_Symbol]
-exp.sorted_col <- colnames(damage.exp)[order(colnames(damage.exp))]
-breast_damage.exp <- damage.exp[, exp.sorted_col]
-#
-damage.cnv <- breast_prism.cnv[,colnames(breast_prism.achilles) %in% prism.snv.breast_damage$Hugo_Symbol]
-cnv.sorted_col <- colnames(damage.cnv)[order(colnames(damage.cnv))]
-breast_damage.cnv <- damage.cnv[, cnv.sorted_col]
-#
-breast_damage.achilles <- as.data.frame(breast_prism.achilles[,colnames(breast_prism.achilles) %in% prism.snv.breast_damage$Hugo_Symbol])
-damage.achilles_mean <- apply(breast_damage.achilles, 2, mean)
-#
-important_genes <- colnames(breast_damage.achilles[,which(damage.achilles_mean <= -0.5)])
-important_gene_exp <- prism.exp[, colnames(prism.exp) %in% important_genes]
-important_gene_list <- colnames(important_gene_exp)
-#
-carcinoma_damage.achilles <- as.data.frame(breast_prism.achilles[rownames(prism.achilles.breast_carcinoma),colnames(breast_prism.achilles) %in% prism.snv.breast_damage$Hugo_Symbol])
-arcinoma.damage.achilles_mean <- apply(carcinoma_damage.achilles, 2, mean)
-#
-important_carcinoma.genes <- colnames(carcinoma_damage.achilles[,which(carcinoma.damage.achilles_mean <= -0.5)])
-important_carcinoma.gene_exp <- prism.exp[, colnames(prism.exp) %in% important_carcinoma.genes]
-important_carcinoma.gene_list <- colnames(important_carcinoma.gene_exp)
-#
-prism.snv.breast_carcinoma <- prism.snv.breast_damage[prism.snv.breast_damage$DepMap_ID %in% breast_carcinoma,]
-prism.snv.breast_ductal_carcinoma <- prism.snv.breast_damage[prism.snv.breast_damage$DepMap_ID %in% breast_ductal_carcinoma,]
+#prism.snv.breast_carcinoma <- prism.snv.breast_damage[prism.snv.breast_damage$DepMap_ID %in% breast_carcinoma,]
+#prism.snv.breast_ductal_carcinoma <- prism.snv.breast_damage[prism.snv.breast_damage$DepMap_ID %in% breast_ductal_carcinoma,]
 ```
 
 # --------------------------- #
