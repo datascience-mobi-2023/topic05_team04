@@ -220,3 +220,12 @@ ggplot(umap_layout_breast, aes(x = V1, y = V2, colour = imp_treat$levels)) +
     theme_bw() +
     ggtitle("UMAP of the Breastcancer celllines")
 ```
+
+
+### Lineare Regression
+```{r}
+# check corrrelation between concentration and cellgrowth
+concentration <- sub(".*::(.*?)::.*", "\\1", colnames(breast_prism_imp))
+
+
+```

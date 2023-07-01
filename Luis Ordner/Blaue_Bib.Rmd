@@ -299,4 +299,17 @@ ggplot(umap_layout_prism, aes(x = V1, y = V2, colour = meta_eff_treat$levels)) +
     theme_bw() +
     ggtitle("UMAP of all celllines")
 # -----
+#################################
+###### Lineare Regression #######
+#################################
+# ------
+# BREAST
+
+special_drugs <- rownames(lowest_mean_duplicate_b[which(lowest_mean_duplicate_b$colMeans_breast < -2 & lowest_mean_duplicate_b$concentration_b < 1),])
+special_drugs_meta <- meta_eff_treat_b[which(rownames(meta_eff_treat_b) %in% special_drugs),]
+special_drugs_meta[,1:6]
+special_drugs_meta[,7:12]
+# Spearrman corr between the concentration and the colMean
+plot(lowest_mean_duplicate_b$concentration_b,lowest_mean_duplicate_b$colMeans_breast)
+cor(lowest_mean_duplicate_b$colMeans_breast, as.numeric(lowest_mean_duplicate_b$concentration_b), method = "spearman")
 ```
