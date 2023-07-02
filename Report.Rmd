@@ -1,23 +1,35 @@
 ---
 title: "Drug repurposing for breast cancer treatment - team04"
 author: "Simon Westermann, Luis Herfurth, Aaron Eidenmüller, Sharujan Suthakaran"
-date: "29.April 2023"
+date: "01.Juli 2023"
 output: pdf_document
 ---
+
+Ich würde mit bookdown schreiben https://bookdown.org/yihui/rmarkdown-cookbook/formatting.html
+Da wird formatieren deutlich einfacher
+
+Bei dem angefangenen Frame habe ich mich stark an den Vorgaben des Essays orientiert. Wir könnten dann, wenn wir das mit bookdown machen, das IPMB Tex Template verwenden 
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Information about the data
+Title page mit Titel, Gruppennummer und Gruppenmitgliedern
 
-I just loaded the rda files in here. If you moved the rda files and this rmd in the same working directory, than the load command will work for you aswell. 
+#Abstract
 
-```{r}
-load("prism_datasets.rda")
-load("celllines_datasets.rda")
+Table of contents
++
+Abbreviations
 
-```
+
+#Introduction
+
+
+
+# Materials and Methods
+
+##Data 
 
 ### Prism Datasets  
 
@@ -39,4 +51,10 @@ load("celllines_datasets.rda")
 **Prism.achilles:** has information on how important a gene is for cell survival. Was generated using knockdown celllines. Gene names (rows) and celllines (colums)
    
    
-## Clean up of the data
+## Data clean up
+
+#Results
+
+#Discussion
+
+#References
