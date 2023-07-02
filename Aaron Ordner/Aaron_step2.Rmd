@@ -318,7 +318,19 @@ for (k in 1:length(rel.genes)){
 Now we investigate which genes appear the most often in all.rel.genes
 
 ```{r}
-test
+library(ggplot2)
+list.targets <- as.data.frame(unlist(all.rel.genes))
+hist.targets <- as.data.frame(table(list.targets))
+
+most.targets <- hist.targets[which(hist.targets[,2]>15),]
+print(most.targets)
+
+ggplot(hist.targets) +
+  geom_bar(stat = "identity", aes(x = list.targets, y = Freq)) +
+  xlab("Targets") +
+  ylab("Count")
+
+
 ```
 
 
