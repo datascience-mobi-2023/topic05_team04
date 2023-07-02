@@ -164,7 +164,7 @@ rownames(prism.var.mean) <- as.character(rel.cl[,1])
 lineage.amount <- lineages.distribution[which(lineages.distribution >= 10)]
 prism.var.mean$LineageAmount <- lineage.amount
 colnames(prism.var.mean)[1] <- "VarMeans"
-View(prism.var.mean)
+#View(prism.var.mean)
 
 ```
 
@@ -297,7 +297,7 @@ cor.test <- apply(abs.exp.treat.cor, 2, function(x){
 
 ```
 
-Testing if the correlation also means that there is a signifikant difference between the means of the treatment response in comparison to all the other treament responses.
+Testing if the correlation also means that there is a signifikant difference between the means of the treatment response in comparison to all the other treatment responses.
 ```{r}
 rel.genes <- list()
 
@@ -315,48 +315,68 @@ for (k in 1:length(rel.genes)){
 }
 ```
 
+Now we investigate which genes appear the most often in all.rel.genes
+
+```{r}
+test
+```
 
 
 
+```{r}
+#Correlation between copy number and gene expression
+row.order <- c() 
+for (i in 1:nrow(breast_prism.cnv)){
+  row.order <- rbind(row.order, which(rownames(breast_prism.cnv)%in%rownames(breast_PRISM.exp)[i]))
+  }
+#order of rows in the two data frames are not the same
+exp.copy.cor <- data.frame()
+copy.names <- c()
+for (x in 1:ncol(breast_PRISM.exp)){
+  copy.gene <- which(colnames(breast_prism.cnv)%in%colnames(breast_PRISM.exp)[x])
+  if (length(copy.gene) > 0) {
+    copy.cor <- cor(breast_PRISM.exp[,x], breast_prism.cnv[row.order,copy.gene])
+    exp.copy.cor <- rbind(exp.copy.cor, copy.cor)
+    copy.names <- c(copy.names, rownames(breast_PRISM.exp)[x])
+  }
+}
+
+```
 
 
 
 
 ```{r}
+#achilles mean tests
+
+breast_achilles_mean <- apply(prism.achilles.breast, 2, mean)
+prism.achilles.other <-prism.achilles.rm[-which(rownames(prism.achilles.rm) %in% prism.cl[breast.cl, 1]), ]
+other_achilles_mean <- apply(prism.achilles.other, 2, mean)
+
+#achilles.mean.test <- apply(prism.achilles.breast, 2, function(x)
+achilles.genes <- c() 
+for(x in 1:ncol(prism.achilles.breast))  {
+  achilles.genes <- rbind(achilles.genes, wilcox.test(prism.achilles.breast[,x], prism.achilles.other[,x]))
+  
+}
+rownames(achilles.genes) <- colnames(prism.achilles)
+achilles.test.genes <- which(achilles.genes[,3]<0.01)
+
+
+
+breast_achilles_relmeans <- apply(prism.achilles.breast[,achilles.test.genes], 2, mean)
+
+achilles.low.score <- which(breast_achilles_relmeans < other_achilles_mean[achilles.test.genes])
+
+achilles.rel.genes <- which(breast_achilles_relmeans[achilles.low.score] < -1)
+
+
+print(achilles.rel.genes)
+```
+
+
+```{r}
 #junkyard
-rel.genes <- list()
-
-for (i in 1:ncol(abs.exp.treat.cor)) {
-  cor.genes <- rownames(abs.exp.treat.cor)[which(abs.exp.treat.cor[, i] > 0.75)]
-  if (length(cor.genes) > 0) {
-    rel.genes[[i]] <- setNames(list(cor.genes), colnames(abs.exp.treat.cor)[i])
-  }
-}
-names(rel.genes) <- colnames(abs.exp.treat.cor)
-gene_names <- sapply(rel.genes,  function(x){
-  names(x)
-})
-
-
-for (i in 1:length(gene_names)){
-  target.name <- treat.gene_list$target[which(treat.gene_list$`rownames(prism.treat)`%in%gene_names[[i]])]
-  rel.genes[[i]] <- append(rel.genes[[i]], target.name) 
-  
-  
-}
-filtered.rel.genes <- Filter(function(x) length(x) > 0, rel.genes)
-filtered.gene_names <- Filter(function(x) length(x) >0, gene_names)
-vec.filtered.gene_names <- unlist(filtered.gene_names)
-vec.filtered.gene_names <- vec.filtered.gene_names[nzchar(vec.filtered.gene_names)]
-breast.treat_filtered <- breast_prism_lowest[,-which(colnames(breast_prism_lowest)%in%vec.filtered.gene_names)]
-
-all.rel.genes <- filtered.rel.genes
-for (x in 1:ncol(breast.treat_filtered)){
-  target.position <- which(treat.gene_list$`rownames(prism.treat)`%in%colnames(breast.treat_filtered[x]))
-  targets <- treat.gene_list$target[target.position]
-  names(targets) <- treat.gene_list$`rownames(prism.treat)`[target.position]
-  all.rel.genes[[x+length(filtered.rel.genes)]] <- targets
-}
 
 
 ```
