@@ -100,7 +100,7 @@ colnames(prism.achilles.overview) <- c("mean", "median", "standard deviation", "
 ### BREAST ###
 ##############
 drugnames_b <- sub("::.*", "", colnames(breast_prism_imp))
-concentration_b <- sub(".*::(.*?)::.*", "\\1", colnames(breast_prism_imp))
+concentration_b <- as.numeric(sub(".*::(.*?)::.*", "\\1", colnames(breast_prism_imp)))
 names_conc_drug_b <- sub("::.*", "", sub("::", ":", colnames(breast_prism_imp)))
 colMeans_breast <- apply(breast_prism_imp, 2, mean)
 duplicate_drugs_b <- unique(drugnames_b[duplicated(drugnames_b)])
@@ -112,16 +112,24 @@ for(i in 1:length(duplicate_drugs_b)) {
     lowest_colmean_b <- min(act_df_b$colMeans_breast, na.rm = TRUE)
     lowest_mean_duplicate_b <- rbind(lowest_mean_duplicate_b, act_df_b[which(act_df_b$colMeans_breast == lowest_colmean_b),])
 }
+highest_mean_duplicate_b <- data.frame()
+for(i in 1:length(duplicate_drugs_b)) {
+    act_rows_b <- which(df_nam_con_mean_b$drugnames_b == duplicate_drugs_b[i])
+    act_df_b <- df_nam_con_mean_b[act_rows_b,]
+    highest_colmean_b <- max(act_df_b$colMeans_breast, na.rm = TRUE)
+    highest_mean_duplicate_b <- rbind(highest_mean_duplicate_b , act_df_b[which(act_df_b$colMeans_breast == highest_colmean_b),])
+}
 pref_drug_con_combo_breast <- rownames(lowest_mean_duplicate_b)
 breast_prism_lowest <- breast_prism_imp[,pref_drug_con_combo_breast]
-pref_drug_ths_b <- rownames(lowest_mean_duplicate_b[lowest_mean_duplicate_b$colMeans_breast < -2,])
+lowest_mean_duplicate_tsh_b <- lowest_mean_duplicate_b[lowest_mean_duplicate_b$colMeans_breast < -2,]
+pref_drug_ths_b <- rownames(lowest_mean_duplicate_tsh_b)
 breast_prism_lowest_ths <- breast_prism_imp[,pref_drug_ths_b]
 ##############
 ### PRISM ####
 ##############
 drugnames <- sub("::.*", "", colnames(prism_imp))
 drugnames <- sub("::.*", "", colnames(prism_imp))
-concentration <- sub(".*::(.*?)::.*", "\\1", colnames(prism_imp))
+concentration <- as.numeric(sub(".*::(.*?)::.*", "\\1", colnames(prism_imp)))
 names_conc_drug <- sub("::.*", "", sub("::", ":", colnames(prism_imp)))
 colMeans <- apply(prism_imp, 2, mean)
 duplicate_drugs <- unique(drugnames[duplicated(drugnames)])
@@ -133,9 +141,17 @@ for(i in 1:length(duplicate_drugs)) {
     lowest_colmean <- min(act_df$colMeans, na.rm = TRUE)
     lowest_mean_duplicate <- rbind(lowest_mean_duplicate, act_df[which(act_df$colMeans == lowest_colmean),])
 }
+highest_mean_duplicate <- data.frame()
+for(i in 1:length(duplicate_drugs)) {
+    act_rows <- which(df_nam_con_mean$drugnames == duplicate_drugs[i])
+    act_df <- df_nam_con_mean[act_rows,]
+    highest_colmean <- max(act_df$colMeans, na.rm = TRUE)
+    highest_mean_duplicate <- rbind(highest_mean_duplicate , act_df[which(act_df$colMeans == highest_colmean),])
+}
 pref_drug_con_combo <- rownames(lowest_mean_duplicate)
 prism_lowest <- prism_imp[,pref_drug_con_combo]
-pref_drug_ths <- rownames(lowest_mean_duplicate[lowest_mean_duplicate$colMeans < -2,])
+lowest_mean_duplicate_tsh <- lowest_mean_duplicate[lowest_mean_duplicate$colMeans < -2,]
+pref_drug_ths <- rownames(lowest_mean_duplicate_tsh)
 prism_lowest_ths <- prism_imp[,pref_drug_ths]
 ##########################################
 # 5. # FILTERING NON-ONCOLOGY DRUGS ###### Aaron
@@ -274,6 +290,13 @@ vec_breast <- unlist(sapply(breast_prism, function(x) x[is.numeric(x)]))
 vec_breast <- na.omit(vec_breast)
 hist(vec_breast, breaks = 80, xlab = "Cell Growth", main = "Overview of the Cell Growth", xlim = c(-8, 2));abline(v = mean(vec_breast, na.rm = TRUE), col = "red", lwd = 2, lty = 3);abline(v = median(vec_breast, na.rm = TRUE), col = "blue", lwd = 2, lty= 3);legend("topleft", legend = c("mean", "median"), col = c("red", "blue"), lwd = 2, lty = 3)
 heatmapbreast <- pheatmap(breast_prism_imp, show_rownames = TRUE, show_colnames = FALSE)
+##################################
+###### CONCENTRATION EFFECT ######
+##################################
+hist(as.numeric(lowest_mean_duplicate_b$concentration_b))
+hist(lowest_mean_duplicate_b$colMeans_breast)
+hist(as.numeric(highest_mean_duplicate_b$concentration_b))
+hist(highest_mean_duplicate_b$colMeans_breast)
 #################################
 ###### DIMENSION REDUCTION ######
 #################################
@@ -303,13 +326,30 @@ ggplot(umap_layout_prism, aes(x = V1, y = V2, colour = meta_eff_treat$levels)) +
 ###### Lineare Regression #######
 #################################
 # ------
-# BREAST
 
 special_drugs <- rownames(lowest_mean_duplicate_b[which(lowest_mean_duplicate_b$colMeans_breast < -2 & lowest_mean_duplicate_b$concentration_b < 1),])
 special_drugs_meta <- meta_eff_treat_b[which(rownames(meta_eff_treat_b) %in% special_drugs),]
 special_drugs_meta[,1:6]
 special_drugs_meta[,7:12]
-# Spearrman corr between the concentration and the colMean
-plot(lowest_mean_duplicate_b$concentration_b,lowest_mean_duplicate_b$colMeans_breast)
-cor(lowest_mean_duplicate_b$colMeans_breast, as.numeric(lowest_mean_duplicate_b$concentration_b), method = "spearman")
+# ------ 
+high_conc <- rownames(prism.treat[which(prism.treat$dose > 9),])
+high_conc_breast <- breast_prism_imp[,which(colnames(breast_prism_imp) %in% high_conc)]
+col_mean_high_conc <- apply(high_conc_breast, 2, mean)
+# vvvvvvvv #
+hist(col_mean_high_conc) # <---! distribution of the mean of the high concentration drugs -->
+# ------
+conc_tsh_b <- df_nam_con_mean_b$concentration_b[which(df_nam_con_mean_b$colMeans < -2)]
+colMeans_tsh_b <- df_nam_con_mean_b$colMeans_breast[which(df_nam_con_mean_b$colMeans < -2)]
+model_breast_tsh <- lm(colMeans_tsh_b ~ conc_tsh_b, data = df_nam_con_mean_b)
+# vvvvvvvv #
+summary(model_breast_tsh)
+plot(conc_tsh_b, colMeans_tsh_b) ; abline(model_breast_tsh, col = "red") # <---! linear regression of the inhibitory drugs -->
+# ------
+model_breast <- lm(concentration_b ~ colMeans_breast, data = df_nam_con_mean_b)
+model_prism <- lm(concentration ~ colMeans, data = df_nam_con_mean)
+# vvvvvvvv #
+plot(colMeans_breast,concentration_b); abline(model_breast, col = "red")
+plot(colMeans,concentration); abline(model_prism, col = "red")
+summary(model_breast) # <---! linear regression of the drugs on breast-->
+summary(model_prism) # <---! linear regression of the drugs on prism-->
 ```
