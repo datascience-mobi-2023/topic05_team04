@@ -194,8 +194,27 @@ all_onco_prism <- prism_lowest[,colnames(prism_lowest)%in%rownames(onco.all.trea
 onco_prism <- prism_lowest[,colnames(prism_lowest)%in%rownames(onco.treat)]
 
 
+library(tidyverse)
+prism.treat.test <-cbind(prism.treat, rownames(prism.treat))
+breast.treat_subset <- prism.treat.test %>% separate_rows(indication, sep = ",")
+
+breast.onco.treat <-prism.treat[which("breast cancer"==breast.treat_subset$indication),]
+
+breast_onco_prism <-breast_prism_lowest[,colnames(prism_lowest)%in%rownames(breast.onco.treat)]
+
+breast.onco.mean <- as.data.frame(apply(breast_onco_prism, 2, mean))
+colnames(breast.onco.mean) <- c("mean")
+
+unique(breast.treat_subset$indication)
 
 prism.mean <- apply(prism_lowest, 2, mean)
+
+
+sum("breast cancer"==breast.treat_subset$indication, na.rm = TRUE)
+
+
+ggplot(breast.onco.mean)+
+  geom_histogram(aes(x = mean))
 
 #non.onco.var <- apply(non_onco_prism, 2, var)
 
@@ -292,7 +311,7 @@ Testing if the correlation also means that there is a signifikant difference bet
 rel.genes <- list()
 
 for (i in 1:ncol(abs.exp.treat.cor)) {
-  cor.genes <- rownames(abs.exp.treat.cor)[which(abs.exp.treat.cor[, i] > 0.75)]
+  cor.genes <- rownames(abs.exp.treat.cor)[which(abs.exp.treat.cor[, i] > 0.80)]
   rel.genes[[i]] <- cor.genes
   
 }
@@ -392,18 +411,34 @@ for (x in 1:ncol(breast_PRISM.exp)){
 ```{r}
 #achilles mean tests
 
-breast_achilles_mean <- apply(prism.achilles.breast, 2, mean)
-prism.achilles.other <-prism.achilles.rm[-which(rownames(prism.achilles.rm) %in% prism.cl[breast.cl, 1]), ]
-other_achilles_mean <- apply(prism.achilles.other, 2, mean)
+ach.pos <- unlist(apply(hist.targets, 2, function(x){
+  which(colnames(prism.achilles)%in%x)
+}))
 
-#achilles.mean.test <- apply(prism.achilles.breast, 2, function(x)
+ach.test.rem <- prism.achilles.rm[,ach.pos]
+breast.ach.test <- ach.test.rem[rownames(prism.achilles.rm) %in% prism.cl[breast.cl, 1],]
+
+breast.achilles.mean <- apply(breast.ach.test, 2, mean)
+prism.achilles.other <-ach.test.rem[-which(rownames(prism.achilles.rm) %in% prism.cl[breast.cl, 1]), ]
+other.achilles.mean <- apply(prism.achilles.other, 2, mean)
+
+ach.low.pos <- which(breast_achilles_mean<other_achilles_mean)
+
+breast.ach.test <- breast.ach.test[,ach.low.pos]
+prism.achilles.other <- prism.achilles.other[,ach.low.pos]
+
+breast_achilles_mean <- breast.achilles.mean[ach.low.pos]
+other_achilles_mean <- other.achilles.mean[ach.low.pos]
+
+
 achilles.genes <- c() 
-for(x in 1:ncol(prism.achilles.breast))  {
-  achilles.genes <- rbind(achilles.genes, wilcox.test(prism.achilles.breast[,x], prism.achilles.other[,x]))
+for(x in 1:length(ach.low.pos))  {
+  result <- wilcox.test(breast.ach.test[, x], prism.achilles.other[, x], alternative = "less")
+  achilles.genes <- rbind(achilles.genes, result$p.value)
   
 }
-rownames(achilles.genes) <- colnames(prism.achilles)
-achilles.test.genes <- which(achilles.genes[,3]<0.05)
+rownames(achilles.genes) <- colnames(breast.ach.test)
+achilles.test.genes <- which(achilles.genes<0.05)
 
 #print(achilles.genes[19,3])
 
@@ -440,6 +475,23 @@ ggplot(achilles.boxplot)+
 ```
 
 ```{r}
+min(as.data.frame(achilles.genes))
+
+achilles.genes.adj <- p.adjust(unlist(achilles.genes), method = "fdr")
+
+min(achilles.genes.adj)
+
+which(achilles.genes.adj<0.05)
+
+rownames(achilles.genes)[c(311, 386)]
+
+```
+```{r}
+rownames(which(breast.achilles.mean<(-1)))
+```
+
+
+```{r}
 mean.achilles.dif <- as.data.frame(breast_achilles_mean - other_achilles_mean)
 colnames(mean.achilles.dif) <- c("difference")
 ggplot(mean.achilles.dif)+
@@ -459,25 +511,13 @@ breast_exp_mean <- apply(breast_prism.exp, 2, mean)
 ```
 
 
+
+
+
 ```{r}
 #junkyard
 
-for (y in 1:ncol(breast_prism_lowest)) {
-  correlation <- c()
-  
-  for (x in 1:100) {
-    gene.expression <- breast_PRISM.exp[, x]
-    correlation[x] <- cor(breast_prism_lowest[, y], gene.expression)
-  }
-  
-  
-  
-  if (y == 1) {
-    test.exp.treat.cor <- correlation  
-  } else {
-    test.exp.treat.cor <- cbind(test.exp.treat.cor, correlation)  
-  }
-}
+
 ```
 
 
