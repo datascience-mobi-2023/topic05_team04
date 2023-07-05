@@ -454,6 +454,8 @@ ggplot(mean.achilles.dif)+
 
 w.genes.cancer <- achilles.rel.genes[which(names(achilles.rel.genes)%in%hist.targets$genes)]
 
+breast_exp_mean <- apply(breast_prism.exp, 2, mean)
+
 ```
 
 
