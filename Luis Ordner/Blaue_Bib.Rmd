@@ -207,7 +207,7 @@ color_palette_b <- c(setNames(level_colors_b, top_x_levels_b), Other = "transpar
 meta_eff_treat <- prism.treat[pref_drug_con_combo,]
 level_counts <- table(meta_eff_treat$moa)
 sorted_levels <- names(sort(level_counts, decreasing = TRUE))
-top_x_levels <- sorted_levels[1:10]  ### <---! USER INPUT --->
+top_x_levels <- sorted_levels[1:20]  ### <---! USER INPUT --->
 levels <- factor(meta_eff_treat$moa, levels = c("Other", top_x_levels))
 meta_eff_treat$levels <- levels
 meta_eff_treat$levels[is.na(meta_eff_treat$levels)] <- "Other"
@@ -310,14 +310,15 @@ hist(highest_mean_duplicate_b$colMeans_breast)
 breast_cancer_umap <- umap(t(breast_prism_lowest), n_neighbors = 7, min_dist = 0.5, n_epochs = 200, n_components = 2) 
 umap_layout_breast <- as.data.frame(breast_cancer_umap$layout)
 
-umap_layout_breast$levels_b <- meta_eff_treat$levels_b
+umap_layout_breast$levels_b <- meta_eff_treat_b$levels_b
 
 umap_layout_breast <- umap_layout_breast %>%
   mutate(alpha_level_b = ifelse(levels_b == "Other", 0.2, 1))
 
 color_palette_b <- c(setNames(level_colors, top_x_levels), Other = "lightgray")
-ggplot(umap_layout_breast, aes(x = V1, y = V2, colour = levels_b, alpha_levels_b)) +
-    geom_point(size = 3, alpha = 1) +
+
+ggplot(umap_layout_breast, aes(x = V1, y = V2, color = levels_b, alpha = alpha_level_b)) +
+    geom_point(size = 3) +
     scale_color_manual(values = color_palette_b) +
     theme_bw() +
     ggtitle("UMAP of the Breastcancer celllines")
@@ -331,10 +332,10 @@ umap_layout_prism$levels <- meta_eff_treat$levels
 umap_layout_prism <- umap_layout_prism %>%
   mutate(alpha_level = ifelse(levels == "Other", 0.2, 1))
 
-color_palette <- c(setNames(level_colors, top_x_levels), Other = "lightgray")
+color_palette <- c(setNames(level_colors_b, top_x_levels_b), Other = "lightgray")
 
 ggplot(umap_layout_prism, aes(x = V1, y = V2, color = levels, alpha = alpha_level)) +
-    geom_point( size = 3) +
+    geom_point(size = 3) +
     scale_color_manual(values = color_palette) +
     theme_bw() +
     ggtitle("UMAP of all celllines")
