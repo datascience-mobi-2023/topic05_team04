@@ -1,0 +1,37 @@
+---
+title: "final dataframe"
+author: "Sharujan Suthakaran"
+date: "05.Juli 2023"
+---
+
+```{r}
+breast_exp_mean <- apply(breast_prism.exp, 2, mean)
+
+
+
+
+```
+
+
+```{r}
+
+Wgene.krebs <- data.frame(row.names = names(w.genes.cancer), stringsAsFactors = FALSE)
+
+for (gene_name in names(w.genes.cancer)) {
+  if (gene_name %in% colnames(breast_prism.exp)) {
+   frequency_value <- hist.targets[gene_name ,]
+   achilles_value <- breast_achilles_mean[gene_name]
+   exp_value <- breast_exp_mean[gene_name]
+   Wgene.krebs <- cbind(Wgene.krebs, frequency_value, achilles_value, exp_value)
+}
+else {
+    warning(paste("Column", gene_name, "does not exist in breast_damage.exp. Skipping."))
+  }
+}
+
+View(Wgene.krebs)
+
+View(hist.targets)
+
+
+```
