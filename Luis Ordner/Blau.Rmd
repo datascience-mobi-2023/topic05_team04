@@ -169,7 +169,7 @@ lowest_mean_duplicate <- data.frame()
 for(i in 1:length(duplicate_drugs)) {
     act_rows <- which(df_nam_con_mean$drugnames == duplicate_drugs[i])
     act_df <- df_nam_con_mean[act_rows,]
-    lowest_colmean <- min(act_df$colMeans_breast, na.rm = TRUE)
+    lowest_colmean <- min(act_df$colMeans_breast)
     lowest_mean_duplicate <- rbind(lowest_mean_duplicate, act_df[which(act_df$colMeans_breast == lowest_colmean),])
 }
 #lowest_mean_duplicate  # <--- with rownames - u can get the prism colname for the drug::conc combination with the lowest colmean
@@ -178,8 +178,8 @@ head(lowest_mean_duplicate)
 
 ## Hier kann man sich bisschen die Verteilungen anchauen
 ```{r}
-#hist(as.numeric(lowest_mean_duplicate$concentration))
-hist(lowest_mean_duplicate$colMeans_breast)
+#hist(as.numeric(lowest_mean_duplicate_b$concentration))
+hist(lowest_mean_duplicate_b$colMeans_breast)
 ```
 
 ## UMAP für den Breastcancer teil
