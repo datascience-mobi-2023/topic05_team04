@@ -28,6 +28,8 @@
 library(ggplot2) #install.packages("ggplot2")
 library(umap) #install.packages("umap")
 library(readxl) #install.packages("readxl")
+library(scales) #install.packages("scales")
+library(dplyr)
 #library(tidyverse) #install.packages("tidyverse")
 # --------------------------------- #
 load("/Users/luisherfurth/Codenmachtspass/Data/prism_datasets.rda")
@@ -208,9 +210,9 @@ sorted_levels <- names(sort(level_counts, decreasing = TRUE))
 top_x_levels <- sorted_levels[1:20]  ### <---! USER INPUT --->
 levels <- factor(meta_eff_treat$moa, levels = c("Other", top_x_levels))
 meta_eff_treat$levels <- levels
-meta_eff_treat$levels[is.na(meta_eff_treat$clevels)] <- "Other"
+meta_eff_treat$levels[is.na(meta_eff_treat$levels)] <- "Other"
 level_colors <- rainbow(length(top_x_levels))
-color_palette <- c(setNames(level_colors, top_x_levels), Other = "transparent")
+color_palette <- c(setNames(level_colors, top_x_levels), Other = "lightgray")
 ################ Sharu
 #PRISM.snv.breast <- prism.snv[which(as.character(prism.snv$DepMap_ID) %in% breast_prism.cl$DepMap_ID),]
 #prism.snv.breast <- PRISM.snv.breast[PRISM.snv.breast$Variant_Classification != "Silent",]
@@ -307,8 +309,16 @@ hist(highest_mean_duplicate_b$colMeans_breast)
 # BREAST
 breast_cancer_umap <- umap(t(breast_prism_lowest), n_neighbors = 7, min_dist = 0.5, n_epochs = 200, n_components = 2) 
 umap_layout_breast <- as.data.frame(breast_cancer_umap$layout)
-ggplot(umap_layout_breast, aes(x = V1, y = V2, colour = meta_eff_treat_b$levels_b)) +
-    geom_point(size = 3, alpha = 1) +
+
+umap_layout_breast$levels_b <- meta_eff_treat_b$levels_b
+
+umap_layout_breast <- umap_layout_breast %>%
+  mutate(alpha_level_b = ifelse(levels_b == "Other", 0.2, 1))
+
+color_palette_b <- c(setNames(level_colors, top_x_levels), Other = "lightgray")
+
+ggplot(umap_layout_breast, aes(x = V1, y = V2, color = levels_b, alpha = alpha_level_b)) +
+    geom_point(size = 3) +
     scale_color_manual(values = color_palette_b) +
     theme_bw() +
     ggtitle("UMAP of the Breastcancer celllines")
@@ -316,8 +326,16 @@ ggplot(umap_layout_breast, aes(x = V1, y = V2, colour = meta_eff_treat_b$levels_
 # PRISM
 cancer_umap <- umap(t(prism_lowest), n_neighbors = 7, min_dist = 0.5, n_epochs = 200, n_components = 2) 
 umap_layout_prism <- as.data.frame(cancer_umap$layout)
-ggplot(umap_layout_prism, aes(x = V1, y = V2, colour = meta_eff_treat$levels)) +
-    geom_point(size = 3, alpha = 1) +
+
+umap_layout_prism$levels <- meta_eff_treat$levels
+
+umap_layout_prism <- umap_layout_prism %>%
+  mutate(alpha_level = ifelse(levels == "Other", 0.2, 1))
+
+color_palette <- c(setNames(level_colors_b, top_x_levels_b), Other = "lightgray")
+
+ggplot(umap_layout_prism, aes(x = V1, y = V2, color = levels, alpha = alpha_level)) +
+    geom_point(size = 3) +
     scale_color_manual(values = color_palette) +
     theme_bw() +
     ggtitle("UMAP of all celllines")
