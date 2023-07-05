@@ -109,6 +109,7 @@ level_colors <- rainbow(length(top_10_levels))
 
 ```
 
+
 ```{r UMAP by Simon}
 library(ggplot2)
 #I created this UMAP with the parameters mentioned in the Paper from Corsello
@@ -236,4 +237,43 @@ ggplot(umap_layout_breast, aes(x = V1, y = V2, colour = imp_treat$levels)) +
     geom_vline(xintercept = 0, color = 'red') +
     geom_hline(yintercept = 0, color = 'red')
 ```
+
+```{r UMAP by luis without other}
+cancer_umap <- umap(t(prism_lowest), n_neighbors = 7, min_dist = 0.5, n_epochs = 200, n_components = 2) 
+umap_layout_prism <- as.data.frame(cancer_umap$layout)
+
+umap_layout_prism$levels <- meta_eff_treat$levels
+
+umap_layout_prism <- umap_layout_prism %>%
+  mutate(alpha_level = ifelse(levels == "Other", 0.2, 1))
+
+color_palette <- c(setNames(level_colors_b, top_x_levels_b), Other = "lightgray")
+
+ggplot(umap_layout_prism, aes(x = V1, y = V2, color = levels, alpha = alpha_level)) +
+    geom_point(size = 3) +
+    scale_color_manual(values = color_palette) +
+    theme_bw() +
+    ggtitle("UMAP of all celllines")
+
+##clustering of this UMAP
+library(cluster)
+silhouette_score <- function(k){
+  km <- kmeans(cancer_umap$layout, centers = k)
+  s <- silhouette(km$cluster, dist(cancer_umap$layout))
+  mean(s[, 3])
+}
+k <- 2:20
+avg_s <- sapply(k, silhouette_score)
+#best cluster size through silhouette method -> size 3 works best
+plot(k, type = 'b', avg_s,xlim = c(2,20), ylim = c(0.34,0.59), xlab='Number of clusters', ylab='Average Silhouette Scores'); abline(h = max(avg_s), col = 'red')
+
+##trying 20 centers for clustering to cluster unknown moa
+cancer_km <- kmeans(cancer_umap$layout, centers = 20)
+cancercol <- rainbow(20)[cancer_km$cluster]
+plot(breast_cancer_umap$layout[,1], breast_cancer_umap$layout[,2], 
+     col= cancercol, pch=19,
+     xlab='V1',ylab='V2',
+     main='Clustering of drugs')#; abline(h = 0, col = 'orange'); abline(v = 0, col = 'orange')
+```
+
 
