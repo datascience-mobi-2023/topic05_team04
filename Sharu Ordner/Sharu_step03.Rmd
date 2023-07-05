@@ -58,7 +58,7 @@ max(prism.achilles_mean) #0.751765
 
 #hist(prism.achilles_mean)
 
-important_genes <- colnames(prism.achilles.breast[,which(prism.achilles_mean >= 0)])
+important_genes <- colnames(prism.achilles.breast[,which(prism.achilles_mean <= 0)])
 
 important_gene_exp <- prism.exp[, colnames(prism.exp) %in% important_genes]
 
@@ -217,7 +217,6 @@ geneSearchEngine("PRKG1")
 ***This function undergoes printing out values of .exp/.achilles and.cnv of damaging genes. Additionally, it prints possible treatments, if the gene is a target in prism.treat.***
 
 ```{r}
-
 for (gene_name in prism.snv.breast_damage$Hugo_Symbol) {
    
     matchingRows <- which(prism.treat_subset$target == gene_name)
@@ -282,6 +281,75 @@ for (gene_name in prism.snv.breast_damage$Hugo_Symbol) {
 }
 
 ```
+
+```{r}
+  
+for (gene_name in list.targets$`unlist(all.rel.genes)`) {
+   
+    matchingRows <- which(prism.treat_subset$target == gene_name)
+    if (length(matchingRows) == 0) {
+      cat("No matching treatment found for Gene:", gene_name, "\n")
+    } else {
+      cat("Matching treatment(s) for Gene:", gene_name, "\n")
+      for (row in matchingRows) {
+        rowName <- row.names(prism.treat)[row]
+        rowValue <- as.character(prism.treat$name[row])
+        cat("Row Name:", rowName, "\tTreatment:", rowValue, "\n")
+      }
+    }
+    
+    
+    if (gene_name %in% colnames(breast_damage.exp) &&
+        gene_name %in% colnames(breast_damage.achilles) &&
+        gene_name %in% colnames(breast_damage.cnv)) {
+      
+      
+      exp_value <- breast_damage.exp[rownames(breast_damage.exp), gene_name]
+      cat("Expression Level:", exp_value, "\n")
+      
+      
+      achilles_value <- breast_damage.achilles[rownames(breast_damage.achilles), gene_name]
+      cat("Achilles Value:", achilles_value, "\n")
+      
+    
+      cnv_value <- breast_damage.cnv[rownames(breast_damage.cnv), gene_name]
+      cat("Copy Number:", cnv_value, "\n")
+      
+      cat("\n")
+    } else {
+      cat("Gene:", gene_name, "is not present in all datasets.\n\n")
+      
+    if (gene_name %in% colnames(breast_damage.exp)) {
+      exp_value <- breast_damage.exp[, gene_name]
+      cat("Expression Level (breast_damage.exp):\n")
+      for (i in 1:length(rownames(breast_damage.exp))) {
+      cat(rownames(breast_damage.exp)[i], ":", exp_value[i], "\n")
+}
+    }
+    
+    if (gene_name %in% colnames(breast_damage.achilles)) {
+      achilles_value <- breast_damage.achilles[, gene_name]
+      cat("Achilles Value (breast_damage.achilles):\n")
+      for (j in 1:length(rownames(breast_damage.achilles))) {
+      cat(rownames(breast_damage.achilles)[j], ":", achilles_value[j], "\n")
+}
+    }
+    
+    if (gene_name %in% colnames(breast_damage.cnv)) {
+      cnv_value <- breast_damage.cnv[, gene_name]
+      cat("Copy Number (breast_damage.cnv):\n")
+      for (z in 1:length(rownames(breast_damage.cnv))) {
+      cat(rownames(breast_damage.cnv)[z], ":", cnv_value[z], "\n")
+}
+    }
+    
+    cat("\n")
+  }
+}
+
+
+````
+
 
 ***Search engine for treatments, needs further improvement***
 
@@ -531,8 +599,8 @@ achilles.cnv.exp_breast <- data.frame(row.names = rownames(breast_prism.exp), st
 
 for (gene_name in colnames(breast_damage.achilles)) {
   if (gene_name %in% colnames(breast_damage.exp) && gene_name %in% colnames(breast_damage.cnv)) {
-  achilles_value <- breast_damage.achilles[, gene_name]
-  exp_value <- breast_damage.exp[, gene_name]
+  achilles_value <- breast_achilles_mean[, gene_name]
+  exp_value <- breast_damage[, gene_name]
   cnv_value <- breast_damage.cnv[, gene_name]
   achilles.cnv.exp_breast <- cbind(achilles.cnv.exp_breast, achilles_value, exp_value, cnv_value)
 }

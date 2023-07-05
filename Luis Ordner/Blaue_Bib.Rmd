@@ -344,7 +344,6 @@ ggplot(umap_layout_prism, aes(x = V1, y = V2, color = levels, alpha = alpha_leve
 ###### Lineare Regression #######
 #################################
 # ------
-
 special_drugs <- rownames(lowest_mean_duplicate_b[which(lowest_mean_duplicate_b$colMeans_breast < -2 & lowest_mean_duplicate_b$concentration_b < 1),])
 special_drugs_meta <- meta_eff_treat_b[which(rownames(meta_eff_treat_b) %in% special_drugs),]
 special_drugs_meta[,1:6]
@@ -382,9 +381,16 @@ vec_breast <- unlist(sapply(breast_prism, function(x) x[is.numeric(x)]))
 vec_breast <- na.omit(vec_breast)
 inhibitory <- vec_breast < -2
 ggplot() +
-    geom_histogram(aes(x = vec_breast, fill = inhibitory), bins = 150) +
-    scale_fill_manual(values = c("#f54949", "steelblue")) +
-    labs(title = "Histogram of Breast Prism", x = "Cell Growth", y = "Count")
+    geom_histogram(aes(x = vec_breast, fill = inhibitory), bins = 111) +
+    scale_fill_manual(values = c("coral2", "steelblue2")) +
+    labs(title = "Cell Growth of breast cancer cells after treatment", x = "log2FC", y = "Count")
+################
+high_cor <- highest_cor_b$correlation < -0.9
+ggplot() +
+    geom_histogram(aes(x = highest_cor_b$correlation, fill = high_cor), bins = 121) +
+    scale_fill_manual(values = c("coral2", "steelblue2"))
+################
+
 
 ```
 ## Testing

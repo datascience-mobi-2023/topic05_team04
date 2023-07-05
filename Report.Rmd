@@ -1,9 +1,17 @@
 ---
-title: "Drug repurposing for breast cancer treatment - team04"
-author: "Simon Westermann, Luis Herfurth, Aaron Eidenmüller, Sharujan Suthakaran"
-date: "01.Juli 2023"
-output: pdf_document
+title: "  "
+date: " "
+bibliography:
+csl: 
+geometry: "margin=2.3cm"
+linestretch: 1.15
+output: 
+  pdf_document:
+    number_sections: true
 ---
+
+
+
 
 Ich würde mit bookdown schreiben https://bookdown.org/yihui/rmarkdown-cookbook/formatting.html
 Da wird formatieren deutlich einfacher
@@ -50,11 +58,38 @@ Abbreviations
 
 **Prism.achilles:** has information on how important a gene is for cell survival. Was generated using knockdown celllines. Gene names (rows) and celllines (colums)
    
+
+## Data clean up/Filtering
+Show distributions after cleanup
    
-## Data clean up
+##Clustering
+kmeans
+
+##Dimension reduction  
+UMAP
+
+##statistical test
+Wilcoxson test
+0.05 alpha
+p adjust needed
+
+##Lineare Regression
 
 #Results
+First include positiv results; if space is left include negativ results: UMAP, K means clustering, promoting drugs
+describe goal, describe process, describe outcome
+##List of inhibitory drugs
+
+
+##Gen search engine
+
+##Dataframe for targets involving genes
+
+##Linear regression
+Perform drug by drug to avoid weird plot
 
 #Discussion
+Search for papers mentioning certain genes found in the targets of the inhibitory drugs or 
+
 
 #References
