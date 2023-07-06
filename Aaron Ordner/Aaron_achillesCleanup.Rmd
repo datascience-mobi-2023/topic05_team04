@@ -1,6 +1,6 @@
 ```{r}
-load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/prism_datasets.rda")
-load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/cellline_datasets.rda")
+#load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/prism_datasets.rda")
+#load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/cellline_datasets.rda")
 
 ```
 

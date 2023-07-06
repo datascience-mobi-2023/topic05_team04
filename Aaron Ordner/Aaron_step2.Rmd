@@ -1,6 +1,6 @@
 ```{r}
-load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/prism_datasets.rda")
-load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/cellline_datasets.rda")
+#load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/prism_datasets.rda")
+#load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/cellline_datasets.rda")
 
 ```
 
@@ -112,7 +112,8 @@ sum(na.omit("oncology"==prism.treat$disease.area))/dim(prism.treat)[1]
 As not every drug has a specific disease area, we will try to eliminate the oncological drugs via their names.For this we will compare the drugs in prism.treat and in two cancer treatment list, cancer national institute (https://www.cancer.gov/about-cancer/treatment/drugs) and cancer research UK (https://www.cancerresearchuk.org/about-cancer/treatment/drugs) 
 ```{r}
 library(readxl)
-cancer.therapy <- read_excel("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/oncological_treatments.xlsx")
+#cancer.therapy <- read_excel("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/oncological_treatments.xlsx")
+cancer.therapy <- read_excel("~/Downloads/oncological_treatments.xlsx")
 cancer.therapy <- as.data.frame(cancer.therapy)
 treat.names <- as.data.frame(prism.treat$name)
 

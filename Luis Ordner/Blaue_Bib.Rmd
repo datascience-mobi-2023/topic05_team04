@@ -32,8 +32,8 @@ library(scales) #install.packages("scales")
 library(dplyr)
 #library(tidyverse) #install.packages("tidyverse")
 # --------------------------------- #
-load("/Users/luisherfurth/Codenmachtspass/Data/prism_datasets.rda")
-load("/Users/luisherfurth/Codenmachtspass/Data/cellline_datasets.rda")
+#load("/Users/luisherfurth/Codenmachtspass/Data/prism_datasets.rda")
+#load("/Users/luisherfurth/Codenmachtspass/Data/cellline_datasets.rda")
 ###############################
 # 2. # PRISM IMPUTATION ####### Luis
 ###############################
@@ -158,7 +158,7 @@ prism_lowest_ths <- prism_imp[,pref_drug_ths]
 ##########################################
 # 5. # FILTERING NON-ONCOLOGY DRUGS ###### Aaron
 ##########################################
-cancer.therapy <- read_excel("/Users/luisherfurth/Codenmachtspass/Data/oncological_treatments.xlsx")
+#cancer.therapy <- read_excel("/Users/luisherfurth/Codenmachtspass/Data/oncological_treatments.xlsx")
 cancer.therapy <- as.data.frame(cancer.therapy)
 treat.names <- as.data.frame(prism.treat$name)
 drug.overlap <- apply(treat.names, 1, function(x){
