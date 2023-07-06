@@ -411,6 +411,9 @@ for (x in 1:ncol(breast_PRISM.exp)){
 ```{r}
 #achilles mean tests
 
+
+
+
 ach.pos <- unlist(apply(hist.targets, 2, function(x){
   which(colnames(prism.achilles)%in%x)
 }))
@@ -424,11 +427,19 @@ other.achilles.mean <- apply(prism.achilles.other, 2, mean)
 
 ach.low.pos <- which(breast_achilles_mean<other_achilles_mean)
 
+hist(other_achilles_mean)
+
 breast.ach.test <- breast.ach.test[,ach.low.pos]
 prism.achilles.other <- prism.achilles.other[,ach.low.pos]
 
+
 breast_achilles_mean <- breast.achilles.mean[ach.low.pos]
+
+
+
 other_achilles_mean <- other.achilles.mean[ach.low.pos]
+
+
 
 
 achilles.genes <- c() 
