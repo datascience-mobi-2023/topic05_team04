@@ -1,6 +1,6 @@
 ```{r}
-#load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/prism_datasets.rda")
-#load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/cellline_datasets.rda")
+load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/prism_datasets.rda")
+load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/cellline_datasets.rda")
 
 ```
 
@@ -112,8 +112,7 @@ sum(na.omit("oncology"==prism.treat$disease.area))/dim(prism.treat)[1]
 As not every drug has a specific disease area, we will try to eliminate the oncological drugs via their names.For this we will compare the drugs in prism.treat and in two cancer treatment list, cancer national institute (https://www.cancer.gov/about-cancer/treatment/drugs) and cancer research UK (https://www.cancerresearchuk.org/about-cancer/treatment/drugs) 
 ```{r}
 library(readxl)
-#cancer.therapy <- read_excel("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/oncological_treatments.xlsx")
-cancer.therapy <- read_excel("~/Downloads/oncological_treatments.xlsx")
+cancer.therapy <- read_excel("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/oncological_treatments.xlsx")
 cancer.therapy <- as.data.frame(cancer.therapy)
 treat.names <- as.data.frame(prism.treat$name)
 
@@ -409,10 +408,9 @@ for (x in 1:ncol(breast_PRISM.exp)){
 
 
 
+
 ```{r}
 #achilles mean tests
-
-
 
 
 ach.pos <- unlist(apply(hist.targets, 2, function(x){
@@ -420,24 +418,23 @@ ach.pos <- unlist(apply(hist.targets, 2, function(x){
 }))
 
 ach.test.rem <- prism.achilles.rm[,ach.pos]
-breast.ach.test <- ach.test.rem[rownames(prism.achilles.rm) %in% prism.cl[breast.cl, 1],]
+breast.ach <- ach.test.rem[rownames(prism.achilles.rm) %in% prism.cl[breast.cl, 1],]
+other.ach <-ach.test.rem[-which(rownames(prism.achilles.rm) %in% prism.cl[breast.cl, 1]), ]
 
-breast.achilles.mean <- apply(breast.ach.test, 2, mean)
-prism.achilles.other <-ach.test.rem[-which(rownames(prism.achilles.rm) %in% prism.cl[breast.cl, 1]), ]
-other.achilles.mean <- apply(prism.achilles.other, 2, mean)
 
-ach.low.pos <- which(breast_achilles_mean<other_achilles_mean)
+breast.achilles.mean <- apply(breast.ach, 2, mean)
+other.achilles.mean <- apply(other.ach, 2, mean)
 
-hist(other_achilles_mean)
 
-breast.ach.test <- breast.ach.test[,ach.low.pos]
-prism.achilles.other <- prism.achilles.other[,ach.low.pos]
+ach.low.pos <- which(breast.achilles.mean<other.achilles.mean&breast.achilles.mean<0)
+
+
+
+breast.ach.test <- breast.ach[,ach.low.pos]
+other.ach.test <- other.ach[,ach.low.pos]
 
 
 breast_achilles_mean <- breast.achilles.mean[ach.low.pos]
-
-
-
 other_achilles_mean <- other.achilles.mean[ach.low.pos]
 
 
@@ -445,20 +442,12 @@ other_achilles_mean <- other.achilles.mean[ach.low.pos]
 
 achilles.genes <- c() 
 for(x in 1:length(ach.low.pos))  {
-  result <- wilcox.test(breast.ach.test[, x], prism.achilles.other[, x], alternative = "less")
+  result <- wilcox.test(breast.ach.test[, x], other.ach.test[, x], alternative = "less")
   achilles.genes <- rbind(achilles.genes, result$p.value)
   
 }
 rownames(achilles.genes) <- colnames(breast.ach.test)
-achilles.test.genes <- which(achilles.genes<0.05)
 
-#print(achilles.genes[19,3])
-
-breast_achilles_relmeans <- apply(prism.achilles.breast[,achilles.test.genes], 2, mean)
-
-achilles.low.score <- which(breast_achilles_relmeans < other_achilles_mean[achilles.test.genes])
-
-achilles.rel.genes <- which(breast_achilles_relmeans[achilles.low.score] < 0)
 
 
 
@@ -495,11 +484,16 @@ min(achilles.genes.adj)
 
 which(achilles.genes.adj<0.05)
 
-rownames(achilles.genes)[c(311, 386)]
+rownames(achilles.genes)[c( 206, 254)]
 
 ```
+
+
 ```{r}
-rownames(which(breast.achilles.mean<(-1)))
+w.genes.cancer <- names(breast.achilles.mean)[which(breast.achilles.mean<(-1))]%in%hist.targets$genes
+
+breast_exp_mean <- apply(breast_prism.exp, 2, mean)
+
 ```
 
 
@@ -516,7 +510,6 @@ ggplot(mean.achilles.dif)+
 
 ```{r}
 
-w.genes.cancer <- achilles.rel.genes[which(names(achilles.rel.genes)%in%hist.targets$genes)]
 
 breast_exp_mean <- apply(breast_prism.exp, 2, mean)
 
