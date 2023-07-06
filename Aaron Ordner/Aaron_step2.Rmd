@@ -478,7 +478,9 @@ ggplot(achilles.boxplot)+
 ```{r}
 min(as.data.frame(achilles.genes))
 
-achilles.genes.adj <- p.adjust(unlist(achilles.genes), method = "fdr")
+achilles.genes.adj <- as.data.frame(p.adjust(unlist(achilles.genes), method = "fdr"))
+
+rownames(achilles.genes.adj) <- rownames(achilles.genes)
 
 min(achilles.genes.adj)
 
@@ -490,9 +492,51 @@ rownames(achilles.genes)[c( 206, 254)]
 
 
 ```{r}
-w.genes.cancer <- names(breast.achilles.mean)[which(breast.achilles.mean<(-1))]%in%hist.targets$genes
+w.genes.cancer <- names(breast.achilles.mean)[which(breast.achilles.mean<(-1))]
 
 breast_exp_mean <- apply(breast_prism.exp, 2, mean)
+
+
+targets.treat <- prism.treat_subset[which(prism.treat_subset$`rownames(prism.treat)`%in%colnames(breast_prism_lowest)),]
+
+names.target <- as.vector(targets.treat$name)
+
+#targets.treat$name[which(targets.treat$target==gene.name)]
+```
+
+
+```{r}
+Wgene.krebs <- data.frame()
+
+for (gene_name in w.genes.cancer) {
+    frequency_value <- hist.targets[hist.targets$genes == gene_name, "Freq"]
+    achilles_value <- breast_achilles_mean[gene_name]
+    exp_value <- breast_exp_mean[gene_name]
+    p_value <- achilles.genes.adj[gene_name,]
+    if (gene_name%in%targets.treat$target){
+      names <- paste(names.target[which(targets.treat$target==gene_name)], collapse = ", ")
+      treatments <- trimws(names, whitespace = "right")
+    }
+      else {
+        treatments <- c("none")
+      }
+      
+    new_row <- c(frequency_value, achilles_value, exp_value, p_value, treatments)
+  if (gene_name == w.genes.cancer[1]) {
+    Wgene.krebs <- new_row
+  } 
+    else {
+    Wgene.krebs <- rbind(Wgene.krebs, new_row)
+  }
+}
+
+rownames(Wgene.krebs) <- w.genes.cancer
+
+colnames(Wgene.krebs) <- c("Frequency in list.targets", "mean prism.achilles", "mean prism.exp", "p-value from achilles.genes.adj", "treatments")
+
+
+
+
 
 ```
 
@@ -508,12 +552,7 @@ ggplot(mean.achilles.dif)+
        y = "count log10-transformed")
 ```
 
-```{r}
 
-
-breast_exp_mean <- apply(breast_prism.exp, 2, mean)
-
-```
 
 
 
@@ -521,7 +560,15 @@ breast_exp_mean <- apply(breast_prism.exp, 2, mean)
 
 ```{r}
 #junkyard
+names.target[which(targets.treat$target==w.genes.cancer[2])]
 
+paste(c("hallo", "wie", "gehts"), sep = ", ")
+
+treatmentsrownames(Wgene.krebs) <- w.genes.cancer
+
+names.target <- as.vector(targets.treat$name)
+
+levels(targets.treat$name[1])
 
 ```
 
