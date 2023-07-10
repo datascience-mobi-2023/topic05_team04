@@ -15,7 +15,15 @@ w.genes.cancer <- names(breast.achilles.mean)[which(breast.achilles.mean<(-1))]
 
 names.target <- as.vector(targets.treat$name)
 
+targets.treat <- prism.treat_subset[which(prism.treat_subset$`rownames(prism.treat)`%in%colnames(breast_prism_lowest)),]
 
+which("ACLY" %in% hallmarks.geneSym)
+
+class(hallmarks.geneSym)
+
+hallmarks.data <- as.data.frame(hallmarks.geneSym)
+
+View(targets.treat)
 ```
 
 
@@ -28,7 +36,8 @@ for (gene_name in w.genes.cancer) {
     achilles_value <- breast_achilles_mean[gene_name]
     exp_value <- breast_exp_mean[gene_name]
     p_value <- achilles.genes.adj[gene_name,]
-    variant_class <- prism.snv[prism.snv$Hugo_Symbol == gene_name, "Variant_Classification"]
+    #variant_class <- prism.snv[prism.snv$Hugo_Symbol == gene_name, "Variant_Classification"]
+    #hallmarks_class <- rownames(hallmarks.data$hallmarks.geneSym == gene_name)
     if (gene_name%in%targets.treat$target){
       names <- paste(names.target[which(targets.treat$target==gene_name)], collapse = ", ")
       treatments <- trimws(names, whitespace = "right")
@@ -37,7 +46,7 @@ for (gene_name in w.genes.cancer) {
         treatments <- c("none")
       }
       
-    new_row <- c(frequency_value, achilles_value, exp_value, p_value, variant_class, treatments)
+    new_row <- c(frequency_value, achilles_value, exp_value, p_value, treatments)
   if (gene_name == w.genes.cancer[1]) {
     Wgene.krebs <- new_row
   } 
@@ -48,7 +57,7 @@ for (gene_name in w.genes.cancer) {
 
 rownames(Wgene.krebs) <- w.genes.cancer
 
-colnames(Wgene.krebs) <- c("Frequency in list.targets", "mean prism.achilles", "mean prism.exp", "p-value from achilles.genes.adj","Mutation type","treatments")
+colnames(Wgene.krebs) <- c("Frequency in list.targets", "mean prism.achilles", "mean prism.exp", "p-value from achilles.genes.adj", "treatments")
 
-
+sum(prism.snv$Variant_Classification == "none")
 ```
