@@ -534,10 +534,6 @@ rownames(Wgene.krebs) <- w.genes.cancer
 
 colnames(Wgene.krebs) <- c("Frequency in list.targets", "mean prism.achilles", "mean prism.exp", "p-value from achilles.genes.adj", "treatments")
 
-
-
-
-
 ```
 
 
