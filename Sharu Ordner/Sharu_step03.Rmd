@@ -85,7 +85,9 @@ library(jsonlite)
 
 hallmarks <- fromJSON("~/Downloads/h.all.v2023.1.Hs.json.txt")
 
-#View(hallmarks)
+#ViewView(hallmarks)
+
+hallmarks.geneSym <- unlist(lapply(hallmarks, function(x) x$geneSymbols))
 
 class(hallmarks)
 
