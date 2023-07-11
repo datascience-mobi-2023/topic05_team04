@@ -7,47 +7,6 @@ date: "01.Juni 2023"
 # 1. threshold for gene importance
 
 ```{r}
-##junk
-##trying to integrate achilles data info with .exp (until 4, but from where?)
-
-#View(prism.achilles.rm)
-
-min(prism.achilles.rm) #-4,495
-
-max(prism.achilles.rm) #4,874
-
-#View(prism.achilles.rm)
-
-important_genes <- rownames(prism.achilles.breast[,which(prism.achilles. <= 0)]) # does not work
-
-prism.achilles_mean <- apply(prism.achilles.breast, 2, mean)
-
-important_genes <- colnames(prism.achilles.breast[,which(prism.achilles_mean >= 2)])
-
-#View(prism.achilles_mean)
-
-#View(important_genes)
-
-important_gene_exp <- prism.exp[, colnames(prism.exp) %in% important_genes]
-
-#dim(important_gene_exp)
-
-#View(important_gene_exp)
-
-important_gene_list <- colnames(important_gene_exp)
-
-#View(important_gene_list)
-
-#print(important_gene_list)
-
-sum(which(prism.achilles_mean < -1))
-
-sum(important_genes %in% colnames(prism.exp))
-
-
-```
-
-```{r}
 min(prism.achilles.breast) #-2.749
 
 max(prism.achilles.breast) #2.649
@@ -85,7 +44,7 @@ library(jsonlite)
 
 hallmarks <- fromJSON("~/Downloads/h.all.v2023.1.Hs.json.txt")
 
-#ViewView(hallmarks)
+#View(hallmarks)
 
 hallmarks.geneSym <- unlist(lapply(hallmarks, function(x) x$geneSymbols))
 
@@ -141,7 +100,7 @@ sum(important_gene_list %in% C6.geneSym) #3843
 
 breast_gene <- intersect(C6.geneSym, important_gene_list)
 
-print(breast_gene)
+#print(breast_gene)
 
 
 ```
@@ -284,6 +243,7 @@ for (gene_name in prism.snv.breast_damage$Hugo_Symbol) {
 
 ```
 
+**same code, but looks for the gene out of our own relevant genes list instead of prism.snv.**
 ```{r}
   
 for (gene_name in list.targets$`unlist(all.rel.genes)`) {
@@ -387,7 +347,7 @@ sum(is.na(prism.treat$target))
 
 breast_carcinoma <- c(breast_prism_cl[which(breast_prism_cl$lineage_subtype == "breast_carcinoma"),])$DepMap_ID
 
-print(breast_carcinoma)
+#print(breast_carcinoma)
 
 breast_ductal_carcinoma <- c(breast_prism_cl[which(breast_prism_cl$lineage_subtype == "breast_ductal_carcinoma"),])$DepMap_ID
 
@@ -401,7 +361,7 @@ prism.achilles.breast_carcinoma <- prism.achilles.breast[which(rownames(prism.ac
 
 prism.achilles.breast_ductal_carcinoma <- prism.achilles.breast[which(rownames(prism.achilles.breast)%in%breast_ductal_carcinoma),]
 
-View(prism.achilles.breast_carcinoma)
+#View(prism.achilles.breast_carcinoma)
 ```
 
 **threshold for breast carcinoma subtype**
@@ -412,9 +372,9 @@ imp.carcinoma <- apply(prism.achilles.breast_carcinoma, 2, mean)
 
 #View(imp.carcinoma)
 
-max(imp.carcinoma)
+max(imp.carcinoma) #0.734
 
-min(imp.carcinoma)
+min(imp.carcinoma) #-2.419
 
 ```
 
@@ -426,9 +386,9 @@ imp.ductal_carcinoma <- apply(prism.achilles.breast_ductal_carcinoma, 2, mean)
 
 #View(imp.ductal_carcinoma)
 
-max(imp.ductal_carcinoma)
+max(imp.ductal_carcinoma) #0.772
 
-min(imp.ductal_carcinoma)
+min(imp.ductal_carcinoma) #-2.332
 
 ```
 
@@ -539,7 +499,7 @@ hist(damage.achilles_mean)
 
 important_gene_exp <- prism.exp[, colnames(prism.exp) %in% important_genes]
 
-dim(important_gene_exp)
+#dim(important_gene_exp)
 
 important_gene_list <- colnames(important_gene_exp)
 
@@ -547,6 +507,7 @@ important_gene_list <- colnames(important_gene_exp)
 
 
 ```
+
 ```{r}
 carcinoma_damage.achilles <- as.data.frame(breast_prism.achilles[rownames(prism.achilles.breast_carcinoma),colnames(breast_prism.achilles) %in% prism.snv.breast_damage$Hugo_Symbol])
 
@@ -564,7 +525,7 @@ important_carcinoma.genes <- colnames(carcinoma_damage.achilles[,which(carcinoma
 
 important_carcinoma.gene_exp <- prism.exp[, colnames(prism.exp) %in% important_carcinoma.genes]
 
-dim(important_carcinoma.gene_exp)
+#dim(important_carcinoma.gene_exp)
 
 important_carcinoma.gene_list <- colnames(important_carcinoma.gene_exp)
 
@@ -595,7 +556,7 @@ important_ductal.gene_list <- colnames(important_ductal.gene_exp)
 #print(important_carcinoma.gene_list)
 ```
 
-
+**this loop was the start to create our own data frame with relevant information**
 ```{r}
 achilles.cnv.exp_breast <- data.frame(row.names = rownames(breast_prism.exp), stringsAsFactors = FALSE)
 
@@ -637,9 +598,9 @@ colnames(achilles.cnv.exp_breast) <- c("Gene_Name", paste0("Achilles_", colnames
 #View(achilles.cnv.exp_breast)
 
 
-View(prism.treat)
+#View(prism.treat)
 
-intersect(colnames(prism.exp), prism.treat$target)
+#intersect(colnames(prism.exp), prism.treat$target)
 
 
 ```
