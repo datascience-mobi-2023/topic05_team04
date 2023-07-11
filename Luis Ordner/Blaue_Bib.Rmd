@@ -221,9 +221,10 @@ for(i in 1:length(duplicate_drugs_b)) {
     act_rows_b <- which(df_nam_con_mean_b$drugnames_b == duplicate_drugs_b[i])
     act_df_b <- df_nam_con_mean_b[act_rows_b,]
     if (length(act_rows_b) > 3) {
-        act_reg_b <- lm(act_df_b$concentration_b ~ act_df_b$colMeans_breast, data = act_df_b)
-        act_residuals_b <- residuals(act_reg_b)
-        regression_list_b[[i]] <- list(summary(act_reg_b), act_residuals_b, summary(act_reg_b)$r.squared)
+        act_reg_b <- lm(act_df_b$colMeans_breast ~ act_df_b$concentration_b, data = act_df_b)
+        act_residuals_b <- act_reg_b$residuals
+        act_plot_b <- data.frame(x = act_df_b$concentration_b, y = act_df_b$colMeans_breast)
+        regression_list_b[[i]] <- list(summary(act_reg_b), act_reg_b, act_residuals_b, summary(act_reg_b)$r.squared, act_plot_b)
         names(regression_list_b)[i] <- duplicate_drugs_b[i]
         r_squared_b <- c(r_squared_b, summary(act_reg_b)$r.squared)
     }
@@ -429,9 +430,13 @@ for(i in 1:length(duplicate_drugs_b)) {
 }
 ####################################
 ####################################
-
-
-
+prediction_tool <- function(drugname, conc_values) {
+  postion <- which(drugname == names(regression_list_b))
+  act_model_b <- regression_list_b[[position]][[2]]
+  predictions <- predict(act_model_b, newdata = data.frame(conc_values))
+  plot <- plot(regression_list_b[[position]][[5]]$x, regression_list_b[[position]][[5]]$y, pch = 16, col = "black", xlab = "Concentration", ylab = "log2FC"); abline(regression_list_b[[position]][[2]], col = "red")
+  return(predictions, plot)
+}
 
 ####################################
 ####################################
