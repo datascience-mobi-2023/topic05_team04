@@ -127,6 +127,9 @@ non.onco.treat <- non.onco.treat[-which("oncology"==non.onco.treat$disease.area)
 dim(non.onco.treat)[1]/dim(prism.treat)[1]
 #The data frame "non.onco.treat" is now the same as prism.treat but without known oncological drugs
 
+disease.treat <- prism.treat %>% separate_rows(disease.area, sep = ",")
+sum(colnames(prism_lowest)%in%disease.treat$broad_id[which("oncology" == disease.treat$disease.area)&which(" oncology" == disease.treat$disease.area)])
+
 ```
 
 ```{r}
@@ -290,6 +293,10 @@ colnames(exp.treat.cor) <- colnames(breast_prism_lowest)
 rownames(exp.treat.cor) <- colnames(breast_PRISM.exp)
 ```
 
+```{r}
+mean.exp.treat.cor <- colMeans(exp.treat.cor)
+hist(exp.treat.cor)
+```
 
 
 Finding out which gene has a high absolute correlation with the treatment response.
@@ -328,9 +335,10 @@ Now we investigate which genes appear the most often in all.rel.genes
 
 ```{r}
 library(ggplot2)
-list.targets <- as.data.frame(unlist(all.rel.genes))
+
+list.targets <- as.data.frame(unlist(all.rel.genes)) 
 colnames(list.targets) <- "genes"
-hist.targets <- as.data.frame(table(list.targets))
+hist.targets <- as.data.frame(table(list.targets)) #important
 
 freq.targets <- as.data.frame(table(hist.targets$Freq))
 
@@ -539,9 +547,6 @@ extract_transform <- function(input_string) {
 }
 
 
-
-print(transformed_output)
-paste(transformed_output, collapse = ", ")
 ```
 
 

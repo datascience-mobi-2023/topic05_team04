@@ -25,81 +25,9 @@ non.onco.treat <- prism.treat[-which(drug.overlap>0),]
 non.onco.treat <- non.onco.treat[-which("oncology"==non.onco.treat$disease.area),]
 dim(non.onco.treat)[1]/dim(prism.treat)[1]
 #The data frame "non.onco.treat" is now the same as prism.treat but without known oncological drugs
-```
-
-```{r}
-onco.all.treat <- prism.treat[which(drug.overlap>0),]
-
-onco.treat <- prism.treat[which("oncology"==prism.treat$disease.area),]
-
-all_onco_prism <- prism_lowest[,colnames(prism_lowest)%in%rownames(onco.all.treat)]
-
-onco_prism <- prism_lowest[,colnames(prism_lowest)%in%rownames(onco.treat)]
-
-
-
-prism.treat.test <-cbind(prism.treat, rownames(prism.treat))
-breast.treat_subset <- prism.treat.test %>% separate_rows(indication, sep = ",")
-
-breast.onco.treat <-prism.treat[which("breast cancer"==breast.treat_subset$indication),]
-
-breast_onco_prism <-breast_prism_lowest[,colnames(prism_lowest)%in%rownames(breast.onco.treat)]
-
-breast.onco.mean <- as.data.frame(apply(breast_onco_prism, 2, mean))
-colnames(breast.onco.mean) <- c("mean")
-
-prism.mean <- apply(prism_lowest, 2, mean)
-
-
-sum("breast cancer"==breast.treat_subset$indication, na.rm = TRUE)
-
-
-ggplot(breast.onco.mean)+
-  geom_histogram(aes(x = mean))
-
-#Plotting the mean scores for oncological, definite oncological and non oncological drugs
-
-non.onco.mean <- as.data.frame(apply(non_onco_prism, 2, mean))
-colnames(non.onco.mean) <- c("mean")
-
-all.onco.mean <- as.data.frame(apply(all_onco_prism, 2, mean))
-colnames(all.onco.mean) <- c("mean")
-
-onco.mean <- as.data.frame(apply(onco_prism, 2, mean))
-colnames(onco.mean) <- c("mean")
-
-non.onco.mean$class <- "non-oncological"
-all.onco.mean$class <- "all oncological"
-onco.mean$class <- "oncological"
-
-
-oncology.mean <- rbind(non.onco.mean, onco.mean, all.onco.mean)
-
-shapiro.test(onco.mean)
-shapiro.test(all.onco.mean)
-shapiro.test(non.onco.mean)
-shapiro.test(prism.mean)
-#All of those variables are not normally distributed. This means we have to use a non-parametric test.
-
-
-ggplot(oncology.mean) + 
-  geom_histogram(aes(x = mean, fill = class), bins = 10)+
-  scale_fill_brewer(palette = 'Set2')+
-  facet_wrap(~class, scales ="free_y")
-```
-```{r}
-#alpha is equal to 5%
-wilcox.test(all.onco.mean, non.onco.mean) #p-value = 0.6546
-wilcox.test(onco.mean, non.onco.mean) #p-value = 0.3249 
-wilcox.test(onco.mean, prism.mean) #p-value = 0.322
-
-#This means that the means are not significantly different.
 
 ```
 
-
-##Correlation analysis
-#Correlation of treatment response and gene expression
 ```{r}
 exp.treat.cor <- data.frame()  
 
@@ -172,15 +100,163 @@ for (k in 1:length(rel.genes)){
 ```
 
 
+```{r}
+list.targets <- as.data.frame(unlist(all.rel.genes)) 
+colnames(list.targets) <- "genes"
+hist.targets <- as.data.frame(table(list.targets))
+```
+
+
+```{r}
+#Correlation between copy number and gene expression
+row.order <- c() 
+for (i in 1:nrow(breast_prism.cnv)){
+  row.order <- rbind(row.order, which(rownames(breast_prism.cnv)%in%rownames(breast_PRISM.exp)[i]))
+  }
+#order of rows in the two data frames are not the same
+exp.copy.cor <- data.frame()
+copy.names <- c()
+for (x in 1:ncol(breast_PRISM.exp)){
+  copy.gene <- which(colnames(breast_prism.cnv)%in%colnames(breast_PRISM.exp)[x])
+  if (length(copy.gene) > 0) {
+    copy.cor <- cor(breast_PRISM.exp[,x], breast_prism.cnv[row.order,copy.gene])
+    exp.copy.cor <- rbind(exp.copy.cor, copy.cor)
+    copy.names <- c(copy.names, colnames(breast_PRISM.exp)[x])
+  }
+}
+
+rownames(exp.copy.cor) <- as.vector(copy.names)
+colnames(exp.copy.cor) <- c("correlation")
+```
+
+
+```{r}
+#achilles mean tests
+
+
+ach.pos <- unlist(apply(hist.targets, 2, function(x){
+  which(colnames(prism.achilles)%in%x)
+}))
+
+ach.test.rem <- prism.achilles.rm[,ach.pos]
+breast.ach <- ach.test.rem[rownames(prism.achilles.rm) %in% prism.cl[breast.cl, 1],]
+other.ach <-ach.test.rem[-which(rownames(prism.achilles.rm) %in% prism.cl[breast.cl, 1]), ]
+
+
+breast.achilles.mean <- apply(breast.ach, 2, mean)
+other.achilles.mean <- apply(other.ach, 2, mean)
+
+
+ach.low.pos <- which(breast.achilles.mean<other.achilles.mean&breast.achilles.mean<0)
+
+
+
+breast.ach.test <- breast.ach[,ach.low.pos]
+other.ach.test <- other.ach[,ach.low.pos]
+
+
+breast_achilles_mean <- breast.achilles.mean[ach.low.pos]
+other_achilles_mean <- other.achilles.mean[ach.low.pos]
 
 
 
 
+```
 
 
+```{r}
+achilles.genes <- c() 
+for(x in 1:length(ach.low.pos))  {
+  result <- wilcox.test(breast.ach.test[, x], other.ach.test[, x], alternative = "less")
+  achilles.genes <- rbind(achilles.genes, result$p.value)
+  
+}
+rownames(achilles.genes) <- colnames(breast.ach.test)
 
+achilles.genes.adj <- as.data.frame(p.adjust(unlist(achilles.genes), method = "fdr"))
 
+rownames(achilles.genes.adj) <- rownames(achilles.genes)
 
+rownames(which(achilles.genes.adj<0.05))
+```
+
+```{r}
+breast_exp_mean <- apply(breast_prism.exp, 2, mean)
+
+w.genes.cancer <- names(breast.achilles.mean)[which(breast.achilles.mean<(-1))]
+
+targets.treat <- prism.treat_subset[which(prism.treat_subset$`rownames(prism.treat)`%in%colnames(breast_prism_lowest)),]
+
+names.target <- as.vector(targets.treat$name)
+
+breast_prism.snv <- prism.snv[which(prism.snv$DepMap_ID%in%breast_prism.cl$DepMap_ID),]
+
+#For me to make Sharus code work
+#hallmarks <- fromJSON("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/h.all.v2023.1.Hs.json.txt")
+hallmark.genes <- as.data.frame(hallmarks.geneSym)
+rownames(hallmark.genes)[which(hallmark.genes$hallmarks.geneSym%in%w.genes.cancer[1])]
+
+```
+
+```{r}
+input_string <- rownames(hallmark.genes)[which(hallmark.genes$hallmarks.geneSym%in%w.genes.cancer[1])]
+
+extract_transform <- function(input_string) {
+  modified_string <- gsub("^HALLMARK_", "", input_string)
+  split_string <- strsplit(modified_string, "_")[[1]]
+  capitalized_words <- sapply(split_string, function(word) {
+    paste0(toupper(substring(word, 1, 1)), substring(word, 2))
+  })
+  transformed_string <- paste(capitalized_words, collapse = " ")
+  
+  return(transformed_string)
+}
+```
+
+```{r}
+Wgene.krebs <- data.frame()
+
+for (gene_name in w.genes.cancer) {
+    frequency_value <- hist.targets[hist.targets$genes == gene_name, "Freq"]
+    achilles_value <- breast.achilles.mean[gene_name]
+    exp_value <- breast_exp_mean[gene_name]
+    p_value <- achilles.genes.adj[gene_name,]
+    if (gene_name%in%hallmark.genes$hallmarks.geneSym){
+      hall.output <- rownames(hallmark.genes)[which(hallmark.genes$hallmarks.geneSym%in%gene_name)]
+      hall.transform <- extract_transform(hall.output)
+      hallmark <- paste(hall.transform, collapse = ", ")
+    }
+      else {
+        hallmark <- c("none")
+      }
+    if (gene_name%in%breast_prism.snv$Hugo_Symbol){
+      mut.pos <- which(gene_name%in%breast_prism.snv$Hugo_Symbol)
+      mutation <- as.vector(breast_prism.snv$Variant_Classification[mut.pos])
+    }
+      else {
+        mutation <- c("none")
+      } 
+    if (gene_name%in%targets.treat$target){
+      names <- paste(names.target[which(targets.treat$target==gene_name)], collapse = ", ")
+      treatments <- trimws(names, whitespace = "right")
+    }
+      else {
+        treatments <- c("none")
+      }
+      
+    new_row <- c(frequency_value, achilles_value, exp_value, p_value, treatments, mutation, hallmark)
+  if (gene_name == w.genes.cancer[1]) {
+    Wgene.krebs <- new_row
+  } 
+    else {
+    Wgene.krebs <- rbind(Wgene.krebs, new_row)
+  }
+}
+
+rownames(Wgene.krebs) <- w.genes.cancer
+
+colnames(Wgene.krebs) <- c("Frequency in list.targets", "mean prism.achilles", "mean prism.exp", "p-value from achilles.genes.adj", "treatments", "mutation", "hallmark")
+```
 
 
 
