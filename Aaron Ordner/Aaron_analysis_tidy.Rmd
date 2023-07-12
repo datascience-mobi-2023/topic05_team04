@@ -1,0 +1,200 @@
+```{r}
+load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/prism_datasets.rda")
+load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/cellline_datasets.rda")
+library(readxl)
+library(tidyverse)
+library(ggplot2)
+```
+
+
+##Oncological drugs
+As not every drug has a specific disease area, we will try to eliminate the oncological drugs via their names.For this we will compare the drugs in prism.treat and in two cancer treatment list, cancer national institute (https://www.cancer.gov/about-cancer/treatment/drugs) and cancer research UK (https://www.cancerresearchuk.org/about-cancer/treatment/drugs)
+```{r}
+
+cancer.therapy <- read_excel("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/oncological_treatments.xlsx")
+cancer.therapy <- as.data.frame(cancer.therapy)
+treat.names <- as.data.frame(prism.treat$name)
+
+
+drug.overlap <- apply(treat.names, 1, function(x){
+  sum(cancer.therapy==x)
+})
+which(drug.overlap>0)
+
+non.onco.treat <- prism.treat[-which(drug.overlap>0),]
+non.onco.treat <- non.onco.treat[-which("oncology"==non.onco.treat$disease.area),]
+dim(non.onco.treat)[1]/dim(prism.treat)[1]
+#The data frame "non.onco.treat" is now the same as prism.treat but without known oncological drugs
+```
+
+```{r}
+onco.all.treat <- prism.treat[which(drug.overlap>0),]
+
+onco.treat <- prism.treat[which("oncology"==prism.treat$disease.area),]
+
+all_onco_prism <- prism_lowest[,colnames(prism_lowest)%in%rownames(onco.all.treat)]
+
+onco_prism <- prism_lowest[,colnames(prism_lowest)%in%rownames(onco.treat)]
+
+
+
+prism.treat.test <-cbind(prism.treat, rownames(prism.treat))
+breast.treat_subset <- prism.treat.test %>% separate_rows(indication, sep = ",")
+
+breast.onco.treat <-prism.treat[which("breast cancer"==breast.treat_subset$indication),]
+
+breast_onco_prism <-breast_prism_lowest[,colnames(prism_lowest)%in%rownames(breast.onco.treat)]
+
+breast.onco.mean <- as.data.frame(apply(breast_onco_prism, 2, mean))
+colnames(breast.onco.mean) <- c("mean")
+
+prism.mean <- apply(prism_lowest, 2, mean)
+
+
+sum("breast cancer"==breast.treat_subset$indication, na.rm = TRUE)
+
+
+ggplot(breast.onco.mean)+
+  geom_histogram(aes(x = mean))
+
+#Plotting the mean scores for oncological, definite oncological and non oncological drugs
+
+non.onco.mean <- as.data.frame(apply(non_onco_prism, 2, mean))
+colnames(non.onco.mean) <- c("mean")
+
+all.onco.mean <- as.data.frame(apply(all_onco_prism, 2, mean))
+colnames(all.onco.mean) <- c("mean")
+
+onco.mean <- as.data.frame(apply(onco_prism, 2, mean))
+colnames(onco.mean) <- c("mean")
+
+non.onco.mean$class <- "non-oncological"
+all.onco.mean$class <- "all oncological"
+onco.mean$class <- "oncological"
+
+
+oncology.mean <- rbind(non.onco.mean, onco.mean, all.onco.mean)
+
+shapiro.test(onco.mean)
+shapiro.test(all.onco.mean)
+shapiro.test(non.onco.mean)
+shapiro.test(prism.mean)
+#All of those variables are not normally distributed. This means we have to use a non-parametric test.
+
+
+ggplot(oncology.mean) + 
+  geom_histogram(aes(x = mean, fill = class), bins = 10)+
+  scale_fill_brewer(palette = 'Set2')+
+  facet_wrap(~class, scales ="free_y")
+```
+```{r}
+#alpha is equal to 5%
+wilcox.test(all.onco.mean, non.onco.mean) #p-value = 0.6546
+wilcox.test(onco.mean, non.onco.mean) #p-value = 0.3249 
+wilcox.test(onco.mean, prism.mean) #p-value = 0.322
+
+#This means that the means are not significantly different.
+
+```
+
+
+##Correlation analysis
+#Correlation of treatment response and gene expression
+```{r}
+exp.treat.cor <- data.frame()  
+
+for (y in 1:ncol(breast_prism_lowest)) {
+  correlation <- c()
+  
+  for (x in 1:ncol(breast_PRISM.exp)) {
+    gene.expression <- breast_PRISM.exp[, x]
+    correlation[x] <- cor(breast_prism_lowest[, y], gene.expression)
+  }
+  
+  
+  
+  if (y == 1) {
+    exp.treat.cor <- correlation  
+  } else {
+    exp.treat.cor <- cbind(exp.treat.cor, correlation)  
+  }
+}
+colnames(exp.treat.cor) <- colnames(breast_prism_lowest)
+rownames(exp.treat.cor) <- colnames(breast_PRISM.exp)
+
+abs.exp.treat.cor <- abs(exp.treat.cor)
+cor.test <- apply(abs.exp.treat.cor, 2, function(x){
+  sum(0.75<x)
+  
+})
+```
+
+
+#Correlation between gene expression and copy number
+```{r}
+#Correlation between copy number and gene expression
+row.order <- c() 
+for (i in 1:nrow(breast_prism.cnv)){
+  row.order <- rbind(row.order, which(rownames(breast_prism.cnv)%in%rownames(breast_PRISM.exp)[i]))
+  }
+#order of rows in the two data frames are not the same
+exp.copy.cor <- data.frame()
+copy.names <- c()
+for (x in 1:ncol(breast_PRISM.exp)){
+  copy.gene <- which(colnames(breast_prism.cnv)%in%colnames(breast_PRISM.exp)[x])
+  if (length(copy.gene) > 0) {
+    copy.cor <- cor(breast_PRISM.exp[,x], breast_prism.cnv[row.order,copy.gene])
+    exp.copy.cor <- rbind(exp.copy.cor, copy.cor)
+    copy.names <- c(copy.names, colnames(breast_PRISM.exp)[x])
+  }
+}
+
+rownames(exp.copy.cor) <- as.vector(copy.names)
+colnames(exp.copy.cor) <- c("correlation")
+```
+
+#treatments with high correlation to genes
+```{r}
+rel.genes <- list()
+
+for (i in 1:ncol(abs.exp.treat.cor)) {
+  cor.genes <- rownames(abs.exp.treat.cor)[which(abs.exp.treat.cor[, i] > 0.80)]
+  rel.genes[[i]] <- cor.genes
+  
+}
+names(rel.genes) <- colnames(abs.exp.treat.cor)
+all.rel.genes <- rel.genes
+for (k in 1:length(rel.genes)){
+  targets.position <- which(treat.gene_list$`rownames(prism.treat)`%in%names(rel.genes)[k])
+  targets <- treat.gene_list$target[targets.position]
+  all.rel.genes[[k]] <- append(all.rel.genes[[k]], targets)
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
