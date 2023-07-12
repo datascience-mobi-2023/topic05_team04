@@ -38,9 +38,6 @@ extract_transform <- function(input_string) {
 }
 
 
-
-print(transformed_output)
-paste(transformed_output, collapse = ", ")
 ```
 
 
@@ -70,7 +67,7 @@ for (gene_name in w.genes.cancer) {
       } 
     if (gene_name%in%breast_prism.snv$Hugo_Symbol){
       variant.anno <- which(gene_name%in%breast_prism.snv$Hugo_Symbol)
-      annotation.var <- as.vector(breast_prism.snv$Variant_Annotation[variant.anno])
+      annotation.var <- as.vector(breast_prism.snv$Variant_annotation[variant.anno])
     }
       else {
         annotation.var <- c("none")
@@ -95,4 +92,65 @@ for (gene_name in w.genes.cancer) {
 rownames(Wgene.krebs) <- w.genes.cancer
 
 colnames(Wgene.krebs) <- c("Frequency in list.targets", "mean prism.achilles", "mean prism.exp", "p-value from achilles.genes.adj", "treatments", "mutation", "hallmark", "Mutation consequence")
+```
+
+```{r}
+
+geneSearchEngine <- function(x) {
+  gene_name <- x
+  cat("Searching for:", gene_name, "\n")
+  
+  achilles_value <- breast.achilles.mean[gene_name]
+  exp_value <- breast_exp_mean[gene_name]
+  
+  if (gene_name %in% hist.targets$genes) {
+    frequency_value <- hist.targets[hist.targets$genes == gene_name, "Freq"]
+  } else {
+    frequency_value <- "none"
+  }
+ 
+  
+  if (gene_name %in% hallmark.genes$hallmarks.geneSym) {
+    hall.output <- rownames(hallmark.genes)[which(hallmark.genes$hallmarks.geneSym %in% gene_name)]
+    hall.transform <- extract_transform(hall.output)
+    hallmark <- paste(hall.transform, collapse = ", ")
+  } else {
+    hallmark <- "none"
+  }
+  
+  if (gene_name %in% breast_prism.snv$Hugo_Symbol) {
+    mut.pos <- which(gene_name %in% prism.snv$Hugo_Symbol)
+    mutation <- as.vector(prism.snv$Variant_Classification[mut.pos])
+  } else {
+    mutation <- "none"
+  }
+  
+  if (gene_name %in% breast_prism.snv$Hugo_Symbol) {
+    variant.anno <- which(gene_name %in% breast_prism.snv$Hugo_Symbol)
+    annotation.var <- as.vector(breast_prism.snv$Variant_annotation[variant.anno])
+  } else {
+    annotation.var <- "none"
+  }
+  
+  if (gene_name %in% prism.treat_subset$target) {
+    names <- which(gene_name %in% prism.treat_subset$target)
+    treatments <- as.vector(prism.treat_subset$name[names])
+  } else {
+    treatments <- "none"
+  }
+  
+  cat("Frequency Value:", frequency_value, "\n")
+  cat("Achilles Value:", achilles_value, "\n")
+  cat("Exp Value:", exp_value, "\n")
+  cat("Mutation:", mutation, "\n")
+  cat("Hallmark:", hallmark, "\n")
+  cat("Variant Annotation:", annotation.var, "\n")
+  cat("Treatments:", treatments, "\n")
+  cat("\n")
+}
+
+geneSearchEngine("LPL")
+
+
+
 ```

@@ -1,0 +1,155 @@
+---
+title: "  "
+author: " "
+date: " "
+geometry: "margin=2.3cm"
+linestretch: 1.15
+fontsize: 11pt
+output: 
+  pdf_document:
+    number_sections: true
+---
+
+```{=tex}
+\pagenumbering{gobble}
+\begin{titlepage}
+\centering
+	{\Large Ruprecht-Karls University of Heidelberg\\
+		Faculty of Engineering Sciences\\
+		BSc Molecular Biotechnology\\}
+
+	{\vspace{\stretch{3}}}
+
+
+		{\Huge Drug viability screens for oncological and non-oncological treatments for breast cancer}
+
+		
+
+	
+
+	\vspace{\stretch{3}}
+	{\Large Data Science Project Summer Semester 2023}
+	
+	\vspace{\stretch{0.25}}
+	
+	{\Large Topic 5 Team 4}
+
+	\vspace{\stretch{0.25}}
+	
+{\Large Submission date: 17.07.2023}
+
+	\vspace{\stretch{0.75}}
+
+	{\Large
+		Luis Herfurth, Aaron Eidenmüller, Sharujan Suthakaran, Simon Westermann  
+}
+
+	\vspace{\stretch{1}}
+
+\end{titlepage}
+
+\newpage
+\section*{Abstract}
+Hier muss das Abstract eingefügt werden
+
+
+\newpage
+\tableofcontents
+
+\newpage
+\section*{Abbreviations}
+
+
+
+
+
+\newpage
+\pagenumbering{arabic}
+```
+# Introduction
+
+# Materials and Methods
+
+## Data 
+
+### Prism Datasets  
+
+**Prism:** effect of the treatment (columns) on cell growth of the cell lines (rows); includes drug, dosage and assay used
+
+**Prism.treat:** for each treatment (rows) further information on the treatment and drug
+
+**Prism.cl:** contains information about the different celllines    
+*if we search after "breast" in the column lineage we get our 22 celllines*
+
+### Cellline Datasets  
+
+**Prism.exp:** contains levels of gene expression. Celllines (rows) and genes (columns)
+
+**Prism.cnv:** contains copy number levels of genes. Normal is CN = 2. Gene names (rows) and celllines (columns)
+
+**Prism.snv:** marks mutation in the different celllines als functional or nonfunctional to the cancer.
+
+**Prism.achilles:** has information on how important a gene is for cell survival. Was generated using knockdown celllines. Gene names (rows) and celllines (colums)
+   
+
+## Data clean up/Filtering
+Show distributions after cleanup
+Abbildung für prism vorher nachher. Für andere maybe im Clean up
+
+## imension reduction  
+UMAP -> PCA wird rausgelassen; Plot den Luis gemacht hat. Ist nicht geclustert, aber man kann erkennen, dass die MOA sich in den gleichen areas aufhalten
+
+## Clustering
+kmeans -> Simon hat welche gemacht, aber die sehen kacke aus => Anna fragen
+
+## Statistical test
+Wilcoxson test
+0.05 alpha
+p adjust needed wegen sehr viele berechnungen und hoher fdr deswegen
+Shapiro Wilk
+
+## Lineare Regression
+Prediction tool
+
+# Results
+First include positiv results; if space is left include negativ results: UMAP, K means clustering, promoting drugs
+describe goal, describe process, describe outcome
+
+## Gene search engine
+Goal: Arbeitsvereinfachung; Outcome: Overview over data
+Für Präsentation als Visualisierungstool pitchen
+Maybe Website
+
+## List of inhibitory drugs
+Results von Data clean up und filtering.
+Goal: List of Inhibitory Drugs; Outcome: List of Inhibitory Drugs
+Bilder vergleich liste vergleich ohne threshold und mit threshold
+Maybe oncological drugs rein screenen
+
+## Gene analysis
+
+### Correlation analysis
+treatment response / gene expression; 
+Goal: finding relevant genes; Outcome: giant data frame -> used for further work
+
+copy number / gene expression
+Goal: looking if hypothesis correct; Outcome: Histogram of correlations
+
+### Dataframe for targets involving genes
+mean of data frames. Threshold for what genes are relevant. Used indings from correlation tests
+Goal: finding interesting genes; Outcome: Data frame with many genes -> 48 genes data set with filtering after gene knockout score
+
+### Statistical testing of important genes
+Test wich of the found genes are for breast cancer of interest
+Goal: find out which one are negativ, which ones are lower than other lineages; Outcome: 2 genes
+
+## Linear regression
+Perform drug by drug to avoid weird plot; For every drug one linear regression, R² Value and with those showing, that many of them are very good. Prediction model for concentration and drug name. Plot um das gnaze zu veranschaulichen;
+Goal: Regression/Prediction model; Outcome: Regression/Prediction model
+
+# Discussion
+Search for papers mentioning certain genes found in the targets of the inhibitory drugs or 
+
+# References
+
+# Appendix
