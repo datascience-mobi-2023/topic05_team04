@@ -276,4 +276,30 @@ plot(breast_cancer_umap$layout[,1], breast_cancer_umap$layout[,2],
      main='Clustering of drugs')#; abline(h = 0, col = 'orange'); abline(v = 0, col = 'orange')
 ```
 
+```{r}
+cancer_umap <- umap(t(prism_lowest), n_neighbors = 7, min_dist = 0.5, n_epochs = 200, n_components = 2) 
+umap_layout_prism <- as.data.frame(cancer_umap$layout)
+
+umap_layout_prism$levels <- meta_eff_treat$levels
+
+
+library(cluster)
+silhouette_score <- function(k){
+  km <- kmeans(umap_layout_prism, centers = k)
+  s <- silhouette(km$cluster, dist(umap_layout_prism))
+  mean(s[, 3])
+}
+k <- 2:20
+avg_s <- sapply(k, silhouette_score)
+#best cluster size through silhouette method -> size 3 works best
+plot(k, type = 'b', avg_s,xlim = c(2,20), ylim = c(0.34,0.59), xlab='Number of clusters', ylab='Average Silhouette Scores'); abline(h = max(avg_s), col = 'red')
+
+##trying 20 centers for clustering to cluster 
+cancer_km <- kmeans(umap_layout_prism, centers = 20)
+cancercol <- rainbow(20)[cancer_km$cluster]
+plot(umap_layout_prism[,1], umap_layout_prism[,2], 
+     col= cancercol, pch=19,
+     xlab='V1',ylab='V2',
+     main='Clustering of drugs')
+```
 
