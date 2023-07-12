@@ -1,0 +1,346 @@
+# 1. Prism.exp cleaning
+
+```{r}
+####general info
+min(prism.exp, na.rm = T) # 0
+max(prism.exp, na.rm = T) # 17.25397
+
+###cleaning NAs
+sum(is.na(prism.exp)) #non or NA=0, no expression
+
+### checking for zeros instead of NA
+sum(which(prism.exp == 0)) #8,2244 x 10^12 zeros = not detected
+
+deviation <- apply(prism.exp, 2, function(x) sum(x == 0)/length(x))
+
+mean(apply(prism.exp, 2, function(x) sum(x == 0)/length(x))) #0.1531 => 15,3 % of each column is zero
+
+zeros.exp<- mean(apply(prism.exp, 2, function(x) sum(x == 0)/length(x)))
+
+deviation.exp <- deviation - zeros.exp
+
+hist(deviation.exp, breaks = 20)
+
+colzero.exp <- apply(prism.exp, 2, function(x) all(x == 0))
+
+which(colzero.exp) # 6 Genes not expressed in any cell
+
+#--> delete these columns? Yes, for correlation analysis
+
+PRISM.exp <- prism.exp[, !colzero.exp]
+
+############################################################################################################
+
+###breast cancer <> gene expression
+
+lineage.breast <- prism.cl[which(prism.cl$lineage == "breast"),]
+
+breast_prism.exp <- prism.exp[which(rownames(prism.exp) %in% lineage.breast$DepMap_ID),]
+
+##pheatmap(breast_prism.exp, show_rownames = F, show_colnames = F) # many Genes not detected (middle)
+
+sum(which(breast_prism.exp == 0))
+
+mean(apply(breast_prism.exp, 2, function(x) sum(x == 0)/length(x))) #0.1549 => 15,5 % of each column is zero
+
+breastzero.col <- apply(breast_prism.exp, 2, function(x) all(x == 0))
+
+sum(breastzero.col) # 449 Genes are not expressed in breast cancer cells
+
+#--> delete these columns?
+
+breast_PRISM.exp <- breast_prism.exp[, !breastzero.col] #Yes, for correlation analysis
+
+```
+
+# 2. contribution to step 03
+
+```{r}
+
+min(prism.achilles.breast) #-2.749
+
+max(prism.achilles.breast) #2.649
+
+min(prism.achilles_mean) #-2.37806
+
+max(prism.achilles_mean) #0.751765
+
+```
+
+**2. Biomarker gene sets**
+
+<https://www.gsea-msigdb.org/gsea/msigdb>
+
+**Hallmark gene sets (H): These gene sets represent well-defined biological states or processes that are coherently expressed. They can provide insights into common pathways and functions associated with breast cancer.**
+
+Downloaded the gene sets as a JSON Bundle
+
+```{r}
+
+library(jsonlite)
+
+hallmarks <- fromJSON("~/Downloads/h.all.v2023.1.Hs.json.txt") # must be changed
+
+#View(hallmarks)
+
+hallmarks.geneSym <- unlist(lapply(hallmarks, function(x) x$geneSymbols))
+
+class(hallmarks)
+
+```
+
+**subsets of datasets**
+
+```{r}
+#FOR AARON
+
+
+#install.packages("tidyverse")
+
+library(tidyverse)
+prism.treat.test <-cbind(prism.treat, rownames(prism.treat))
+prism.treat_subset <- prism.treat.test %>% separate_rows(target, sep = ",") 
+  
+#print(prism.treat_subset)
+
+#View(prism.treat_subset)
+
+treat.gene_list <- prism.treat_subset[, c(7, 12)]
+
+#View(treat.gene_list)
+
+#dim(treat.gene_list)
+```
+
+#2.1 basic gene Search Engines
+
+```{r}
+
+
+
+geneSearchEngine <- function(y) {
+  matchingRows <- which(prism.treat_subset$target == y)
+  if (length(matchingRows) == 0) {
+    cat("No matching treatment found.\n")
+  } else {
+    cat("Matching treatment(s):\n")
+    for (row in matchingRows) {
+      rowName <- row.names(prism.treat)[row]
+      rowValue <- as.character(prism.treat$name[row])
+      cat("Row Name:", rowName, "\tTreatment:", rowValue, "\n")
+      if (rowName %in% rownames(breast_damage.achilles)) {
+        achilles_value <- breast_damage.achilles[rowName, ]
+        cat("Achilles Value:", achilles_value, "\n")
+      } else {
+        cat("Achilles Value: Not available\n")
+      }
+      
+      if (rowName %in% rownames(breast_damage.exp)) {
+        exp_value <- breast_damage.exp[rowName, ]
+        cat("Exp Value:", exp_value, "\n")
+      } else {
+        cat("Exp Value: Not available\n")
+      }
+      
+      if (rowName %in% rownames(breast_damage.cnv)) {
+        cnv_value <- breast_damage.cnv[rowName, ]
+        cat("Cnv Value:", cnv_value, "\n")
+      } else {
+        cat("Cnv Value: Not available\n")
+      }
+    }
+  }
+}
+
+geneSearchEngine("MCL1")
+
+#intersect(colnames(breast_damage.achilles), colnames(breast_damage.cnv))
+```
+
+***This function undergoes printing out values of .exp/.achilles and.cnv of damaging genes. Additionally, it prints possible treatments, if the gene is a target in prism.treat.***
+
+```{r}
+for (gene_name in prism.snv.breast_damage$Hugo_Symbol) {
+   
+    matchingRows <- which(prism.treat_subset$target == gene_name)
+    if (length(matchingRows) == 0) {
+      cat("No matching treatment found for Gene:", gene_name, "\n")
+    } else {
+      cat("Matching treatment(s) for Gene:", gene_name, "\n")
+      for (row in matchingRows) {
+        rowName <- row.names(prism.treat)[row]
+        rowValue <- as.character(prism.treat$name[row])
+        cat("Row Name:", rowName, "\tTreatment:", rowValue, "\n")
+      }
+    }
+    
+    
+    if (gene_name %in% colnames(breast_damage.exp) &&
+        gene_name %in% colnames(breast_damage.achilles) &&
+        gene_name %in% colnames(breast_damage.cnv)) {
+      
+      
+      exp_value <- breast_damage.exp[rownames(breast_damage.exp), gene_name]
+      cat("Expression Level:", exp_value, "\n")
+      
+      
+      achilles_value <- breast_damage.achilles[rownames(breast_damage.achilles), gene_name]
+      cat("Achilles Value:", achilles_value, "\n")
+      
+    
+      cnv_value <- breast_damage.cnv[rownames(breast_damage.cnv), gene_name]
+      cat("Copy Number:", cnv_value, "\n")
+      
+      cat("\n")
+    } else {
+      cat("Gene:", gene_name, "is not present in all datasets.\n\n")
+      
+    if (gene_name %in% colnames(breast_damage.exp)) {
+      exp_value <- breast_damage.exp[, gene_name]
+      cat("Expression Level (breast_damage.exp):\n")
+      for (i in 1:length(rownames(breast_damage.exp))) {
+      cat(rownames(breast_damage.exp)[i], ":", exp_value[i], "\n")
+}
+    }
+    
+    if (gene_name %in% colnames(breast_damage.achilles)) {
+      achilles_value <- breast_damage.achilles[, gene_name]
+      cat("Achilles Value (breast_damage.achilles):\n")
+      for (j in 1:length(rownames(breast_damage.achilles))) {
+      cat(rownames(breast_damage.achilles)[j], ":", achilles_value[j], "\n")
+}
+    }
+    
+    if (gene_name %in% colnames(breast_damage.cnv)) {
+      cnv_value <- breast_damage.cnv[, gene_name]
+      cat("Copy Number (breast_damage.cnv):\n")
+      for (z in 1:length(rownames(breast_damage.cnv))) {
+      cat(rownames(breast_damage.cnv)[z], ":", cnv_value[z], "\n")
+}
+    }
+    
+    cat("\n")
+  }
+}
+
+```
+
+***Search engine for treatments, based on given information in prism.treat, needs further improvement***
+
+```{r}
+
+treatmentSearchEngine <- function(z) {
+  matchingRows <- which(prism.treat$name == z)
+  if (length(matchingRows) == 0) {
+    cat("No matching target found.\n")
+  } else {
+    cat("Matching target(s):\n")
+    for (row in matchingRows) {
+      rowName <- row.names(prism.treat)[row]
+      rowValue <- as.character(prism.treat$target[row])
+      cat("Row Name:", rowName, "\tTarget:", rowValue, "\n")
+    }
+  }
+}
+
+
+treatmentSearchEngine("noretynodrel")
+
+sum(is.na(prism.treat$target))
+
+```
+# 2.3 damaging variants
+
+***integrate prism.snv for easier gene/cell line filter***
+
+```{r}
+
+PRISM.snv.breast <- prism.snv[which(as.character(prism.snv$DepMap_ID) %in% breast_prism_cl$DepMap_ID),]
+
+#View(PRISM.snv.breast)
+
+prism.snv.breast <- PRISM.snv.breast[PRISM.snv.breast$Variant_Classification != "Silent",]
+
+#View(prism.snv.breast)
+```
+
+*focus on damaging variants*
+
+```{r}
+
+prism.snv.breast_damage <- prism.snv.breast[prism.snv.breast$Variant_annotation == "damaging",]
+
+#View(prism.snv.breast_damage)
+
+##for breast carcinoma
+
+prism.snv.breast_carcinoma <- prism.snv.breast_damage[prism.snv.breast_damage$DepMap_ID %in% breast_carcinoma,]
+
+##for breast ductal carcinoma
+
+prism.snv.breast_ductal_carcinoma <- prism.snv.breast_damage[prism.snv.breast_damage$DepMap_ID %in% breast_ductal_carcinoma,]
+
+```
+
+# 2.3 final Search engine(relevant info for every gene)
+
+```{r}
+
+geneSearchEngine <- function(x) {
+  gene_name <- x
+  cat("Searching for:", gene_name, "\n")
+  
+  achilles_value <- breast.achilles.mean[gene_name]
+  exp_value <- breast_exp_mean[gene_name]
+  
+  if (gene_name %in% hist.targets$genes) {
+    frequency_value <- hist.targets[hist.targets$genes == gene_name, "Freq"]
+  } else {
+    frequency_value <- "none"
+  }
+ 
+  
+  if (gene_name %in% hallmark.genes$hallmarks.geneSym) {
+    hall.output <- rownames(hallmark.genes)[which(hallmark.genes$hallmarks.geneSym %in% gene_name)]
+    hall.transform <- extract_transform(hall.output)
+    hallmark <- paste(hall.transform, collapse = ", ")
+  } else {
+    hallmark <- "none"
+  }
+  
+  if (gene_name %in% breast_prism.snv$Hugo_Symbol) {
+    mut.pos <- which(gene_name %in% prism.snv$Hugo_Symbol)
+    mutation <- as.vector(prism.snv$Variant_Classification[mut.pos])
+  } else {
+    mutation <- "none"
+  }
+  
+  if (gene_name %in% breast_prism.snv$Hugo_Symbol) {
+    variant.anno <- which(gene_name %in% breast_prism.snv$Hugo_Symbol)
+    annotation.var <- as.vector(breast_prism.snv$Variant_annotation[variant.anno])
+  } else {
+    annotation.var <- "none"
+  }
+  
+  if (gene_name %in% prism.treat_subset$target) {
+    names <- which(gene_name %in% prism.treat_subset$target)
+    treatments <- as.vector(prism.treat_subset$name[names])
+  } else {
+    treatments <- "none"
+  }
+  
+  cat("Frequency Value:", frequency_value, "\n")
+  cat("Achilles Value:", achilles_value, "\n")
+  cat("Exp Value:", exp_value, "\n")
+  cat("Mutation:", mutation, "\n")
+  cat("Hallmark:", hallmark, "\n")
+  cat("Variant Annotation:", annotation.var, "\n")
+  cat("Treatments:", treatments, "\n")
+  cat("\n")
+}
+
+geneSearchEngine("LPL")
+
+
+
+```

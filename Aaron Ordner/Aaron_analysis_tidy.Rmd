@@ -6,6 +6,20 @@ library(tidyverse)
 library(ggplot2)
 ```
 
+## .achilles cleaning
+
+```{r}
+missingrows.achilles <- matrix(0, nrow = 5, ncol = ncol(prism.achilles.breast))
+
+colnames(missingrows.achilles) <- colnames(prism.achilles.breast)
+
+rownames(missingrows.achilles) <- setdiff(rownames(breast_prism.exp), rownames(prism.achilles.breast))[1:5]
+
+breast_prism.achilles <- rbind(prism.achilles.breast, missingrows.achilles)
+
+#Sharu: hab hier die Dimension von breast.achilles ausgeglichen, hatte weniger Zelllinien als die anderen
+```
+
 
 ##Oncological drugs
 As not every drug has a specific disease area, we will try to eliminate the oncological drugs via their names.For this we will compare the drugs in prism.treat and in two cancer treatment list, cancer national institute (https://www.cancer.gov/about-cancer/treatment/drugs) and cancer research UK (https://www.cancerresearchuk.org/about-cancer/treatment/drugs)
@@ -214,6 +228,7 @@ extract_transform <- function(input_string) {
 ```
 
 ```{r}
+
 Wgene.krebs <- data.frame()
 
 for (gene_name in w.genes.cancer) {
@@ -236,6 +251,13 @@ for (gene_name in w.genes.cancer) {
       else {
         mutation <- c("none")
       } 
+    if (gene_name%in%breast_prism.snv$Hugo_Symbol){
+      variant.anno <- which(gene_name%in%breast_prism.snv$Hugo_Symbol)
+      annotation.var <- as.vector(breast_prism.snv$Variant_annotation[variant.anno])
+    }
+      else {
+        annotation.var <- c("none")
+      } 
     if (gene_name%in%targets.treat$target){
       names <- paste(names.target[which(targets.treat$target==gene_name)], collapse = ", ")
       treatments <- trimws(names, whitespace = "right")
@@ -244,7 +266,7 @@ for (gene_name in w.genes.cancer) {
         treatments <- c("none")
       }
       
-    new_row <- c(frequency_value, achilles_value, exp_value, p_value, treatments, mutation, hallmark)
+    new_row <- c(frequency_value, achilles_value, exp_value, p_value, treatments, mutation, hallmark, annotation.var)
   if (gene_name == w.genes.cancer[1]) {
     Wgene.krebs <- new_row
   } 
@@ -255,7 +277,7 @@ for (gene_name in w.genes.cancer) {
 
 rownames(Wgene.krebs) <- w.genes.cancer
 
-colnames(Wgene.krebs) <- c("Frequency in list.targets", "mean prism.achilles", "mean prism.exp", "p-value from achilles.genes.adj", "treatments", "mutation", "hallmark")
+colnames(Wgene.krebs) <- c("Frequency in list.targets", "mean prism.achilles", "mean prism.exp", "p-value from achilles.genes.adj", "treatments", "mutation", "hallmark", "Mutation consequence")
 ```
 
 
