@@ -629,6 +629,11 @@ pca_data <- cbind(pca_data, breast_prism.cl$lineage_subtype)
 colnames(pca_data)[3] <- c("subtype")
 ggplot(pca_data) +
   geom_point(aes(x = PC1, y = PC2, colour = subtype))
+
+summary(pca)
+
+summary(pca_data)
+
 ```
 
 
