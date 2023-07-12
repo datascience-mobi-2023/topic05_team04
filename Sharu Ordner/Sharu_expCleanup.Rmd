@@ -162,7 +162,7 @@ class(breast_prism.exp)
 ```
 ```{r}
 # Perform PCA
-pca <- prcomp(t(breast_PRISM.exp), center = TRUE, scale. = TRUE)
+pca <- prcomp(breast_PRISM.exp, center = TRUE, scale. = TRUE)
 
 # Summary of PCA results
 summary(pca)
@@ -172,6 +172,7 @@ plot(pca$x[, 1], pca$x[, 2], col = "blue", pch = 19, xlab = "PC1", ylab = "PC2")
 
 # Add cell line labels
 text(pca$x[, 1], pca$x[, 2], pos = 4, cex = 0.8)
+
 
 
 ```

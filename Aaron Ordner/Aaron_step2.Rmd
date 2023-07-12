@@ -612,6 +612,21 @@ ggplot(mean.achilles.dif)+
 
 
 
+```{r}
+#Sharu Quatsch
+pca_scores <- pca$x[, c(1, 2)]
+pca_data <- data.frame(PC1 = pca_scores[, 1], PC2 = pca_scores[, 2])
+
+rows <- c()
+for (i in 1:nrow(breast_prism.cl)){
+  rows <- rbind(rows, which(rownames(pca_data)%in%breast_prism.cl$DepMap_ID[i]))
+  }
+pca_data <- pca_data[rows,]
+pca_data <- cbind(pca_data, breast_prism.cl$lineage_subtype)
+colnames(pca_data)[3] <- c("subtype")
+ggplot(pca_data) +
+  geom_point(aes(x = PC1, y = PC2, colour = subtype))
+```
 
 
 
