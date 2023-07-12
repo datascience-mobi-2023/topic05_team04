@@ -29,11 +29,11 @@ library(ggplot2) #install.packages("ggplot2")
 library(umap) #install.packages("umap")
 library(readxl) #install.packages("readxl")
 library(scales) #install.packages("scales")
-library(dplyr)
+library(dplyr)  #install.packages("dplyr")
 #library(tidyverse) #install.packages("tidyverse")
 # --------------------------------- #
-#load("/Users/luisherfurth/Codenmachtspass/Data/prism_datasets.rda")
-#load("/Users/luisherfurth/Codenmachtspass/Data/cellline_datasets.rda")
+load("/Users/luisherfurth/Codenmachtspass/Data/prism_datasets.rda")
+load("/Users/luisherfurth/Codenmachtspass/Data/cellline_datasets.rda")
 ###############################
 # 2. # PRISM IMPUTATION ####### Luis
 ###############################
@@ -45,7 +45,6 @@ prism_imp <- as.data.frame(apply(prismNA, 2, function(x) {
     x[is_na] <- mean(x, na.rm = TRUE)
     return(x)
 })) 
-
 ######################################
 # 3. # BREAST PRISM IMPUTATION ####### Luis
 ######################################
@@ -158,7 +157,7 @@ prism_lowest_ths <- prism_imp[,pref_drug_ths]
 ##########################################
 # 5. # FILTERING NON-ONCOLOGY DRUGS ###### Aaron
 ##########################################
-#cancer.therapy <- read_excel("/Users/luisherfurth/Codenmachtspass/Data/oncological_treatments.xlsx")
+cancer.therapy <- read_excel("/Users/luisherfurth/Codenmachtspass/Data/oncological_treatments.xlsx")
 cancer.therapy <- as.data.frame(cancer.therapy)
 treat.names <- as.data.frame(prism.treat$name)
 drug.overlap <- apply(treat.names, 1, function(x){
@@ -213,6 +212,23 @@ meta_eff_treat$levels <- levels
 meta_eff_treat$levels[is.na(meta_eff_treat$levels)] <- "Other"
 level_colors <- rainbow(length(top_x_levels))
 color_palette <- c(setNames(level_colors, top_x_levels), Other = "lightgray")
+###############################
+# 9. # LINEAR REGRESSION ###### Luis
+###############################
+regression_list_b <- list()
+r_squared_b <- c()
+for(i in 1:length(duplicate_drugs_b)) {
+    act_rows_b <- which(df_nam_con_mean_b$drugnames_b == duplicate_drugs_b[i])
+    act_df_b <- df_nam_con_mean_b[act_rows_b,]
+    if (length(act_rows_b) > 3) {
+        act_reg_b <- lm(act_df_b$colMeans_breast ~ act_df_b$concentration_b, data = act_df_b)
+        act_residuals_b <- act_reg_b$residuals
+        act_plot_b <- data.frame(x = act_df_b$concentration_b, y = act_df_b$colMeans_breast)
+        regression_list_b[[i]] <- list(summary(act_reg_b), act_reg_b, act_residuals_b, summary(act_reg_b)$r.squared, act_plot_b)
+        names(regression_list_b)[i] <- duplicate_drugs_b[i]
+        r_squared_b <- c(r_squared_b, summary(act_reg_b)$r.squared)
+    }
+}
 ################ Sharu
 #PRISM.snv.breast <- prism.snv[which(as.character(prism.snv$DepMap_ID) %in% breast_prism.cl$DepMap_ID),]
 #prism.snv.breast <- PRISM.snv.breast[PRISM.snv.breast$Variant_Classification != "Silent",]
@@ -412,6 +428,18 @@ for(i in 1:length(duplicate_drugs_b)) {
         highest_cor_b <- rbind(highest_cor_b, new_row)
     }
 }
+####################################
+####################################
+prediction_tool <- function(drugname, conc_values) {
+  postion <- which(drugname == names(regression_list_b))
+  act_model_b <- regression_list_b[[position]][[2]]
+  predictions <- predict(act_model_b, newdata = data.frame(conc_values))
+  plot <- plot(regression_list_b[[position]][[5]]$x, regression_list_b[[position]][[5]]$y, pch = 16, col = "black", xlab = "Concentration", ylab = "log2FC"); abline(regression_list_b[[position]][[2]], col = "red")
+  return(predictions, plot)
+}
+
+####################################
+####################################
 #### Visualize the correlations ####
 ggplot() +
     geom_histogram(aes(x = highest_cor_b$correlation), fill = "steelblue", bins = 150) 

@@ -514,6 +514,7 @@ names.target <- as.vector(targets.treat$name)
 #targets.treat$name[which(targets.treat$target==gene.name)]
 
 ```
+
 ```{r}
 breast_prism.snv <- prism.snv[which(prism.snv$DepMap_ID%in%breast_prism.cl$DepMap_ID),]
 
@@ -522,6 +523,7 @@ breast_prism.snv <- prism.snv[which(prism.snv$DepMap_ID%in%breast_prism.cl$DepMa
 hallmark.genes <- as.data.frame(hallmarks.geneSym)
 rownames(hallmark.genes)[which(hallmark.genes$hallmarks.geneSym%in%w.genes.cancer[1])]
 ```
+
 ```{r}
 input_string <- rownames(hallmark.genes)[which(hallmark.genes$hallmarks.geneSym%in%w.genes.cancer[1])]
 
