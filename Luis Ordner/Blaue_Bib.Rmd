@@ -262,17 +262,26 @@ testname <- "BRD-A07986123-001-02-8"
 summary_tool <- function(drugname) {
     position <- which(drugname == names(regression_list_b))
     #### Summary model ####
+    act_summary_b <- regression_list_b[[position]][[2]]
+    #### Model ####
     act_model_b <- regression_list_b[[position]][[1]]
     #### Shapiro-Wilk test ####
     act_shapiro <- regression_list_b[[position]][[6]]
     #### Plot the regression ####
     colMeans <- regression_list_b[[position]][[5]]$colMeans
     concentration <- regression_list_b[[position]][[5]]$concentration
+    eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2, 
+    list(a = format(unname(coef(act_model_b)[1]), digits = 2),
+         b = format(unname(coef(act_model_b)[2]), digits = 2),
+         r2 = format(act_model_b$r.squared, digits = 3)))
+    as.character(as.expression(eq))
     ggplot <- ggplot(data = regression_list_b[[position]][[5]], aes(x = concentration_b, y = colMeans)) +
         geom_point() +
-        stat_smooth(method = "lm", formula = y ~ x, geom = "smooth")
+        stat_smooth(method = "lm", formula = y ~ x, geom = "smooth") +
+        annotate("text", x = 6.5, y = 1.5, label = eq, size = 3) +
+        annotate("text", x = 6.5, y = 1, label = paste("Shapiro_Wilk normality test for Residuals:", "\n", "W =", round(act_shapiro$statistic, 3), "|  p-value =", format(act_shapiro$p.value, scientific = TRUE)), size = 3)
 
-    return_list <- list(summary = act_model_b, shapiro = act_shapiro, plot = ggplot)
+    return_list <- list(summary = act_model_b, plot = ggplot)
     return(return_list)
 }
 #######################
@@ -283,7 +292,7 @@ prediction_tool <- function(drugname, conc_values) {
     #### Prediction ####
     act_model_b <- regression_list_b[[position]][[2]]
     predictions <- predict(act_model_b, newdata = data.frame(conc_values))
-    
+
     return(predictions)
 }
 ################ Sharu
@@ -487,14 +496,10 @@ ggplot(umap_layout_prism, aes(x = V1, y = V2, color = levels, alpha = alpha_leve
 ### Histogramm of r_squared of regressions ###
 # ------------------------------------------ #
 ggplot() +
-    geom_histogram(aes(x =)) 
+    geom_histogram(aes(x = r_squared_b), bins = 75, fill = "steelblue") 
 ```
 ## Testing
 ```{r}
-#### Visualize the correlations ####
-ggplot() +
-    geom_histogram(aes(x = highest_cor_b$correlation), fill = "steelblue", bins = 150) 
-
 #### Select high correlation drugs ####
 low_cor_b <- highest_cor_b[which(highest_cor_b$correlation < - 0.9),]
 low_cor_drug_b <- low_cor_b$drugname
