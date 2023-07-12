@@ -318,7 +318,7 @@ Testing if the correlation also means that there is a signifikant difference bet
 rel.genes <- list()
 
 for (i in 1:ncol(abs.exp.treat.cor)) {
-  cor.genes <- rownames(abs.exp.treat.cor)[which(abs.exp.treat.cor[, i] > 0.80)]
+  cor.genes <- rownames(abs.exp.treat.cor)[which(abs.exp.treat.cor[, i] > 0.75)]
   rel.genes[[i]] <- cor.genes
   
 }
@@ -416,6 +416,8 @@ rownames(exp.copy.cor) <- as.vector(copy.names)
 colnames(exp.copy.cor) <- c("correlation")
 ggplot(exp.copy.cor)+
   geom_histogram(aes(x = correlation))+
+  geom_vline(xintercept = 0.324, linetype = "dashed", color = "red")+
+  geom_vline(xintercept = 0.345, linetype = "dashed", color = "blue")
  
  
 
@@ -507,7 +509,7 @@ min(achilles.genes.adj)
 
 which(achilles.genes.adj<0.05)
 
-rownames(achilles.genes)[c( 206, 254)]
+rownames(achilles.genes)[c(276,  564,  718,  796,  936,  988, 1022)]
 
 ```
 
@@ -629,11 +631,6 @@ pca_data <- cbind(pca_data, breast_prism.cl$lineage_subtype)
 colnames(pca_data)[3] <- c("subtype")
 ggplot(pca_data) +
   geom_point(aes(x = PC1, y = PC2, colour = subtype))
-
-summary(pca)
-
-summary(pca_data)
-
 ```
 
 
