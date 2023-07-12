@@ -411,11 +411,14 @@ for (x in 1:ncol(breast_PRISM.exp)){
     copy.names <- c(copy.names, colnames(breast_PRISM.exp)[x])
   }
 }
-
+median(exp.copy.cor[,1])
 rownames(exp.copy.cor) <- as.vector(copy.names)
 colnames(exp.copy.cor) <- c("correlation")
 ggplot(exp.copy.cor)+
-  geom_histogram(aes(x = correlation))
+  geom_histogram(aes(x = correlation))+
+ 
+ 
+
 ```
 
 ```{r}
@@ -632,15 +635,7 @@ ggplot(pca_data) +
 
 ```{r}
 #junkyard
-names.target[which(targets.treat$target==w.genes.cancer[2])]
 
-paste(c("hallo", "wie", "gehts"), sep = ", ")
-
-treatmentsrownames(Wgene.krebs) <- w.genes.cancer
-
-names.target <- as.vector(targets.treat$name)
-
-levels(targets.treat$name[1])
 
 ```
 
