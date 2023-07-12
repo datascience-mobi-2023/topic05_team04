@@ -153,13 +153,45 @@ summary(pca)
 
 #View(pca)
 
-plot(pca$x[,1],pca$x[,2], col= as.integer(breast_PRISM.exp$DPM1), pch=19 ,xlab = "PC1", ylab = "PC2") 
+plot(pca$x[,1],pca$x[,2], col= breast_PRISM.exp, pch=19 ,xlab = "PC1", ylab = "PC2") 
 
 #View(prism.achilles) 
 
 
 class(breast_prism.exp)
 ```
+```{r}
+# Perform PCA
+pca <- prcomp(t(breast_PRISM.exp), center = TRUE, scale. = TRUE)
+
+# Summary of PCA results
+summary(pca)
+
+# Plot PCA
+plot(pca$x[, 1], pca$x[, 2], col = "blue", pch = 19, xlab = "PC1", ylab = "PC2")
+
+# Add cell line labels
+text(pca$x[, 1], pca$x[, 2], pos = 4, cex = 0.8)
+
+
+```
+
+```{r}
+# Assign cell line lineage from prism.cl to breast_PRISM.exp
+lineages <- prism.cl$lineage[rownames(breast_PRISM.exp)]
+
+# Create a vector of colors for the lineages
+lineage_colors <- rainbow(length(unique(lineages)))
+
+# Plot PCA with lineage colors
+plot(pca$x[, 1], pca$x[, 2], col = lineage_colors[match(lineages, unique(lineages))], pch = 19, xlab = "PC1", ylab = "PC2")
+
+# Add legend for lineages
+legend("bottomright", legend = unique(lineages), col = lineage_colors, pch = 19, cex = 0.8)
+
+```
+
+
 
 ```{r}
 #k-means prism.exp mit Varianz
