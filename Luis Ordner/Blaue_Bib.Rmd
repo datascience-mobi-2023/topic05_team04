@@ -212,9 +212,34 @@ meta_eff_treat$levels <- levels
 meta_eff_treat$levels[is.na(meta_eff_treat$levels)] <- "Other"
 level_colors <- rainbow(length(top_x_levels))
 color_palette <- c(setNames(level_colors, top_x_levels), Other = "lightgray")
+####################################
+# 9.1 # CORRELATION DRUG ~ CONC ###### Luis
+####################################
+##############
+### BREAST ###
+##############
+drugnames_b <- sub("::.*", "", colnames(breast_prism_imp))
+concentration_b <- as.numeric(sub(".*::(.*?)::.*", "\\1", colnames(breast_prism_imp)))
+names_conc_drug_b <- sub("::.*", "", sub("::", ":", colnames(breast_prism_imp)))
+colMeans_breast <- apply(breast_prism_imp, 2, mean)
+duplicate_drugs_b <- unique(drugnames)
+df_nam_con_mean_b <- data.frame(colMeans_breast, drugnames_b, concentration_b, names_conc_drug_b)
+highest_cor_b <- data.frame()
+for(i in 1:length(duplicate_drugs_b)) {
+    act_rows_b <- which(df_nam_con_mean_b$drugnames_b == duplicate_drugs_b[i])
+    act_df_b <- df_nam_con_mean_b[act_rows_b,]
+    if (length(act_rows_b) > 2) {
+        cor_b <- cor(act_df_b$concentration_b, act_df_b$colMeans_breast, method = "pearson")
+        new_row <- data.frame(drugname = duplicate_drugs_b[i], correlation = cor_b)
+        highest_cor_b <- rbind(highest_cor_b, new_row)
+    }
+}
 ###############################
 # 9. # LINEAR REGRESSION ###### Luis
 ###############################
+##############
+### BREAST ###
+##############
 regression_list_b <- list()
 r_squared_b <- c()
 for(i in 1:length(duplicate_drugs_b)) {
@@ -223,11 +248,43 @@ for(i in 1:length(duplicate_drugs_b)) {
     if (length(act_rows_b) > 3) {
         act_reg_b <- lm(act_df_b$colMeans_breast ~ act_df_b$concentration_b, data = act_df_b)
         act_residuals_b <- act_reg_b$residuals
-        act_plot_b <- data.frame(x = act_df_b$concentration_b, y = act_df_b$colMeans_breast)
-        regression_list_b[[i]] <- list(summary(act_reg_b), act_reg_b, act_residuals_b, summary(act_reg_b)$r.squared, act_plot_b)
+        act_shapiro_b <- shapiro.test(act_residuals_b)
+        act_plot_b <- data.frame(concentration_b = act_df_b$concentration, colMeans = act_df_b$colMeans_breast)
+        regression_list_b[[i]] <- list(Summary_reg = summary(act_reg_b), Model = act_reg_b, Residuals = act_residuals_b, R_squared = summary(act_reg_b)$r.squared, Plotdata = act_plot_b, Shapiro_test = act_shapiro_b)
         names(regression_list_b)[i] <- duplicate_drugs_b[i]
         r_squared_b <- c(r_squared_b, summary(act_reg_b)$r.squared)
     }
+}
+testname <- "BRD-A07986123-001-02-8"
+####################
+### SUMMARY TOOL ###
+####################
+summary_tool <- function(drugname) {
+    position <- which(drugname == names(regression_list_b))
+    #### Summary model ####
+    act_model_b <- regression_list_b[[position]][[1]]
+    #### Shapiro-Wilk test ####
+    act_shapiro <- regression_list_b[[position]][[6]]
+    #### Plot the regression ####
+    colMeans <- regression_list_b[[position]][[5]]$colMeans
+    concentration <- regression_list_b[[position]][[5]]$concentration
+    ggplot <- ggplot(data = regression_list_b[[position]][[5]], aes(x = concentration_b, y = colMeans)) +
+        geom_point() +
+        stat_smooth(method = "lm", formula = y ~ x, geom = "smooth")
+
+    return_list <- list(summary = act_model_b, shapiro = act_shapiro, plot = ggplot)
+    return(return_list)
+}
+#######################
+### PREDICTION TOOL ###
+#######################
+prediction_tool <- function(drugname, conc_values) {
+    position <- which(drugname == names(regression_list_b))
+    #### Prediction ####
+    act_model_b <- regression_list_b[[position]][[2]]
+    predictions <- predict(act_model_b, newdata = data.frame(conc_values))
+    
+    return(predictions)
 }
 ################ Sharu
 #PRISM.snv.breast <- prism.snv[which(as.character(prism.snv$DepMap_ID) %in% breast_prism.cl$DepMap_ID),]
@@ -391,8 +448,9 @@ summary(model_prism) # <---! linear regression of the drugs on prism-->
 ######################
 ### VISUALISATIONS ###
 ######################
-library(ggplot2)
-
+# ---------------------------- #
+### Cell Growth of all drugs ###
+# ---------------------------- #
 vec_breast <- unlist(sapply(breast_prism, function(x) x[is.numeric(x)]))
 vec_breast <- na.omit(vec_breast)
 inhibitory <- vec_breast < -2
@@ -400,46 +458,39 @@ ggplot() +
     geom_histogram(aes(x = vec_breast, fill = inhibitory), bins = 111) +
     scale_fill_manual(values = c("coral2", "steelblue2")) +
     labs(title = "Cell Growth of breast cancer cells after treatment", x = "log2FC", y = "Count")
-################
+# ------------------------------------ #
+### Correlation drug ~ concentration ###
+# ------------------------------------ #
 high_cor <- highest_cor_b$correlation < -0.9
 ggplot() +
     geom_histogram(aes(x = highest_cor_b$correlation, fill = high_cor), bins = 121) +
     scale_fill_manual(values = c("coral2", "steelblue2"))
-################
+# -------------------------------------- #
+### UMAP of most effizient drugs prism ###
+# -------------------------------------- #
+cancer_umap <- umap(t(prism_lowest), n_neighbors = 7, min_dist = 0.5, n_epochs = 200, n_components = 2) 
+umap_layout_prism <- as.data.frame(cancer_umap$layout)
 
+umap_layout_prism$levels <- meta_eff_treat$levels
 
+umap_layout_prism <- umap_layout_prism %>%
+  mutate(alpha_level = ifelse(levels == "Other", 0.2, 1))
+
+color_palette <- c(setNames(level_colors_b, top_x_levels_b), Other = "lightgray")
+
+ggplot(umap_layout_prism, aes(x = V1, y = V2, color = levels, alpha = alpha_level)) +
+    geom_point(size = 3) +
+    scale_color_manual(values = color_palette) +
+    theme_bw() +
+    ggtitle("UMAP of all celllines")
+# ------------------------------------------ #
+### Histogramm of r_squared of regressions ###
+# ------------------------------------------ #
+ggplot() +
+    geom_histogram(aes(x =)) 
 ```
 ## Testing
 ```{r}
-#### Determine correlation between drugs and concentration ####
-drugnames_b <- sub("::.*", "", colnames(breast_prism_imp))
-concentration_b <- as.numeric(sub(".*::(.*?)::.*", "\\1", colnames(breast_prism_imp)))
-names_conc_drug_b <- sub("::.*", "", sub("::", ":", colnames(breast_prism_imp)))
-colMeans_breast <- apply(breast_prism_imp, 2, mean)
-duplicate_drugs_b <- unique(drugnames)
-df_nam_con_mean_b <- data.frame(colMeans_breast, drugnames_b, concentration_b, names_conc_drug_b)
-highest_cor_b <- data.frame()
-for(i in 1:length(duplicate_drugs_b)) {
-    act_rows_b <- which(df_nam_con_mean_b$drugnames_b == duplicate_drugs_b[i])
-    act_df_b <- df_nam_con_mean_b[act_rows_b,]
-    if (length(act_rows_b) > 2) {
-        cor_b <- cor(act_df_b$concentration_b, act_df_b$colMeans_breast, method = "pearson")
-        new_row <- data.frame(drugname = duplicate_drugs_b[i], correlation = cor_b)
-        highest_cor_b <- rbind(highest_cor_b, new_row)
-    }
-}
-####################################
-####################################
-prediction_tool <- function(drugname, conc_values) {
-  postion <- which(drugname == names(regression_list_b))
-  act_model_b <- regression_list_b[[position]][[2]]
-  predictions <- predict(act_model_b, newdata = data.frame(conc_values))
-  plot <- plot(regression_list_b[[position]][[5]]$x, regression_list_b[[position]][[5]]$y, pch = 16, col = "black", xlab = "Concentration", ylab = "log2FC"); abline(regression_list_b[[position]][[2]], col = "red")
-  return(predictions, plot)
-}
-
-####################################
-####################################
 #### Visualize the correlations ####
 ggplot() +
     geom_histogram(aes(x = highest_cor_b$correlation), fill = "steelblue", bins = 150) 
