@@ -1,10 +1,10 @@
 ---
 title: "  "
+author: " "
 date: " "
-bibliography:
-csl: 
 geometry: "margin=2.3cm"
 linestretch: 1.15
+fontsize: 11pt
 output: 
   pdf_document:
     number_sections: true
@@ -32,7 +32,7 @@ output:
 	
 	\vspace{\stretch{0.25}}
 	
-	{\Large Topic 5 team 4}
+	{\Large Topic 5 Team 4}
 
 	\vspace{\stretch{0.25}}
 	
@@ -49,7 +49,7 @@ output:
 \end{titlepage}
 
 \newpage
-\addchap{Abstract}
+\section*{Abstract}
 Hier muss das Abstract eingefügt werden
 
 
@@ -57,7 +57,7 @@ Hier muss das Abstract eingefügt werden
 \tableofcontents
 
 \newpage
-\addchap{Abbreviations}
+\section*{Abbreviations}
 
 
 
@@ -66,11 +66,11 @@ Hier muss das Abstract eingefügt werden
 \newpage
 \pagenumbering{arabic}
 ```
-#Introduction
+# Introduction
 
 # Materials and Methods
 
-##Data 
+## Data 
 
 ### Prism Datasets  
 
@@ -96,58 +96,60 @@ Hier muss das Abstract eingefügt werden
 Show distributions after cleanup
 Abbildung für prism vorher nachher. Für andere maybe im Clean up
 
-##Dimension reduction  
+## imension reduction  
 UMAP -> PCA wird rausgelassen; Plot den Luis gemacht hat. Ist nicht geclustert, aber man kann erkennen, dass die MOA sich in den gleichen areas aufhalten
 
-##Clustering
+## Clustering
 kmeans -> Simon hat welche gemacht, aber die sehen kacke aus => Anna fragen
 
-##statistical test
+## Statistical test
 Wilcoxson test
 0.05 alpha
 p adjust needed wegen sehr viele berechnungen und hoher fdr deswegen
 Shapiro Wilk
 
-##Lineare Regression
+## Lineare Regression
 Prediction tool
 
-#Results
+# Results
 First include positiv results; if space is left include negativ results: UMAP, K means clustering, promoting drugs
 describe goal, describe process, describe outcome
 
-##Gen search engine
+## Gene search engine
 Goal: Arbeitsvereinfachung; Outcome: Overview over data
 Für Präsentation als Visualisierungstool pitchen
 Maybe Website
 
-##List of inhibitory drugs
+## List of inhibitory drugs
 Results von Data clean up und filtering.
 Goal: List of Inhibitory Drugs; Outcome: List of Inhibitory Drugs
 Bilder vergleich liste vergleich ohne threshold und mit threshold
 Maybe oncological drugs rein screenen
 
-##Gene analysis
+## Gene analysis
 
-###Correlation analysis
+### Correlation analysis
 treatment response / gene expression; 
 Goal: finding relevant genes; Outcome: giant data frame -> used for further work
 
 copy number / gene expression
 Goal: looking if hypothesis correct; Outcome: Histogram of correlations
 
-###Dataframe for targets involving genes
+### Dataframe for targets involving genes
 mean of data frames. Threshold for what genes are relevant. Used indings from correlation tests
 Goal: finding interesting genes; Outcome: Data frame with many genes -> 48 genes data set with filtering after gene knockout score
 
-###Statistical testing of important genes
+### Statistical testing of important genes
 Test wich of the found genes are for breast cancer of interest
 Goal: find out which one are negativ, which ones are lower than other lineages; Outcome: 2 genes
 
-##Linear regression
+## Linear regression
 Perform drug by drug to avoid weird plot; For every drug one linear regression, R² Value and with those showing, that many of them are very good. Prediction model for concentration and drug name. Plot um das gnaze zu veranschaulichen;
 Goal: Regression/Prediction model; Outcome: Regression/Prediction model
 
-#Discussion
+# Discussion
 Search for papers mentioning certain genes found in the targets of the inhibitory drugs or 
 
-#References
+# References
+
+# Appendix
