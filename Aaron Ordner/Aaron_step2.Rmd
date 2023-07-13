@@ -524,7 +524,7 @@ breast_exp_mean <- apply(breast_prism.exp, 2, mean)
 
 targets.treat <- prism.treat_subset[which(prism.treat_subset$`rownames(prism.treat)`%in%colnames(breast_prism_lowest)),]
 
-names.target <- as.vector(targets.treat$name)
+names.target <- as.data.frame(targets.treat$name)
 
 #targets.treat$name[which(targets.treat$target==gene.name)]
 
@@ -635,6 +635,13 @@ ggplot(pca_data) +
   geom_point(aes(x = PC1, y = PC2, colour = subtype))
 ```
 
+```{r}
+#Für Sharu
+
+name.id <- as.data.frame(prism.treat$name)
+name.id <- cbind(name.id, rownames(prism.treat))
+colnames(name.id) <- c("name", "ID")
+```
 
 
 ```{r}

@@ -100,7 +100,7 @@ colnames(exp.copy.cor) <- c("correlation")
 rel.genes <- list()
 
 for (i in 1:ncol(abs.exp.treat.cor)) {
-  cor.genes <- rownames(abs.exp.treat.cor)[which(abs.exp.treat.cor[, i] > 0.80)]
+  cor.genes <- rownames(abs.exp.treat.cor)[which(abs.exp.treat.cor[, i] > 0.75)]
   rel.genes[[i]] <- cor.genes
   
 }
@@ -121,27 +121,6 @@ hist.targets <- as.data.frame(table(list.targets))
 ```
 
 
-```{r}
-#Correlation between copy number and gene expression
-row.order <- c() 
-for (i in 1:nrow(breast_prism.cnv)){
-  row.order <- rbind(row.order, which(rownames(breast_prism.cnv)%in%rownames(breast_PRISM.exp)[i]))
-  }
-#order of rows in the two data frames are not the same
-exp.copy.cor <- data.frame()
-copy.names <- c()
-for (x in 1:ncol(breast_PRISM.exp)){
-  copy.gene <- which(colnames(breast_prism.cnv)%in%colnames(breast_PRISM.exp)[x])
-  if (length(copy.gene) > 0) {
-    copy.cor <- cor(breast_PRISM.exp[,x], breast_prism.cnv[row.order,copy.gene])
-    exp.copy.cor <- rbind(exp.copy.cor, copy.cor)
-    copy.names <- c(copy.names, colnames(breast_PRISM.exp)[x])
-  }
-}
-
-rownames(exp.copy.cor) <- as.vector(copy.names)
-colnames(exp.copy.cor) <- c("correlation")
-```
 
 
 ```{r}
@@ -161,7 +140,7 @@ breast.achilles.mean <- apply(breast.ach, 2, mean)
 other.achilles.mean <- apply(other.ach, 2, mean)
 
 
-ach.low.pos <- which(breast.achilles.mean<other.achilles.mean&breast.achilles.mean<0)
+ach.low.pos <- which(breast.achilles.mean<0)
 
 
 
@@ -191,7 +170,7 @@ achilles.genes.adj <- as.data.frame(p.adjust(unlist(achilles.genes), method = "f
 
 rownames(achilles.genes.adj) <- rownames(achilles.genes)
 
-rownames(which(achilles.genes.adj<0.05))
+rownames(achilles.genes.adj)[which(achilles.genes.adj<0.05)]
 ```
 
 ```{r}
@@ -208,7 +187,7 @@ breast_prism.snv <- prism.snv[which(prism.snv$DepMap_ID%in%breast_prism.cl$DepMa
 #For me to make Sharus code work
 #hallmarks <- fromJSON("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/h.all.v2023.1.Hs.json.txt")
 hallmark.genes <- as.data.frame(hallmarks.geneSym)
-rownames(hallmark.genes)[which(hallmark.genes$hallmarks.geneSym%in%w.genes.cancer[1])]
+
 
 ```
 
