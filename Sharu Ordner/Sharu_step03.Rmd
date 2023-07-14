@@ -604,3 +604,85 @@ colnames(achilles.cnv.exp_breast) <- c("Gene_Name", paste0("Achilles_", colnames
 
 
 ```
+
+#promoting drugs
+
+```{r}
+min(breast.achilles.mean)
+
+max(breast.achilles.mean)
+
+#View(breast.achilles.mean)
+
+#class(breast.achilles.mean
+
+max(prism, na.rm = T)
+
+prism.breast_carcinoma <- breast_prism_imp[which(rownames(breast_prism)%in%breast_carcinoma),]
+
+prism.breast_ductal_carcinoma <- breast_prism_imp[which(rownames(breast_prism)%in%breast_ductal_carcinoma),]
+
+prism.breast_carcinoma.mean <- apply(prism.breast_carcinoma, 2, mean)
+
+prism.breast_ductal_carcinoma.mean <- apply(prism.breast_ductal_carcinoma, 2, mean)
+
+max(prism.breast_carcinoma.mean, na.rm = T)
+
+max(prism.breast_ductal_carcinoma.mean, na.rm = T)
+
+id.treat <- as.vector(targets.treat$broad_id)
+
+name.id <- as.data.frame(prism.treat$name)
+
+name.id <- cbind(name.id, rownames(prism.treat))
+
+colnames(name.id) <- c("name", "ID")
+
+##########################################
+
+##for breast carcinoma
+
+not_important_genes <- setdiff(prism.treat_subset$target, colnames(breast.achilles.mean)[breast.achilles.mean >= -4 & breast.achilles.mean <= 0])
+
+if (length(not_important_genes) == 0) {
+  cat("No genes found that are not important in prism.achilles based on the positive threshold.\n")
+} else {
+  cat("Genes not important in prism.achilles based on the positive threshold:\n")
+  for (gene in not_important_genes) {
+    if (gene %in% targets.treat$target) {
+      names <- paste(names.target[which(targets.treat$target == gene)], collapse = ", ")
+      treatments <- trimws(names, whitespace = "right")
+      treatment_ids <- name.id$ID[which(name.id$name == treatments)]
+      treatment_mean <- prism.breast_carcinoma.mean[treatment_ids]
+      relevant_treatments <- treatments[treatment_mean > 1]
+      if (length(relevant_treatments) > 0) {
+        cat("Gene:", gene, "\tRelevant Treatments (ID Names):", paste(relevant_treatments, collapse = ", "), "\n")
+      }
+    }
+  }
+}
+
+##for breast ductal carcinoma
+
+not_important_genes <- setdiff(prism.treat_subset$target, colnames(breast.achilles.mean)[breast.achilles.mean >= -4 & breast.achilles.mean <= 0])
+
+if (length(not_important_genes) == 0) {
+  cat("No genes found that are not important in prism.achilles based on the positive threshold.\n")
+} else {
+  cat("Genes not important in prism.achilles based on the positive threshold:\n")
+  for (gene in not_important_genes) {
+    if (gene %in% targets.treat$target) {
+      names <- paste(names.target[which(targets.treat$target == gene)], collapse = ", ")
+      treatments <- trimws(names, whitespace = "right")
+      treatment_ids <- name.id$ID[which(name.id$name == treatments)]
+      treatment_mean <- prism.breast_ductal_carcinoma.mean[treatment_ids]
+      relevant_treatments <- treatments[treatment_mean > 1]
+      if (length(relevant_treatments) > 0) {
+        cat("Gene:", gene, "\tRelevant Treatments (ID Names):", paste(relevant_treatments, collapse = ", "), "\n")
+      }
+    }
+  }
+}
+
+sum(is.na(targets.treat$name))
+```

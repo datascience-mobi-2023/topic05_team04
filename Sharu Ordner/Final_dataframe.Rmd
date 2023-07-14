@@ -133,8 +133,8 @@ geneSearchEngine <- function(x) {
   }
   
   if (gene_name %in% prism.treat_subset$target) {
-    names <- which(gene_name %in% prism.treat_subset$target)
-    treatments <- as.vector(prism.treat_subset$name[names])
+    names <- paste(names.target[which(targets.treat$target==gene_name)], collapse = ", ")
+    treatments <- trimws(names, whitespace = "right")
   } else {
     treatments <- "none"
   }
@@ -149,7 +149,7 @@ geneSearchEngine <- function(x) {
   cat("\n")
 }
 
-geneSearchEngine("LPL")
+geneSearchEngine("ESR1")
 
 
 
