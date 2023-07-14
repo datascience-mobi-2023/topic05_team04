@@ -642,6 +642,44 @@ name.id <- as.data.frame(prism.treat$name)
 name.id <- cbind(name.id, rownames(prism.treat))
 colnames(name.id) <- c("name", "ID")
 ```
+Test
+```{r}
+ach.treat.cor <- data.frame()
+
+ach.order <- c() 
+for (i in 1:nrow(prism.achilles.breast)){
+  ach.order <- rbind(ach.order, which(rownames(breast_prism_lowest)%in%rownames(prism.achilles.breast)[i]))
+  }
+
+test.breast.lowest <- breast_prism_lowest[ach.order,]
+
+for (y in 1:ncol(test.breast.lowest)) {
+  correlation <- c()
+  
+  for (x in 1:ncol(prism.achilles.breast)) {
+    ach.score <- prism.achilles.breast[, x]
+    correlation[x] <- cor(test.breast.lowest[, y], ach.score)
+  }
+  
+  
+  
+  if (y == 1) {
+    ach.treat.cor <- correlation  
+  } else {
+    ach.treat.cor <- cbind(ach.treat.cor, correlation)  
+  }
+}
+colnames(ach.treat.cor) <- colnames(test.breast.lowest)
+rownames(ach.treat.cor) <- colnames(prism.achilles.breast)
+```
+
+```{r}
+max.ach.treat.cor <- apply(abs(ach.treat.cor), 2, max)
+mean(max.ach.treat.cor)
+hist(colMeans(ach.treat.cor))
+
+
+```
 
 
 ```{r}

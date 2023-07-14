@@ -9,13 +9,13 @@ library(ggplot2)
 ## .achilles cleaning
 
 ```{r}
-missingrows.achilles <- matrix(0, nrow = 5, ncol = ncol(prism.achilles.breast))
+#missingrows.achilles <- matrix(0, nrow = 5, ncol = ncol(prism.achilles.breast))
 
-colnames(missingrows.achilles) <- colnames(prism.achilles.breast)
+#colnames(missingrows.achilles) <- colnames(prism.achilles.breast)
 
-rownames(missingrows.achilles) <- setdiff(rownames(breast_prism.exp), rownames(prism.achilles.breast))[1:5]
+#rownames(missingrows.achilles) <- setdiff(rownames(breast_prism.exp), rownames(prism.achilles.breast))[1:5]
 
-breast_prism.achilles <- rbind(prism.achilles.breast, missingrows.achilles)
+#breast_prism.achilles <- rbind(prism.achilles.breast, missingrows.achilles)
 
 #Sharu: hab hier die Dimension von breast.achilles ausgeglichen, hatte weniger Zelllinien als die anderen
 ```

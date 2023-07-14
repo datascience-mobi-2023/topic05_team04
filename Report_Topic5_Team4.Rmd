@@ -96,20 +96,8 @@ Hier muss das Abstract eingefügt werden
 Show distributions after cleanup
 Abbildung für prism vorher nachher. Für andere maybe im Clean up
 
-## imension reduction  
+## Dimension reduction  
 UMAP -> PCA wird rausgelassen; Plot den Luis gemacht hat. Ist nicht geclustert, aber man kann erkennen, dass die MOA sich in den gleichen areas aufhalten
-
-## Clustering
-kmeans -> Simon hat welche gemacht, aber die sehen kacke aus => Anna fragen
-
-## Statistical test
-Wilcoxson test
-0.05 alpha
-p adjust needed wegen sehr viele berechnungen und hoher fdr deswegen
-Shapiro Wilk
-
-## Lineare Regression
-Prediction tool
 
 # Results
 First include positiv results; if space is left include negativ results: UMAP, K means clustering, promoting drugs
@@ -129,6 +117,8 @@ Results von Data clean up und filtering.
 Goal: List of Inhibitory Drugs; Outcome: List of Inhibitory Drugs
 Bilder vergleich liste vergleich ohne threshold und mit threshold
 Maybe oncological drugs rein screenen
+
+#UMAP and 
 
 ## Gene analysis
 
