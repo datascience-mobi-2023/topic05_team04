@@ -238,68 +238,161 @@ ggplot(umap_layout_breast, aes(x = V1, y = V2, colour = imp_treat$levels)) +
     geom_hline(yintercept = 0, color = 'red')
 ```
 
-```{r UMAP by luis without other}
-cancer_umap <- umap(t(prism_lowest), n_neighbors = 7, min_dist = 0.5, n_epochs = 200, n_components = 2) 
-umap_layout_prism <- as.data.frame(cancer_umap$layout)
+```{r Filtering of Prism by luis}
+drugnames <- sub("::.*", "", colnames(prism_imp))
+drugnames <- sub("::.*", "", colnames(prism_imp))
+concentration <- as.numeric(sub(".*::(.*?)::.*", "\\1", colnames(prism_imp)))
+names_conc_drug <- sub("::.*", "", sub("::", ":", colnames(prism_imp)))
+colMeans <- apply(prism_imp, 2, mean)
+duplicate_drugs <- unique(drugnames[duplicated(drugnames)])
+df_nam_con_mean <- data.frame(colMeans, drugnames, concentration, names_conc_drug)
+lowest_mean_duplicate <- data.frame()
+for(i in 1:length(duplicate_drugs)) {
+    act_rows <- which(df_nam_con_mean$drugnames == duplicate_drugs[i])
+    act_df <- df_nam_con_mean[act_rows,]
+    lowest_colmean <- min(act_df$colMeans, na.rm = TRUE)
+    lowest_mean_duplicate <- rbind(lowest_mean_duplicate, act_df[which(act_df$colMeans == lowest_colmean),])
+}
+highest_mean_duplicate <- data.frame()
+for(i in 1:length(duplicate_drugs)) {
+    act_rows <- which(df_nam_con_mean$drugnames == duplicate_drugs[i])
+    act_df <- df_nam_con_mean[act_rows,]
+    highest_colmean <- max(act_df$colMeans, na.rm = TRUE)
+    highest_mean_duplicate <- rbind(highest_mean_duplicate , act_df[which(act_df$colMeans == highest_colmean),])
+}
+pref_drug_con_combo <- rownames(lowest_mean_duplicate)
+prism_lowest <- prism_imp[,pref_drug_con_combo]
+lowest_mean_duplicate_tsh <- lowest_mean_duplicate[lowest_mean_duplicate$colMeans < -2,]
+pref_drug_ths <- rownames(lowest_mean_duplicate_tsh)
+prism_lowest_ths <- prism_imp[,pref_drug_ths]
+breast_prism.cl <- prism.cl[which(prism.cl$lineage == 'breast'), ]
+breast_prism <- prism[which(rownames(prism) %in% breast_prism.cl$DepMap_ID), ]
+bp_onlyNA.col <- colnames(breast_prism[which(colSums(is.na(breast_prism)) == 22)]) 
+rem.bpNAcol <- which(colnames(breast_prism) %in% bp_onlyNA.col)
+breast_prism_imp <- breast_prism[, -rem.bpNAcol] 
+
+breast_prism_imp <- as.data.frame(apply(breast_prism_imp, 2, function(x) {
+    is_na <- is.na(x)
+    x[is_na] <- mean(x, na.rm = TRUE)
+    return(x)
+}))
+drugnames_b <- sub("::.*", "", colnames(breast_prism_imp))
+concentration_b <- as.numeric(sub(".*::(.*?)::.*", "\\1", colnames(breast_prism_imp)))
+names_conc_drug_b <- sub("::.*", "", sub("::", ":", colnames(breast_prism_imp)))
+colMeans_breast <- apply(breast_prism_imp, 2, mean)
+duplicate_drugs_b <- unique(drugnames_b[duplicated(drugnames_b)])
+df_nam_con_mean_b <- data.frame(colMeans_breast, drugnames_b, concentration_b, names_conc_drug_b)
+lowest_mean_duplicate_b <- data.frame()
+for(i in 1:length(duplicate_drugs_b)) {
+    act_rows_b <- which(df_nam_con_mean_b$drugnames_b == duplicate_drugs_b[i])
+    act_df_b <- df_nam_con_mean_b[act_rows_b,]
+    lowest_colmean_b <- min(act_df_b$colMeans_breast, na.rm = TRUE)
+    lowest_mean_duplicate_b <- rbind(lowest_mean_duplicate_b, act_df_b[which(act_df_b$colMeans_breast == lowest_colmean_b),])
+}
+highest_mean_duplicate_b <- data.frame()
+for(i in 1:length(duplicate_drugs_b)) {
+    act_rows_b <- which(df_nam_con_mean_b$drugnames_b == duplicate_drugs_b[i])
+    act_df_b <- df_nam_con_mean_b[act_rows_b,]
+    highest_colmean_b <- max(act_df_b$colMeans_breast, na.rm = TRUE)
+    highest_mean_duplicate_b <- rbind(highest_mean_duplicate_b , act_df_b[which(act_df_b$colMeans_breast == highest_colmean_b),])
+}
+pref_drug_con_combo_breast <- rownames(lowest_mean_duplicate_b)
+breast_prism_lowest <- breast_prism_imp[,pref_drug_con_combo_breast]
+lowest_mean_duplicate_tsh_b <- lowest_mean_duplicate_b[lowest_mean_duplicate_b$colMeans_breast < -2,]
+pref_drug_ths_b <- rownames(lowest_mean_duplicate_tsh_b)
+breast_prism_lowest_ths <- breast_prism_imp[,pref_drug_ths_b]
+meta_eff_treat <- prism.treat[pref_drug_con_combo,]
+level_counts <- table(meta_eff_treat$moa)
+sorted_levels <- names(sort(level_counts, decreasing = TRUE))
+top_x_levels <- sorted_levels[1:20]  ### <---! USER INPUT --->
+levels <- factor(meta_eff_treat$moa, levels = c("Other", top_x_levels))
+meta_eff_treat$levels <- levels
+meta_eff_treat$levels[is.na(meta_eff_treat$levels)] <- "Other"
+level_colors <- rainbow(length(top_x_levels))
+color_palette0 <- c(setNames(level_colors, top_x_levels), Other = "lightgray")
+```
+
+```{r Umap from luis and cluster by simon}
+prism_umap1 <- umap(t(prism_lowest), n_neighbors = 7, min_dist = 0.5, n_epochs = 200, n_components = 2) 
+umap_layout_prism <- as.data.frame(prism_umap1$layout)
 
 umap_layout_prism$levels <- meta_eff_treat$levels
 
 umap_layout_prism <- umap_layout_prism %>%
   mutate(alpha_level = ifelse(levels == "Other", 0.2, 1))
 
-color_palette <- c(setNames(level_colors_b, top_x_levels_b), Other = "lightgray")
-
 ggplot(umap_layout_prism, aes(x = V1, y = V2, color = levels, alpha = alpha_level)) +
     geom_point(size = 3) +
-    scale_color_manual(values = color_palette) +
+    scale_color_manual(values = color_palette0) +
     theme_bw() +
     ggtitle("UMAP of all celllines")
 
 ##clustering of this UMAP
 library(cluster)
 silhouette_score <- function(k){
-  km <- kmeans(cancer_umap$layout, centers = k)
-  s <- silhouette(km$cluster, dist(cancer_umap$layout))
+  km <- kmeans(prism_umap1$layout, centers = k)
+  s <- silhouette(km$cluster, dist(prism_umap1$layout))
   mean(s[, 3])
 }
 k <- 2:20
 avg_s <- sapply(k, silhouette_score)
-#best cluster size through silhouette method -> size 3 works best
+#best cluster size through silhouette method -> size 3 works best .> trotzdem 20 genommen
 plot(k, type = 'b', avg_s,xlim = c(2,20), ylim = c(0.34,0.59), xlab='Number of clusters', ylab='Average Silhouette Scores'); abline(h = max(avg_s), col = 'red')
 
 ##trying 20 centers for clustering to cluster unknown moa
-cancer_km <- kmeans(cancer_umap$layout, centers = 20)
-cancercol <- rainbow(20)[cancer_km$cluster]
-plot(breast_cancer_umap$layout[,1], breast_cancer_umap$layout[,2], 
-     col= cancercol, pch=19,
+cancer_km1 <- kmeans(prism_umap1$layout, centers = 20)
+umap_layout_prism$cluster <- cancer_km1$cluster
+cancercol0 <- c(setNames(rainbow(20)[cancer_km1$cluster], top_x_levels))
+plot(umap_layout_prism[,1], umap_layout_prism[,2], 
+     col= cancercol0, pch=19,
      xlab='V1',ylab='V2',
      main='Clustering of drugs')#; abline(h = 0, col = 'orange'); abline(v = 0, col = 'orange')
+
+ggplot(umap_layout_prism, aes(x = V1, y = V2, color = cancercol0)) +
+    geom_point(size = 3) +
+    theme_bw() +
+    ggtitle("UMAP of clustered celllines") +
+    theme(legend.position = "none")
+
 ```
 
 ```{r}
-cancer_umap <- umap(t(prism_lowest), n_neighbors = 7, min_dist = 0.5, n_epochs = 200, n_components = 2) 
-umap_layout_prism <- as.data.frame(cancer_umap$layout)
 
-umap_layout_prism$levels <- meta_eff_treat$levels
+prism_umap2 <- umap(t(prism_lowest), n_neighbors = 7, min_dist = 0.5, n_epochs = 200, n_components = 2) 
+umap2_layout_prism <- as.data.frame(prism_umap2$layout)
+umap2_layout_prism$levels <- meta_eff_treat$levels
 
+umap2_layout_prism <- umap2_layout_prism %>%
+  mutate(alpha_level = ifelse(levels == "Other", 0.2, 1))
 
 library(cluster)
 silhouette_score <- function(k){
-  km <- kmeans(umap_layout_prism, centers = k)
-  s <- silhouette(km$cluster, dist(umap_layout_prism))
+  km <- kmeans(prism_umap2$layout, centers = k)
+  s <- silhouette(km$cluster, dist(prism_umap2$layout))
   mean(s[, 3])
 }
 k <- 2:20
 avg_s <- sapply(k, silhouette_score)
-#best cluster size through silhouette method -> size 3 works best
+#best cluster size through silhouette method -> size 3 works best -> trotzdem 20
 plot(k, type = 'b', avg_s,xlim = c(2,20), ylim = c(0.34,0.59), xlab='Number of clusters', ylab='Average Silhouette Scores'); abline(h = max(avg_s), col = 'red')
 
-##trying 20 centers for clustering to cluster 
-cancer_km <- kmeans(umap_layout_prism, centers = 20)
-cancercol <- rainbow(20)[cancer_km$cluster]
-plot(umap_layout_prism[,1], umap_layout_prism[,2], 
-     col= cancercol, pch=19,
+##trying 20 centers for clustering to cluster
+library(ggforce)
+library(ggalt)
+cancer_km2 <- kmeans(prism_umap2$layout, centers = 20)
+umap2_layout_prism$cluster <- factor(cancer_km2$cluster)
+cancercol1 <- rainbow(20)[cancer_km2$cluster]
+plot(umap2_layout_prism[,1], umap2_layout_prism[,2], 
+     col= cancercol1, pch=19,
      xlab='V1',ylab='V2',
      main='Clustering of drugs')
+
+ggplot(umap2_layout_prism, aes(x = V1, y = V2, color = levels, alpha = alpha_level)) +
+    geom_point(size = 3) +
+    #geom_encircle(aes(group = cluster), color = "black", alpha = 0.2, expand = 0.1) +
+    geom_mark_hull(concavity = 5,expand=0,radius=0, aes(group = cluster, color="black"), show.legend = FALSE) +
+    scale_color_manual(values = color_palette0) +
+    theme_bw() +
+    ggtitle("UMAP of all celllines")
 ```
 
