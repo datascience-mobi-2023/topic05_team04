@@ -121,9 +121,9 @@ describe goal, describe process, describe outcome
 ## Gene search engine
 Goal: Arbeitsvereinfachung; Outcome: Overview over data
 Für Präsentation als Visualisierungstool pitchen
-Maybe Website, ***Discussion***
+Maybe Website
 
-Analysing the main datasets led to many individual data formats such as data frames, lists etc.; which contain relevant information gathered by our code. ***In general, one could get a possible important gene through literature analysis or comparing every meaningful value in our database manually, which is time-consuming and one could lose track.*** The aim of the function of the search engine was to quickly search for a gene of interest and display its attached values out of our main cell line datasets (prism.exp, prism.achilles, prism.cnv) for a more simple process of gene analysis. Based on this code, applications like looking for suitable treatments in prism.treat, loops which undergo printing every gene and their attached values in breast cancer celllines and the first approach for a relevant final data frame were realized.
+Analysing the main datasets led to many individual data formats such as data frames, lists etc.; which contain relevant information gathered by our code. The aim of the function of the search engine was to quickly search for a gene of interest and display its attached values out of our main cell line datasets (prism.exp, prism.achilles, prism.cnv) for a more simple process of gene analysis. Based on this code, applications like looking for suitable treatments in prism.treat, loops which undergo printing every gene and their attached values in breast cancer celllines and the first approach for a relevant final data frame were realized.
 The conclusive outcome of this engine development was a final modified search engine, in which one can type in the gene of interest and it prints every relevant value or information to get a decisive overview for drug repurposing applications. 
 
 
@@ -170,6 +170,10 @@ Goal: Regression/Prediction model; Outcome: Regression/Prediction model
 # Discussion
 Search for papers mentioning certain genes found in the targets of the inhibitory drugs or 
 
+
+
+gene search engine:
+An informative gene search engine is a promising advancement in the field of genomic data analysis. Regarding large screenings, utilizing a specific profile as an input to the engine, offers accurate results, enabling other researchers to identify genes and their possible association to another treatment. Respectively, one could have got a possible important gene through literature analysis or comparing every meaningful value in our big database manually, but it is time-consuming and one could lose the overview. The demonstrated scalability and function of our engine does not display the current standard of such engines with a wide range of abilities, being GEMINI and Sigcom LINCS. While further improvements may be considered, our gene search engine occurred to be a useable tool for exploring gene-associated data for an overview and contributes to helping researchers to find their specific gene-treatment interaction.
 # References
 
 # Appendix
