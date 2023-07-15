@@ -95,7 +95,9 @@ By leveraging the genetic association approach and focusing on gene expression a
 
 **Prism.exp:** contains levels of gene expression. Celllines (rows) and genes (columns)
 
-**Prism.cnv:** contains copy number levels of genes. Normal is CN = 2. Gene names (rows) and celllines (columns)
+The copy number data frame contains the copy number of each gene for each cell line used in the PRISM screen. Each row of the data frame represents a specific cell line, while the columns correspond to different genes. The row names and column names of the data frame are assigned using the respective cell line IDs and gene designations.
+The copy number of a gene refers to the number of copies present in the genome of an individual cell. Theoretically, each gene has a copy number of two, because one gene copy of each parent exists in the genome. However, mutations can lead to variations in the copy numbers, resulting in either higher or lower values than the expected two copies.
+
 
 **Prism.snv:** marks mutation in the different celllines als functional or nonfunctional to the cancer.
 

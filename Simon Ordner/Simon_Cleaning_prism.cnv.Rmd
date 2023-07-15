@@ -19,7 +19,7 @@ rm(prism, prism.achilles, prism.exp, prism.snv, prism.treat)
 **Prism.cl:** contains information about the different celllines    
 *if we search after "breast" in the column lineage we get our 22 celllines*
 
-**Prism.cnv:** contains copy number levels of genes. Normal is CN = 2. Gene names (rows) and celllines (columns)
+**Prism.cnv:** contains copy number levels of genes. Normal is CN = 2. Gene names (col) and celllines (row)
 
 ## Clean up of the data
 
