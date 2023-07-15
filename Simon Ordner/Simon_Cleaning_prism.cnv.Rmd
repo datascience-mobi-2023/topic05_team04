@@ -47,23 +47,22 @@ sum(is.na(prism.cnv)) #0 -> no NA values
 
 ```{r Overwiew over breast_prism.cnv}
 par(mfrow = c(1,2));plot(sapply(breast_prism.cnv, mean)); plot(sapply(breast_prism.cnv, median))
-sapply(breast_prism.cnv, min)
-sapply(breast_prism.cnv, max)
-sapply(breast_prism.cnv, sd)
+par(mfrow = c(1,2));plot(sapply(breast_prism.cnv, min)); plot(sapply(breast_prism.cnv, max))
+plot(sapply(breast_prism.cnv, sd))
 ```
 
 
-```{r}
+```{r Heatmap of data for overview}
 library(pheatmap)
 my_breaks <- seq(min(breast_prism.cnv), max(breast_prism.cnv))
-my_palette <- colorRampPalette(c("yellow", "green", "red"), space = "rgb")(6)
+my_palette <- colorRampPalette(c("yellow", "green", "red", "red", "red", "red"), space = "rgb")(6)
 pheatmap(breast_prism.cnv, show_rownames = FALSE, show_colnames = FALSE, cluster_cols = FALSE, cluster_rows = FALSE, col = my_palette, breaks = my_breaks)
-#heatmap does not work yet; i copied a lot from luigis "blau"
+# heatmap does not show a lot
 ```
-```{r}
+```{r Heatmap for Overview of whole prism.cnv}
 library(pheatmap)
 my_breaks_prism.cnv <- seq(min(prism.cnv), max(prism.cnv))
-my_palette <- colorRampPalette(c("yellow", "green", "red"), space = "rgb")(6)
-pheatmap(prism.cnv, show_rownames = FALSE, show_colnames = FALSE, cluster_cols = FALSE, cluster_rows = FALSE, col = my_palette, breaks = my_breaks)
+my_palette_prism.cnv <- colorRampPalette(c("yellow", "green", "red", "red", "red", "red", "red", "red"), space = "rgb")(8)
+pheatmap(prism.cnv, show_rownames = FALSE, show_colnames = FALSE, cluster_cols = FALSE, cluster_rows = FALSE, col = my_palette_prism.cnv, breaks = my_breaks_prism.cnv)
 ```
 

@@ -1,7 +1,0 @@
----
-title: "Step 3"
-author: "Simon Westermann"
-last edited: "22.June 2023"
-output: html_document
----
-
