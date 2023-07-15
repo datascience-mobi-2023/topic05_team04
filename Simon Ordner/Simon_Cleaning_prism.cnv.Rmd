@@ -60,7 +60,6 @@ pheatmap(breast_prism.cnv, show_rownames = FALSE, show_colnames = FALSE, cluster
 # heatmap does not show a lot
 ```
 ```{r Heatmap for Overview of whole prism.cnv}
-library(pheatmap)
 my_breaks_prism.cnv <- seq(min(prism.cnv), max(prism.cnv))
 my_palette_prism.cnv <- colorRampPalette(c("yellow", "green", "red", "red", "red", "red", "red", "red"), space = "rgb")(8)
 pheatmap(prism.cnv, show_rownames = FALSE, show_colnames = FALSE, cluster_cols = FALSE, cluster_rows = FALSE, col = my_palette_prism.cnv, breaks = my_breaks_prism.cnv)
