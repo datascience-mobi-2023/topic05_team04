@@ -2,6 +2,8 @@
 title: "  "
 author: " "
 date: " "
+bibliography: references/ref.bib 
+csl: references/citation_style.csl
 geometry: "margin=2.3cm"
 linestretch: 1.15
 fontsize: 11pt
@@ -9,6 +11,11 @@ output:
   pdf_document:
     number_sections: true
 ---
+```{r, include=FALSE}
+# das ist das package was man braucht. mit dem dahinter sollte eigentlich alles was man braucht runter geladen werden
+install.packages("bookdown", dependencies = TRUE)
+```
+
 
 ```{=tex}
 \pagenumbering{gobble}
@@ -131,6 +138,11 @@ The conclusive outcome of this engine development was a final modified search en
 To compile a list of inhibitory drugs, the first step involved filtering of the prism dataset. This dataset consists of 1396 distinct drugs that were tested on their effect on cell growth at concentrations ranging from 0.000194147 nM to 12.655 nM. Further Analysis showed that every drug was tested at 4 – 8 different doses. In the prism data set, the lowest values, indicate the highest effectiveness. To identify inhibitory drugs, we calculated the average prism score for every drug. Then we specifically chose the concentration that exhibited the lowest average prism score for every drug. To further understand the impact of the doses on the prism score, we compared the concentrations associated with the lowest and highest average prism score for every drug. 
 
 PLOT 1 and PLOT 2
+```{r Chunk Titel, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift, out.width='0.65\\linewidth'}
+
+# hier dann code für den plot eingeben. Oben schreiben wir, dass man die entsprechenden Variablen aus den anderen rmd files laden muss. können wir auch nochmal ganz oben als disclaimer in den package download chunk packen.
+
+```
 
 Once the most effective drug concentration combinations were identified, we proceeded with an additional round of filtering. This time only the drugs resulting in an average prism score lower than -2 were selected. This threshold was chosen because its allowing the removal of 60 % of the provided drugs. 
 
