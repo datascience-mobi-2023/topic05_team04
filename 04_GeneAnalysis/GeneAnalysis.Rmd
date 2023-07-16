@@ -1,21 +1,254 @@
-# y. Aaron
+# 1. cancer hallmarks
 
 ***hallmark dataset***
 ```{r}
-
+library(jsonlite)
 hallmarks <- fromJSON("~/Downloads/h.all.v2023.1.Hs.json.txt")
 
 hallmarks.geneSym <- unlist(lapply(hallmarks, function(x) x$geneSymbols))
 
 hallmarks.data <- as.data.frame(hallmarks.geneSym)
 
-input_string <- rownames(hallmark.genes)[which(hallmark.genes$hallmarks.geneSym%in%w.genes.cancer[1])]
+
+```
+
+# 2. Correlation analysis
+
+#Correlation between gene expression and treatment response
+```{r}
+#This code will take a while to run. It will work though so no worries
+
+exp.treat.cor <- data.frame()  
+
+for (y in 1:ncol(breast_prism_lowest)) {
+  correlation <- c()
+  
+  for (x in 1:ncol(breast_PRISM.exp)) {
+    gene.expression <- breast_PRISM.exp[, x]
+    correlation[x] <- cor(breast_prism_lowest[, y], gene.expression)
+  }
+  
+  
+  
+  if (y == 1) {
+    exp.treat.cor <- correlation  
+  } else {
+    exp.treat.cor <- cbind(exp.treat.cor, correlation)  
+  }
+}
+colnames(exp.treat.cor) <- colnames(breast_prism_lowest)
+rownames(exp.treat.cor) <- colnames(breast_PRISM.exp)
+
+abs.exp.treat.cor <- abs(exp.treat.cor)
+cor.test <- apply(abs.exp.treat.cor, 2, function(x){
+  sum(0.75<x)
+  
+})
+```
+
+
+#Correlation between gene expression and copy number
+```{r}
+#Correlation between copy number and gene expression
+row.order <- c() 
+for (i in 1:nrow(breast_prism.cnv)){
+  row.order <- rbind(row.order, which(rownames(breast_prism.cnv)%in%rownames(breast_PRISM.exp)[i]))
+  }
+#order of rows in the two data frames are not the same
+exp.copy.cor <- data.frame()
+copy.names <- c()
+for (x in 1:ncol(breast_PRISM.exp)){
+  copy.gene <- which(colnames(breast_prism.cnv)%in%colnames(breast_PRISM.exp)[x])
+  if (length(copy.gene) > 0) {
+    copy.cor <- cor(breast_PRISM.exp[,x], breast_prism.cnv[row.order,copy.gene])
+    exp.copy.cor <- rbind(exp.copy.cor, copy.cor)
+    copy.names <- c(copy.names, colnames(breast_PRISM.exp)[x])
+  }
+}
+
+rownames(exp.copy.cor) <- as.vector(copy.names)
+colnames(exp.copy.cor) <- c("correlation")
+
+#Percentage of negative correlations 
+sum(exp.copy.cor<0)/nrow(exp.copy.cor)
+```
+
+#treatments with high correlation to genes
+```{r}
+rel.genes <- list()
+
+for (i in 1:ncol(abs.exp.treat.cor)) {
+  cor.genes <- rownames(abs.exp.treat.cor)[which(abs.exp.treat.cor[, i] > 0.75)]
+  rel.genes[[i]] <- cor.genes
+  
+}
+names(rel.genes) <- colnames(abs.exp.treat.cor)
+all.rel.genes <- rel.genes
+for (k in 1:length(rel.genes)){
+  targets.position <- which(treat.gene_list$`rownames(prism.treat)`%in%names(rel.genes)[k])
+  targets <- treat.gene_list$target[targets.position]
+  all.rel.genes[[k]] <- append(all.rel.genes[[k]], targets)
+}
+```
+
+#frequency of genes in relevant genes list
+```{r}
+list.targets <- as.data.frame(unlist(all.rel.genes)) 
+colnames(list.targets) <- "genes"
+hist.targets <- as.data.frame(table(list.targets))
+```
+
+
+# 3. Statistical testing
+
+#Division of breast cancer cell lines and other cell lines for preparation of tests
+
+```{r}
+#achilles mean tests
+
+
+ach.pos <- unlist(apply(hist.targets, 2, function(x){
+  which(colnames(prism.achilles)%in%x)
+}))
+
+ach.test.rem <- prism.achilles.rm[,ach.pos]
+breast.ach <- ach.test.rem[rownames(prism.achilles.rm) %in% prism.cl[breast.cl, 1],]
+other.ach <-ach.test.rem[-which(rownames(prism.achilles.rm) %in% prism.cl[breast.cl, 1]), ]
+
+
+breast.achilles.mean <- apply(breast.ach, 2, mean)
+other.achilles.mean <- apply(other.ach, 2, mean)
+
+
+ach.low.pos <- which(breast.achilles.mean<0)
+
+
+
+breast.ach.test <- breast.ach[,ach.low.pos]
+other.ach.test <- other.ach[,ach.low.pos]
+
+
+breast_achilles_mean <- breast.achilles.mean[ach.low.pos]
+other_achilles_mean <- other.achilles.mean[ach.low.pos]
+
+
+```
+
+#Statistical test on gene knockout scores
+
+```{r}
+achilles.genes <- c() 
+for(x in 1:length(ach.low.pos))  {
+  result <- wilcox.test(breast.ach.test[, x], other.ach.test[, x], alternative = "less")
+  achilles.genes <- rbind(achilles.genes, result$p.value)
+  
+}
+rownames(achilles.genes) <- colnames(breast.ach.test)
+
+achilles.genes.adj <- as.data.frame(p.adjust(unlist(achilles.genes), method = "fdr"))
+
+rownames(achilles.genes.adj) <- rownames(achilles.genes)
+
+rownames(achilles.genes.adj)[which(achilles.genes.adj<0.05)]
+
+breast_prism.snv <- prism.snv[which(prism.snv$DepMap_ID%in%breast_prism.cl$DepMap_ID),]
+
 
 ```
 
 
+# 4.Selecting for interesting genes
 
-# x. final Gene search engine
+#preparation for final data frame
+
+```{r}
+breast_exp_mean <- apply(breast_prism.exp, 2, mean)
+
+w.genes.cancer <- names(breast.achilles.mean)[which(breast.achilles.mean<(-1))]
+
+targets.treat <- prism.treat_subset[which(prism.treat_subset$`rownames(prism.treat)`%in%colnames(breast_prism_lowest)),]
+
+names.target <- as.vector(targets.treat$name)
+
+
+hallmark.genes <- as.data.frame(hallmarks.geneSym)
+
+```
+
+#Function to shorten names in hallmark data
+
+```{r}
+input_string <- rownames(hallmark.genes)[which(hallmark.genes$hallmarks.geneSym%in%w.genes.cancer[1])]
+
+extract_transform <- function(input_string) {
+  modified_string <- gsub("^HALLMARK_", "", input_string)
+  split_string <- strsplit(modified_string, "_")[[1]]
+  capitalized_words <- sapply(split_string, function(word) {
+    paste0(toupper(substring(word, 1, 1)), substring(word, 2))
+  })
+  transformed_string <- paste(capitalized_words, collapse = " ")
+  
+  return(transformed_string)
+}
+```
+
+#Final data frame with interesting genes
+
+```{r}
+
+Wgene.krebs <- data.frame()
+
+for (gene_name in w.genes.cancer) {
+    frequency_value <- hist.targets[hist.targets$genes == gene_name, "Freq"]
+    achilles_value <- breast.achilles.mean[gene_name]
+    exp_value <- breast_exp_mean[gene_name]
+    p_value <- achilles.genes.adj[gene_name,]
+    if (gene_name%in%hallmark.genes$hallmarks.geneSym){
+      hall.output <- rownames(hallmark.genes)[which(hallmark.genes$hallmarks.geneSym%in%gene_name)]
+      hall.transform <- extract_transform(hall.output)
+      hallmark <- paste(hall.transform, collapse = ", ")
+    }
+      else {
+        hallmark <- c("none")
+      }
+    if (gene_name%in%breast_prism.snv$Hugo_Symbol){
+      mut.pos <- which(gene_name%in%breast_prism.snv$Hugo_Symbol)
+      mutation <- as.vector(breast_prism.snv$Variant_Classification[mut.pos])
+    }
+      else {
+        mutation <- c("none")
+      } 
+    if (gene_name%in%breast_prism.snv$Hugo_Symbol){
+      variant.anno <- which(gene_name%in%breast_prism.snv$Hugo_Symbol)
+      annotation.var <- as.vector(breast_prism.snv$Variant_annotation[variant.anno])
+    }
+      else {
+        annotation.var <- c("none")
+      } 
+    if (gene_name%in%targets.treat$target){
+      names <- paste(names.target[which(targets.treat$target==gene_name)], collapse = ", ")
+      treatments <- trimws(names, whitespace = "right")
+    }
+      else {
+        treatments <- c("none")
+      }
+      
+    new_row <- c(frequency_value, achilles_value, exp_value, p_value, treatments, mutation, hallmark, annotation.var)
+  if (gene_name == w.genes.cancer[1]) {
+    Wgene.krebs <- new_row
+  } 
+    else {
+    Wgene.krebs <- rbind(Wgene.krebs, new_row)
+  }
+}
+
+rownames(Wgene.krebs) <- w.genes.cancer
+
+colnames(Wgene.krebs) <- c("Frequency in list.targets", "mean prism.achilles", "mean prism.exp", "p-value from achilles.genes.adj", "treatments", "mutation", "hallmark", "Mutation consequence")
+```
+
+
+# 5. final Gene search engine
 
 
 ```{r}
