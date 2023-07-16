@@ -13,19 +13,6 @@ input_string <- rownames(hallmark.genes)[which(hallmark.genes$hallmarks.geneSym%
 
 ```
 
-***prism.treat subset***
-```{r}
-
-library(tidyverse)
-
-prism.treat.test <-cbind(prism.treat, rownames(prism.treat))
-
-prism.treat_subset <- prism.treat.test %>% separate_rows(target, sep = ",") 
-
-treat.gene_list <- prism.treat_subset[, c(7, 12)]
-
-```
-
 
 
 # x. final Gene search engine

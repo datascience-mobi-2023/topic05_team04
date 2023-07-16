@@ -164,3 +164,18 @@ drug.overlap <- apply(treat.names, 1, function(x){
 non.onco.treat <- prism.treat[-which(drug.overlap > 0),]
 non.onco.treat <- non.onco.treat[-which("oncology" == non.onco.treat$disease.area),]
 ```
+
+***prism.treat subset***
+
+```{r}
+
+library(tidyverse)
+
+prism.treat.test <-cbind(prism.treat, rownames(prism.treat))
+
+prism.treat_subset <- prism.treat.test %>% separate_rows(target, sep = ",") 
+
+treat.gene_list <- prism.treat_subset[, c(7, 12)]
+
+```
+```

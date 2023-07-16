@@ -128,10 +128,15 @@ The conclusive outcome of this engine development was a final modified search en
 
 
 ## List of inhibitory drugs
-Results von Data clean up und filtering.
-Goal: List of Inhibitory Drugs; Outcome: List of Inhibitory Drugs
-Bilder vergleich liste vergleich ohne threshold und mit threshold
-Maybe oncological drugs rein screenen
+To compile a list of inhibitory drugs, the first step involved filtering of the prism dataset. This dataset consists of 1396 distinct drugs that were tested on their effect on cell growth at concentrations ranging from 0.000194147 nM to 12.655 nM. Further Analysis showed that every drug was tested at 4 – 8 different doses. In the prism data set, the lowest values, indicate the highest effectiveness. To identify inhibitory drugs, we calculated the average prism score for every drug. Then we specifically chose the concentration that exhibited the lowest average prism score for every drug. To further understand the impact of the doses on the prism score, we compared the concentrations associated with the lowest and highest average prism score for every drug. 
+
+PLOT 1 and PLOT 2
+
+Once the most effective drug concentration combinations were identified, we proceeded with an additional round of filtering. This time only the drugs resulting in an average prism score lower than -2 were selected. This threshold was chosen because its allowing the removal of 60 % of the provided drugs. 
+
+PLOT 3
+
+This resulted in a data frame containing 582 inhibitory drugs (columns) and the respective prism scores on 481 cell lines (rows).
 
 ## UMAP
 
@@ -155,8 +160,20 @@ A threshold of absolute correlation greater than 0.75 was applied to select gene
 Moreover, the 3925 preselected genes were compiled into a data frame for further research. Genes with a mean achilles score below -1 for breast cell lines were included in the final data frame. 108 preselected genes fulfilled this criterion. This data frame includes information such as the frequency of high absolute correlation with a treatment, mean expression score, mean prism score and the p-value from the Wilcoxon rank sum test. Furthermore, it provides additional details on gene mutations in breast cancer cell lines, treatments targeting the gene, and its association with any cancer hallmarks. This data frame concludes our gene analysis as it combines our gene selection process with general information we gather about the genes along the way. Two genes showed a high frequency amongst treatments, mTOR and AURKA. These genes were associated with more than 20 treatments during the analysis.
 
 ## Linear regression
-Perform drug by drug to avoid weird plot; For every drug one linear regression, R² Value and with those showing, that many of them are very good. Prediction model for concentration and drug name. Plot um das gnaze zu veranschaulichen;
-Goal: Regression/Prediction model; Outcome: Regression/Prediction model
+Linear regression is a statistical technique to model the relationship between a dependent variable and one or more independent variables and fitting a straight line to the data. We used linear regression models to predict the average prism score based on the concentration for every drug. We created a function that takes drug names as inputs and returns a scatter plot with a linear fit on top and additional information about how well the model performs. This includes the R2 value, and a Shapiro Wilk normality test performed on the residuals. The R2 value is an indicator of how well the straight line fights the data point and if there is a linear relation between the points. The Shapiro Wilk normality test is commonly used to assess if the residuals follow a normal distribution. This is important to evaluate the performance because deviations from normal distribution suggest an underlying true pattern, that is not captured by the model. 
+
+	PLOT 4
+
+Next we created a function which takes drug names and concentration values as an Input and returns  predicted mean cell growth values for the concentration values. 
+
+	Input
+	Output
+	PLOT 5
+
+To further confirm the relationship between concentration and the mean cell growth, we calculated the Pearson correlation for each drug. 
+
+	PLOT 6
+
 
 # Discussion
 
