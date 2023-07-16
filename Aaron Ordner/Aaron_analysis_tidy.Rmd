@@ -93,6 +93,9 @@ for (x in 1:ncol(breast_PRISM.exp)){
 
 rownames(exp.copy.cor) <- as.vector(copy.names)
 colnames(exp.copy.cor) <- c("correlation")
+
+#Percentage of negative correlations 
+sum(exp.copy.cor<0)/nrow(exp.copy.cor)
 ```
 
 #treatments with high correlation to genes
@@ -152,7 +155,7 @@ breast_achilles_mean <- breast.achilles.mean[ach.low.pos]
 other_achilles_mean <- other.achilles.mean[ach.low.pos]
 
 
-
+sum(colnames(prism.achilles%in%hist.targets$genes))
 
 ```
 
@@ -171,6 +174,10 @@ achilles.genes.adj <- as.data.frame(p.adjust(unlist(achilles.genes), method = "f
 rownames(achilles.genes.adj) <- rownames(achilles.genes)
 
 rownames(achilles.genes.adj)[which(achilles.genes.adj<0.05)]
+
+breast_prism.snv <- prism.snv[which(prism.snv$DepMap_ID%in%breast_prism.cl$DepMap_ID),]
+
+
 ```
 
 ```{r}
@@ -182,7 +189,9 @@ targets.treat <- prism.treat_subset[which(prism.treat_subset$`rownames(prism.tre
 
 names.target <- as.vector(targets.treat$name)
 
-breast_prism.snv <- prism.snv[which(prism.snv$DepMap_ID%in%breast_prism.cl$DepMap_ID),]
+
+
+
 
 #For me to make Sharus code work
 #hallmarks <- fromJSON("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/h.all.v2023.1.Hs.json.txt")

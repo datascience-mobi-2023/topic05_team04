@@ -411,6 +411,8 @@ for (x in 1:ncol(breast_PRISM.exp)){
     copy.names <- c(copy.names, colnames(breast_PRISM.exp)[x])
   }
 }
+
+sum(exp.copy.cor<0)/nrow(exp.copy.cor)
 median(exp.copy.cor[,1])
 rownames(exp.copy.cor) <- as.vector(copy.names)
 colnames(exp.copy.cor) <- c("correlation")
@@ -537,6 +539,8 @@ breast_prism.snv <- prism.snv[which(prism.snv$DepMap_ID%in%breast_prism.cl$DepMa
 #hallmarks <- fromJSON("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/h.all.v2023.1.Hs.json.txt")
 hallmark.genes <- as.data.frame(hallmarks.geneSym)
 rownames(hallmark.genes)[which(hallmark.genes$hallmarks.geneSym%in%w.genes.cancer[1])]
+
+
 ```
 
 ```{r}
