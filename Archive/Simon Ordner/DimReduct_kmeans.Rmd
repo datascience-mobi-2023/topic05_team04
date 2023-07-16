@@ -239,7 +239,7 @@ ggplot(umap_layout_prism, aes(x = V1, y = V2, color = levels, alpha = alpha_leve
     geom_point(size = 3) +
     scale_color_manual(values = color_palette0) +
     theme_bw() +
-    ggtitle("UMAP of all celllines")
+    ggtitle("UMAP of MOAs")
 
 
 silhouette_score <- function(k){
@@ -263,28 +263,64 @@ cancercol <- rainbow(20)[cancer_km$cluster]
 ggplot(umap_layout_prism, aes(x = V1, y = V2, color = cancercol)) +
     geom_point(size = 3) +
     theme_bw() +
-    ggtitle("UMAP of clustered celllines") +
+    ggtitle("PCA of clustered MOAs") +
     theme(legend.position = "none")
 p <- ggplot(umap_layout_prism, aes(x = V1, y = V2, color = levels, alpha = alpha_level)) +
   geom_point(size = 3) +
   geom_mark_hull(aes(group = cluster), concavity = 5, expand = 0, radius = 0, color = "black", alpha = 1, show.legend = FALSE) +
   scale_color_manual(values = color_palette0) +
   theme_bw() +
-  ggtitle("UMAP of all cell lines")
+  ggtitle("UMAP of MOAs with encirceld clusters")
 p
 #ggsave("plot.png", plot = p, width = 29.7, height = 21, units = "cm", dpi = 600)
 ```
 
-```{r}
+```{r PCA for comparison}
+# pca with same data as umap
 prism_pca <- prcomp(t(prism_lowest))
+# calculating variance and plotting them
 prism_pca_var <- (prism_pca$sdev)^2
 prism_pca_prop.var <- prism_pca_var/sum(prism_pca_var)
 names(prism_pca_prop.var) <- 1:length(prism_pca_prop.var)
-barplot(prism_pca_prop.var[1:20],ylab='Proportion of variance') # we only plot the first 20 PCs
-ggplot(prism_pca, aes(x = V1, y = V2, color = levels, alpha = alpha_level)) +
+barplot(prism_pca_prop.var[1:20],ylab='Proportion of variance') # only first 20 PCs
+# further processing for plotting
+df_prism_pca <- as.data.frame(prism_pca$x)
+df_prism_pca$levels <- meta_eff_treat$levels
+df_prism_pca <- df_prism_pca %>%
+  mutate(alpha_level = ifelse(levels == "Other", 0.2, 1))
+# plot
+ggplot(df_prism_pca, aes(x = PC1, y = PC2, color = levels, alpha = alpha_level)) +
     geom_point(size = 3) +
     scale_color_manual(values = color_palette0) +
     theme_bw() +
-    ggtitle("UMAP of all celllines")
+    ggtitle("PCA of MOAs")
+# calculating silhouette score for clustering
+silhouette_score <- function(k){
+  km <- kmeans(prism_pca$x, centers = k)
+  s <- silhouette(km$cluster, dist(prism_pca$x))
+  mean(s[, 3])
+}
+k <- 2:20
+avg_s <- sapply(k, silhouette_score) # takes long to calculate
+#best cluster size through silhouette method -> size 2 works best -> anyways 20 beacause moas
+plot(k, type = 'b', avg_s,xlim = c(2,20), ylim = c(min(avg_s)-1,max(avg_s)+1), xlab='Number of clusters', ylab='Average Silhouette Scores'); abline(h = max(avg_s), col = 'red')
+# clustering with kmeans
+pca_km <- kmeans(prism_pca$x, centers = 20)
+# integrating for clustering plot
+df_prism_pca$cluster <- factor(pca_km$cluster)
+pcacol <- rainbow(20)[pca_km$cluster]
+# cluster plot
+ggplot(df_prism_pca, aes(x = PC1, y = PC2, color = pcacol)) +
+    geom_point(size = 3) +
+    theme_bw() +
+    ggtitle("PCA of clustered MOAs") +
+    theme(legend.position = "none")
+# encirceled clusters plot
+ggplot(df_prism_pca, aes(x = PC1, y = PC2, color = levels, alpha = alpha_level)) +
+  geom_point(size = 3) +
+  geom_mark_hull(aes(group = cluster), concavity = 5, expand = 0, radius = 0, color = "black", alpha = 1, show.legend = FALSE) +
+  scale_color_manual(values = color_palette0) +
+  theme_bw() +
+  ggtitle("PCA of MOAs with encirceld clusters")
 ```
 
