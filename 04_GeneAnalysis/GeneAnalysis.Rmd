@@ -1,6 +1,8 @@
-# x. Gene Search Engine
+# y. Aaron
 
+***hallmark dataset***
 ```{r}
+
 hallmarks <- fromJSON("~/Downloads/h.all.v2023.1.Hs.json.txt")
 
 hallmarks.geneSym <- unlist(lapply(hallmarks, function(x) x$geneSymbols))
@@ -10,6 +12,23 @@ hallmarks.data <- as.data.frame(hallmarks.geneSym)
 input_string <- rownames(hallmark.genes)[which(hallmark.genes$hallmarks.geneSym%in%w.genes.cancer[1])]
 
 ```
+
+***prism.treat subset***
+```{r}
+
+library(tidyverse)
+
+prism.treat.test <-cbind(prism.treat, rownames(prism.treat))
+
+prism.treat_subset <- prism.treat.test %>% separate_rows(target, sep = ",") 
+
+treat.gene_list <- prism.treat_subset[, c(7, 12)]
+
+```
+
+
+
+# x. final Gene search engine
 
 
 ```{r}
