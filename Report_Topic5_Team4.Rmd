@@ -90,13 +90,14 @@ By leveraging the genetic association approach and focusing on gene expression a
 **Prism.treat:** for each treatment (rows) further information on the treatment and drug
 
 **Prism.cl:** contains information about the different celllines    
-*if we search after "breast" in the column lineage we get our 22 celllines*
 
 ### Cellline Datasets  
 
 **Prism.exp:** contains levels of gene expression. Celllines (rows) and genes (columns)
 
-**Prism.cnv:** contains copy number levels of genes. Normal is CN = 2. Gene names (rows) and celllines (columns)
+The copy number data frame contains the copy number of each gene for each cell line used in the PRISM screen. Each row of the data frame represents a specific cell line, while the columns correspond to different genes. The row names and column names of the data frame are assigned using the respective cell line IDs and gene designations.
+The copy number of a gene refers to the number of copies present in the genome of an individual cell. Theoretically, each gene has a copy number of two, because one gene copy of each parent exists in the genome. However, mutations can lead to variations in the copy numbers, resulting in either higher or lower values than the expected two copies.
+
 
 **Prism.snv:** marks mutation in the different celllines als functional or nonfunctional to the cancer.
 
@@ -107,8 +108,13 @@ By leveraging the genetic association approach and focusing on gene expression a
 Show distributions after cleanup
 Abbildung für prism vorher nachher. Für andere maybe im Clean up
 
+Before performing the cleanup process, a subset of the data frame was created specifically for the copy number data of the 22 breast cancer cell lines. This subset was obtained by extracting the ID codes of the breast cell lines from the comprehensive data frame that included information on all cell lines used in the PRISM screen. The extracted ID codes were saved in a vector, which was then utilized to construct a new data frame containing the copy number information solely for the 22 breast cell lines.
+Next, both copy number data frames were checked for missing values, and it was determined that no missing values were present. Consequently, the data frames were deemed suitable for further analysis and processing.
+
+
 ## Dimension reduction  
-UMAP -> PCA wird rausgelassen; Plot den Luis gemacht hat. Ist nicht geclustert, aber man kann erkennen, dass die MOA sich in den gleichen areas aufhalten
+
+Uniform Manifold Approximation and Projection (UMAP) was utilized as a method for reducing the dimensionality of data in this study. UMAP is a non-linear technique designed to retain local structure and capture intricate relationships within high-dimensional datasets. The 'umap' function from the 'umap' package in R was employed to apply UMAP. The method involves several steps: initially, pairwise distances are computed between data points using a selected distance metric. Subsequently, a neighborhood graph is constructed by connecting each point to its closest neighbors. UMAP then estimates a fuzzy-topological representation of the data based on this graph, capturing the connectivity strength via a fuzzy simplicial set. To find a low-dimensional representation that minimizes the inconsistency between pairwise similarities in the original high-dimensional space and the reduced space, an optimization process driven by stochastic gradient descent is conducted. This iterative optimization accounts for attractive and repulsive forces, ultimately yielding a lower-dimensional embedding that represents the data. The 'n_neighbors' parameter specifies the number of nearest neighbors considered during graph construction, and the 'min_dist' parameter governs the minimum distance between points in the low-dimensional embedding. The resulting UMAP embedding maintains local structure and provides a visually interpretable representation, facilitating data exploration and analysis.
 
 # Results
 First include positiv results; if space is left include negativ results: UMAP, K means clustering, promoting drugs
@@ -117,9 +123,9 @@ describe goal, describe process, describe outcome
 ## Gene search engine
 Goal: Arbeitsvereinfachung; Outcome: Overview over data
 Für Präsentation als Visualisierungstool pitchen
-Maybe Website, ***Discussion***
+Maybe Website
 
-Analysing the main datasets led to many individual data formats such as data frames, lists etc.; which contain relevant information gathered by our code. ***In general, one could get a possible important gene through literature analysis or comparing every meaningful value in our database manually, which is time-consuming and one could lose track.*** The aim of the function of the search engine was to quickly search for a gene of interest and display its attached values out of our main cell line datasets (prism.exp, prism.achilles, prism.cnv) for a more simple process of gene analysis. Based on this code, applications like looking for suitable treatments in prism.treat, loops which undergo printing every gene and their attached values in breast cancer celllines and the first approach for a relevant final data frame were realized.
+Analysing the main datasets led to many individual data formats such as data frames, lists etc.; which contain relevant information gathered by our code. The aim of the function of the search engine was to quickly search for a gene of interest and display its attached values out of our main cell line datasets (prism.exp, prism.achilles, prism.cnv) for a more simple process of gene analysis. Based on this code, applications like looking for suitable treatments in prism.treat, loops which undergo printing every gene and their attached values in breast cancer celllines and the first approach for a relevant final data frame were realized.
 The conclusive outcome of this engine development was a final modified search engine, in which one can type in the gene of interest and it prints every relevant value or information to get a decisive overview for drug repurposing applications. 
 
 
@@ -129,7 +135,8 @@ Goal: List of Inhibitory Drugs; Outcome: List of Inhibitory Drugs
 Bilder vergleich liste vergleich ohne threshold und mit threshold
 Maybe oncological drugs rein screenen
 
-#UMAP and 
+## UMAP
+
 
 ## Gene analysis
 
@@ -165,6 +172,10 @@ Goal: Regression/Prediction model; Outcome: Regression/Prediction model
 # Discussion
 Search for papers mentioning certain genes found in the targets of the inhibitory drugs or 
 
+
+
+gene search engine:
+An informative gene search engine is a promising advancement in the field of genomic data analysis. Regarding large screenings, utilizing a specific profile as an input to the engine, offers accurate results, enabling other researchers to identify genes and their possible association to another treatment. Respectively, one could have got a possible important gene through literature analysis or comparing every meaningful value in our big database manually, but it is time-consuming and one could lose the overview. The demonstrated scalability and function of our engine does not display the current standard of such engines with a wide range of abilities, being GEMINI and Sigcom LINCS. While further improvements may be considered, our gene search engine occurred to be a useable tool for exploring gene-associated data for an overview and contributes to helping researchers to find their specific gene-treatment interaction.
 # References
 
 # Appendix
