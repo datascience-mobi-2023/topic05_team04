@@ -320,8 +320,8 @@ rel.genes <- list()
 for (i in 1:ncol(abs.exp.treat.cor)) {
   cor.genes <- rownames(abs.exp.treat.cor)[which(abs.exp.treat.cor[, i] > 0.75)]
   rel.genes[[i]] <- cor.genes
-  
 }
+
 names(rel.genes) <- colnames(abs.exp.treat.cor)
 all.rel.genes <- rel.genes
 for (k in 1:length(rel.genes)){
@@ -419,7 +419,14 @@ colnames(exp.copy.cor) <- c("correlation")
 ggplot(exp.copy.cor)+
   geom_histogram(aes(x = correlation))+
   geom_vline(xintercept = 0.324, linetype = "dashed", color = "red")+
-  geom_vline(xintercept = 0.345, linetype = "dashed", color = "blue")
+  geom_vline(xintercept = 0.345, linetype = "dashed", color = "blue")+
+  theme_minimal()+
+  labs(title = "Correlation between gene expression and copy number",
+       x = "Correlation",
+       y = "Count",
+       )+
+  theme(plot.title = element_text(hjust = 0.5),
+        text = element_text(''))
  
  
 
@@ -530,6 +537,8 @@ names.target <- as.data.frame(targets.treat$name)
 
 #targets.treat$name[which(targets.treat$target==gene.name)]
 
+breast_cnv.mean <- apply(breast_prism.cnv, 2, mean)
+
 ```
 
 ```{r}
@@ -568,6 +577,7 @@ for (gene_name in w.genes.cancer) {
     frequency_value <- hist.targets[hist.targets$genes == gene_name, "Freq"]
     achilles_value <- breast.achilles.mean[gene_name]
     exp_value <- breast_exp_mean[gene_name]
+    cnv_value <- breast_cnv.mean[gene_name]
     p_value <- achilles.genes.adj[gene_name,]
     if (gene_name%in%hallmark.genes$hallmarks.geneSym){
       hall.output <- rownames(hallmark.genes)[which(hallmark.genes$hallmarks.geneSym%in%gene_name)]
@@ -592,7 +602,7 @@ for (gene_name in w.genes.cancer) {
         treatments <- c("none")
       }
       
-    new_row <- c(frequency_value, achilles_value, exp_value, p_value, treatments, mutation, hallmark)
+    new_row <- c(frequency_value, achilles_value, exp_value, cnv_value, p_value, treatments, mutation, hallmark)
   if (gene_name == w.genes.cancer[1]) {
     Wgene.krebs <- new_row
   } 
@@ -603,7 +613,7 @@ for (gene_name in w.genes.cancer) {
 
 rownames(Wgene.krebs) <- w.genes.cancer
 
-colnames(Wgene.krebs) <- c("Frequency in list.targets", "mean prism.achilles", "mean prism.exp", "p-value from achilles.genes.adj", "treatments", "mutation", "hallmark")
+colnames(Wgene.krebs) <- c("Frequency in list.targets", "mean prism.achilles", "mean prism.exp", "cnv value", "p-value from achilles.genes.adj", "treatments", "mutation", "hallmark")
 
 ```
 
@@ -685,6 +695,8 @@ hist(colMeans(ach.treat.cor))
 
 ```
 ```{r}
+
+rownames(install.packages())
 
 ```
 

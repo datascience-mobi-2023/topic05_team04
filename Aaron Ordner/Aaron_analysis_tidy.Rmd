@@ -155,8 +155,6 @@ breast_achilles_mean <- breast.achilles.mean[ach.low.pos]
 other_achilles_mean <- other.achilles.mean[ach.low.pos]
 
 
-sum(colnames(prism.achilles%in%hist.targets$genes))
-
 ```
 
 
