@@ -1,0 +1,717 @@
+```{r}
+load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/prism_datasets.rda")
+load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/cellline_datasets.rda")
+
+```
+
+
+###K-means-clustering###
+
+How about a kmeans clustering? 
+
+(cell lines)
+```{r}
+wss.prism <- sapply(1:10, function(x) kmeans(breast_prism_imp, x)$tot.withinss)
+
+plot(1:10, wss.prism, type = "b", xlab = "N of clusters", ylab = "Total within sum of square")
+
+```
+
+(treaments)
+```{r}
+wss.prism <- sapply(1:10, function(x) kmeans(t(breast_prism_lowest), x)$tot.withinss)
+
+plot(1:10, wss.prism, type = "b", xlab = "N of clusters", ylab = "Total within sum of square")
+
+```
+not very helpful...
+
+As a diferent way to look at the amounts of clusters. silhouette plots.
+(cell lines)
+```{r}
+prism.sd <- apply(breast_prism_imp, 2, sd)
+
+prism.rel <- breast_prism_imp[, which(prism.sd>1)]
+
+D <- dist(t(prism.rel))
+library(cluster)
+sil <- vector()
+
+for (k in 1:60) {
+  km <- kmeans(x = t(prism.rel), centers = k, iter.max = 40)
+  s <- silhouette(km$cluster, D)
+  sil <- c(sil, mean(s))
+}
+plot(1:60,sil)
+```
+(treatments)
+```{r}
+D <- dist(t(breast_prism_lowest))
+library(cluster)
+sil <- vector()
+
+for (k in 1:20) {
+  km <- kmeans(x = t(breast_prism_lowest), centers = k, iter.max = 40)
+  s <- silhouette(km$cluster, D)
+  sil <- c(sil, mean(s))
+}
+plot(1:20,sil)
+```
+
+
+The maximal QTR stage has been exceeded. This means we have to reduce the data.
+
+```{r} 
+#trying to do the clustering on the whole prism data
+wss.prism <- sapply(1:10, function(x) kmeans(t(prism_imp), x)$tot.withinss)
+
+plot(1:10, wss.prism, type = "b", xlab = "N of clusters", ylab = "Total within sum of square")
+
+
+
+```
+
+This needs too much computational power
+
+
+
+
+```{r}
+#try to identify the treatments with low sd
+
+prism.sd <- apply(breast_prism_imp, 2, sd)
+
+prism.rel <- breast_prism_imp[, which(prism.sd>1.5)]# relevant treatments
+
+wss.prism <- sapply(1:10, function(x) kmeans(breast_prism_imp, x)$tot.withinss)
+
+plot(1:10, wss.prism, type = "b", xlab = "N of clusters", ylab = "Total within sum of square")
+```
+
+
+
+
+Now I will try something. I want to know drugs that show a high effect on some cell lines. For this I will firstly delete the columns of oncological drugs as there were shown to have a effect on cancer
+```{r}
+
+lowest_cl <- colnames(breast_prism_imp)%in%rownames(lowest_mean_duplicate)
+breast_prism_lowest <- breast_prism_imp[,lowest_cl]
+#breast_prism_lowest has now only the cell lines from lowest_mean_duplicate
+dim(breast_prism_lowest)
+lowest_cl_prism <- colnames(prism_imp)%in%rownames(lowest_mean_duplicate)
+prism_lowest <- prism_imp[,lowest_cl_prism]
+```
+
+```{r}
+sum(is.na(prism.treat$disease.area))/dim(prism.treat)[1]
+#This means 64,7% of disease areas are unknown
+
+
+sum(na.omit("oncology"==prism.treat$disease.area))/dim(prism.treat)[1]
+```
+As not every drug has a specific disease area, we will try to eliminate the oncological drugs via their names.For this we will compare the drugs in prism.treat and in two cancer treatment list, cancer national institute (https://www.cancer.gov/about-cancer/treatment/drugs) and cancer research UK (https://www.cancerresearchuk.org/about-cancer/treatment/drugs) 
+```{r}
+library(readxl)
+cancer.therapy <- read_excel("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/oncological_treatments.xlsx")
+cancer.therapy <- as.data.frame(cancer.therapy)
+treat.names <- as.data.frame(prism.treat$name)
+
+
+drug.overlap <- apply(treat.names, 1, function(x){
+  sum(cancer.therapy==x)
+})
+which(drug.overlap>0)
+
+non.onco.treat <- prism.treat[-which(drug.overlap>0),]
+non.onco.treat <- non.onco.treat[-which("oncology"==non.onco.treat$disease.area),]
+dim(non.onco.treat)[1]/dim(prism.treat)[1]
+#The data frame "non.onco.treat" is now the same as prism.treat but without known oncological drugs
+
+disease.treat <- prism.treat %>% separate_rows(disease.area, sep = ",")
+sum(colnames(prism_lowest)%in%disease.treat$broad_id[which("oncology" == disease.treat$disease.area)&which(" oncology" == disease.treat$disease.area)])
+
+```
+
+```{r}
+non_onco_prism <- prism_lowest[,colnames(prism_lowest)%in%rownames(non.onco.treat)]
+
+                              
+```
+
+
+
+Now we will look at which group of cancers has the highest variance in their treatment response. This will help with the Dimension reduction and the clustering.
+```{r}
+
+lineages <- unique(prism.cl$lineage)
+lineages <- as.data.frame(lineages)
+lineages.distribution <- apply(lineages, 1, function(x) {
+  sum(prism.cl$lineage%in%x)
+})
+rel.cl <- as.data.frame(lineages[which(lineages.distribution >= 10), ])
+prism.all.var <- apply(prism_lowest, 1, var)
+prism.all.var <- as.data.frame(prism.all.var)
+
+
+```
+
+In "prism.all.var are now the variances of all rows of "prism_lowest". Now we will create a data frame that contains the means of the variances of all the lineage with more than 9 cell lines. 
+
+```{r}
+prism.var.mean <- apply(rel.cl, 1, function(x){
+  DepMap_ID <- prism.cl$DepMap_ID[prism.cl$lineage%in%x]
+  test <- c(which(rownames(prism.all.var)%in%DepMap_ID))
+  mean(prism.all.var[test,])
+})
+prism.var.mean <- as.data.frame(prism.var.mean)
+rownames(prism.var.mean) <- as.character(rel.cl[,1])
+
+lineage.amount <- lineages.distribution[which(lineages.distribution >= 10)]
+prism.var.mean$LineageAmount <- lineage.amount
+colnames(prism.var.mean)[1] <- "VarMeans"
+#View(prism.var.mean)
+
+```
+
+
+How about we make a data frame with only the treatments with high variance so that the dimension reduction is easier.
+```{r}
+treat.var <- apply(prism_lowest, 2, var)
+
+rel.treat <- prism_lowest[,treat.var>=1]
+
+```
+
+
+
+
+We test whether there are differences in the prism scores between oncological and non-oncological drugs.
+
+```{r}
+onco.all.treat <- prism.treat[which(drug.overlap>0),]
+
+onco.treat <- prism.treat[which("oncology"==prism.treat$disease.area),]
+
+all_onco_prism <- prism_lowest[,colnames(prism_lowest)%in%rownames(onco.all.treat)]
+
+onco_prism <- prism_lowest[,colnames(prism_lowest)%in%rownames(onco.treat)]
+
+
+library(tidyverse)
+prism.treat.test <-cbind(prism.treat, rownames(prism.treat))
+breast.treat_subset <- prism.treat.test %>% separate_rows(indication, sep = ",")
+
+breast.onco.treat <-prism.treat[which("breast cancer"==breast.treat_subset$indication),]
+
+breast_onco_prism <-breast_prism_lowest[,colnames(prism_lowest)%in%rownames(breast.onco.treat)]
+
+breast.onco.mean <- as.data.frame(apply(breast_onco_prism, 2, mean))
+colnames(breast.onco.mean) <- c("mean")
+
+unique(breast.treat_subset$indication)
+
+prism.mean <- apply(prism_lowest, 2, mean)
+
+
+sum("breast cancer"==breast.treat_subset$indication, na.rm = TRUE)
+
+
+ggplot(breast.onco.mean)+
+  geom_histogram(aes(x = mean))
+
+#non.onco.var <- apply(non_onco_prism, 2, var)
+
+#onco.var <- apply(onco_prism, 2, var)
+
+#Plotting the mean scores for oncological, definite oncological and non oncological drugs
+
+non.onco.mean <- as.data.frame(apply(non_onco_prism, 2, mean))
+colnames(non.onco.mean) <- c("mean")
+all.onco.mean <- as.data.frame(apply(all_onco_prism, 2, mean))
+colnames(all.onco.mean) <- c("mean")
+onco.mean <- as.data.frame(apply(onco_prism, 2, mean))
+colnames(onco.mean) <- c("mean")
+
+non.onco.mean$class <- "non-oncological"
+all.onco.mean$class <- "all oncological"
+onco.mean$class <- "oncological"
+
+
+
+
+
+oncology.mean <- rbind(non.onco.mean, onco.mean, all.onco.mean)
+
+#All of those variables are not normally distributed. This means we have to use a non-parametric test.
+shapiro.test(onco.mean)
+shapiro.test(all.onco.mean)
+shapiro.test(non.onco.mean)
+shapiro.test(prism.mean)
+
+
+ggplot(oncology.mean) + 
+  geom_histogram(aes(x = mean, fill = class), bins = 10)+
+  scale_fill_brewer(palette = 'Set2')+
+  facet_wrap(~class, scales ="free_y")
+```
+```{r}
+#alpha is equal to 5%
+wilcox.test(all.onco.mean, non.onco.mean) #p-value = 0.6546
+wilcox.test(onco.mean, non.onco.mean) #p-value = 0.3249 
+wilcox.test(onco.mean, prism.mean) #p-value = 0.322
+
+#This means that the means are not significantly different.
+
+```
+
+
+
+trying to calculate the correlation between treatment response and gene expression. I'm very unsure if this will work in any way but here we go...
+
+```{r}
+##Run this code once, trust me it will take a while...
+
+exp.treat.cor <- data.frame()  
+
+for (y in 1:ncol(breast_prism_lowest)) {
+  correlation <- c()
+  
+  for (x in 1:ncol(breast_PRISM.exp)) {
+    gene.expression <- breast_PRISM.exp[, x]
+    correlation[x] <- cor(breast_prism_lowest[, y], gene.expression)
+  }
+  
+  
+  
+  if (y == 1) {
+    exp.treat.cor <- correlation  
+  } else {
+    exp.treat.cor <- cbind(exp.treat.cor, correlation)  
+  }
+}
+colnames(exp.treat.cor) <- colnames(breast_prism_lowest)
+rownames(exp.treat.cor) <- colnames(breast_PRISM.exp)
+```
+
+```{r}
+mean.exp.treat.cor <- colMeans(exp.treat.cor)
+hist(exp.treat.cor)
+```
+
+
+Finding out which gene has a high absolute correlation with the treatment response.
+
+
+```{r}
+abs.exp.treat.cor <- abs(exp.treat.cor)
+cor.test <- apply(abs.exp.treat.cor, 2, function(x){
+  sum(0.75<x)
+  
+}) #0.75 is the mean and median of the maximum absolute correlations 
+
+
+
+```
+
+Testing if the correlation also means that there is a signifikant difference between the means of the treatment response in comparison to all the other treatment responses.
+```{r}
+rel.genes <- list()
+
+for (i in 1:ncol(abs.exp.treat.cor)) {
+  cor.genes <- rownames(abs.exp.treat.cor)[which(abs.exp.treat.cor[, i] > 0.75)]
+  rel.genes[[i]] <- cor.genes
+}
+
+names(rel.genes) <- colnames(abs.exp.treat.cor)
+all.rel.genes <- rel.genes
+for (k in 1:length(rel.genes)){
+  targets.position <- which(treat.gene_list$`rownames(prism.treat)`%in%names(rel.genes)[k])
+  targets <- treat.gene_list$target[targets.position]
+  all.rel.genes[[k]] <- append(all.rel.genes[[k]], targets)
+}
+```
+
+Now we investigate which genes appear the most often in all.rel.genes
+
+```{r}
+library(ggplot2)
+
+list.targets <- as.data.frame(unlist(all.rel.genes)) 
+colnames(list.targets) <- "genes"
+hist.targets <- as.data.frame(table(list.targets)) #important
+
+freq.targets <- as.data.frame(table(hist.targets$Freq))
+
+imp.targets <- hist.targets[which(hist.targets[,2]>5),]
+
+target.order <- order(imp.targets$Freq)
+
+imp.targets.order <- imp.targets[rev(target.order),]
+
+most.targets <- hist.targets[which(hist.targets[,2]>10),]
+
+
+
+
+
+
+
+ggplot(imp.targets) +
+  geom_bar(stat = "identity", aes(x = genes, y = Freq), fill = "#66CC99")+  
+  labs(title = "Histogramm of Gene targets and potential gene targets",
+       x = "Genes",
+       y = "Frequency") +
+  theme_minimal()+
+  theme(axis.text.x = element_blank())+
+  geom_abline(slope=0, intercept= 15, colour="red", linetype="dashed")
+
+
+
+
+ggplot(imp.targets.order) +
+  geom_bar(stat = "identity", aes(x = reorder(genes, -Freq), y = Freq), fill = "#66CC99")+  
+  labs(title = "Histogramm of Gene targets and potential gene targets",
+       x = "Genes",
+       y = "Frequency") +
+  theme_minimal()+
+  theme(axis.text.x = element_blank())+
+  geom_abline(slope=0, intercept= 15, colour="red", linetype="dashed")
+
+
+ggplot(freq.targets)+
+  geom_bar(stat = "identity", aes(x = Var1, y=Freq))+
+  scale_y_continuous(trans ='log10')
+
+ggplot(most.targets) +
+  geom_bar(stat = "identity", aes(x = genes, y = Freq), fill = "#9999CC")+  
+  labs(title = "Histogramm of most Important Gene targets and potential gene targets",
+       x = "Genes",
+       y = "Frequency") +
+  theme_minimal()+
+  theme(axis.text.x = element_blank())
+```
+
+
+
+```{r}
+library(ggplot2)
+#Correlation between copy number and gene expression
+row.order <- c() 
+for (i in 1:nrow(breast_prism.cnv)){
+  row.order <- rbind(row.order, which(rownames(breast_prism.cnv)%in%rownames(breast_PRISM.exp)[i]))
+  }
+#order of rows in the two data frames are not the same
+exp.copy.cor <- data.frame()
+copy.names <- c()
+for (x in 1:ncol(breast_PRISM.exp)){
+  copy.gene <- which(colnames(breast_prism.cnv)%in%colnames(breast_PRISM.exp)[x])
+  if (length(copy.gene) > 0) {
+    copy.cor <- cor(breast_PRISM.exp[,x], breast_prism.cnv[row.order,copy.gene])
+    exp.copy.cor <- rbind(exp.copy.cor, copy.cor)
+    copy.names <- c(copy.names, colnames(breast_PRISM.exp)[x])
+  }
+}
+
+sum(exp.copy.cor<0)/nrow(exp.copy.cor)
+median(exp.copy.cor[,1])
+rownames(exp.copy.cor) <- as.vector(copy.names)
+colnames(exp.copy.cor) <- c("correlation")
+ggplot(exp.copy.cor)+
+  geom_histogram(aes(x = correlation))+
+  geom_vline(xintercept = 0.324, linetype = "dashed", color = "red")+
+  geom_vline(xintercept = 0.345, linetype = "dashed", color = "blue")+
+  theme_minimal()+
+  labs(title = "Correlation between gene expression and copy number",
+       x = "Correlation",
+       y = "Count",
+       )+
+  theme(plot.title = element_text(hjust = 0.5),
+        text = element_text(''))
+ 
+ 
+
+```
+
+```{r}
+#install.packages("extrafont", ask = FALSE)
+#library(extrafont)
+#font_import()
+```
+
+
+
+
+```{r}
+#achilles mean tests
+
+
+ach.pos <- unlist(apply(hist.targets, 2, function(x){
+  which(colnames(prism.achilles)%in%x)
+}))
+
+ach.test.rem <- prism.achilles.rm[,ach.pos]
+breast.ach <- ach.test.rem[rownames(prism.achilles.rm) %in% prism.cl[breast.cl, 1],]
+other.ach <-ach.test.rem[-which(rownames(prism.achilles.rm) %in% prism.cl[breast.cl, 1]), ]
+
+
+breast.achilles.mean <- apply(breast.ach, 2, mean)
+other.achilles.mean <- apply(other.ach, 2, mean)
+
+
+ach.low.pos <- which(breast.achilles.mean<0)
+
+
+
+breast.ach.test <- breast.ach[,ach.low.pos]
+other.ach.test <- other.ach[,ach.low.pos]
+
+
+breast_achilles_mean <- breast.achilles.mean[ach.low.pos]
+other_achilles_mean <- other.achilles.mean[ach.low.pos]
+
+#ach.norm.test <- apply(breast.ach.test, 2, shapiro.test)
+
+
+
+achilles.genes <- c() 
+for(x in 1:length(ach.low.pos))  {
+  result <- wilcox.test(breast.ach.test[, x], other.ach.test[, x], alternative = "less")
+  achilles.genes <- rbind(achilles.genes, result$p.value)
+  
+}
+rownames(achilles.genes) <- colnames(breast.ach.test)
+
+
+
+
+
+boxplot.data.breast <- as.data.frame(prism.achilles.breast[,"SDHC"])
+colnames(boxplot.data.breast) <- "SDHC"
+boxplot.data.breast$lineage<- "breast"
+boxplot.data.other <- as.data.frame(prism.achilles.rm[-breast.cl,"SDHC"])
+colnames(boxplot.data.other) <- "SDHC"
+boxplot.data.other$lineage <- "other"
+achilles.boxplot <- rbind(boxplot.data.breast, boxplot.data.other)
+
+
+ggplot(achilles.boxplot)+
+  geom_boxplot(aes(x = lineage, y = SDHC), fill = "lightgrey")+
+  theme_minimal()+
+  labs(title = "Prism.achilles scores for gene SDHC",
+       x = "Lineage",
+       y = "Achilles score",
+       )+
+  theme(plot.title = element_text(hjust = 0.5),
+        text = element_text(''))
+
+
+#here boxplots to show the need for statistical tests
+```
+
+```{r}
+min(as.data.frame(achilles.genes))
+
+achilles.genes.adj <- as.data.frame(p.adjust(unlist(achilles.genes), method = "fdr"))
+
+rownames(achilles.genes.adj) <- rownames(achilles.genes)
+
+min(achilles.genes.adj)
+
+which(achilles.genes.adj<0.05)
+
+rownames(achilles.genes)[1403]
+#rownames(achilles.genes)[c(276,  564,  718,  796,  936,  988, 1022)]
+
+```
+```{r}
+which(exp.treat.cor["SDHC",] == min(exp.treat.cor["SDHC",]))
+
+max(exp.treat.cor["SDHC",])
+
+
+```
+
+
+```{r}
+w.genes.cancer <- names(breast.achilles.mean)[which(breast.achilles.mean<(-1))]
+
+breast_exp_mean <- apply(breast_prism.exp, 2, mean)
+
+
+targets.treat <- prism.treat_subset[which(prism.treat_subset$`rownames(prism.treat)`%in%colnames(breast_prism_lowest)),]
+
+names.target <- as.data.frame(targets.treat$name)
+
+#targets.treat$name[which(targets.treat$target==gene.name)]
+
+breast_cnv.mean <- apply(breast_prism.cnv, 2, mean)
+
+```
+
+```{r}
+breast_prism.snv <- prism.snv[which(prism.snv$DepMap_ID%in%breast_prism.cl$DepMap_ID),]
+
+#For me to make Sharus code work
+#hallmarks <- fromJSON("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/h.all.v2023.1.Hs.json.txt")
+hallmark.genes <- as.data.frame(hallmarks.geneSym)
+rownames(hallmark.genes)[which(hallmark.genes$hallmarks.geneSym%in%w.genes.cancer[1])]
+
+
+```
+
+```{r}
+input_string <- rownames(hallmark.genes)[which(hallmark.genes$hallmarks.geneSym%in%w.genes.cancer[1])]
+
+extract_transform <- function(input_string) {
+  modified_string <- gsub("^HALLMARK_", "", input_string)
+  split_string <- strsplit(modified_string, "_")[[1]]
+  capitalized_words <- sapply(split_string, function(word) {
+    paste0(toupper(substring(word, 1, 1)), substring(word, 2))
+  })
+  transformed_string <- paste(capitalized_words, collapse = " ")
+  
+  return(transformed_string)
+}
+
+
+```
+
+
+```{r}
+Wgene.krebs <- data.frame()
+
+for (gene_name in w.genes.cancer) {
+    frequency_value <- hist.targets[hist.targets$genes == gene_name, "Freq"]
+    achilles_value <- breast.achilles.mean[gene_name]
+    exp_value <- breast_exp_mean[gene_name]
+    cnv_value <- breast_cnv.mean[gene_name]
+    p_value <- achilles.genes.adj[gene_name,]
+    if (gene_name%in%hallmark.genes$hallmarks.geneSym){
+      hall.output <- rownames(hallmark.genes)[which(hallmark.genes$hallmarks.geneSym%in%gene_name)]
+      hall.transform <- extract_transform(hall.output)
+      hallmark <- paste(hall.transform, collapse = ", ")
+    }
+      else {
+        hallmark <- c("none")
+      }
+    if (gene_name%in%breast_prism.snv$Hugo_Symbol){
+      mut.pos <- which(gene_name%in%breast_prism.snv$Hugo_Symbol)
+      mutation <- as.vector(breast_prism.snv$Variant_Classification[mut.pos])
+    }
+      else {
+        mutation <- c("none")
+      } 
+    if (gene_name%in%targets.treat$target){
+      names <- paste(names.target[which(targets.treat$target==gene_name)], collapse = ", ")
+      treatments <- trimws(names, whitespace = "right")
+    }
+      else {
+        treatments <- c("none")
+      }
+      
+    new_row <- c(frequency_value, achilles_value, exp_value, cnv_value, p_value, treatments, mutation, hallmark)
+  if (gene_name == w.genes.cancer[1]) {
+    Wgene.krebs <- new_row
+  } 
+    else {
+    Wgene.krebs <- rbind(Wgene.krebs, new_row)
+  }
+}
+
+rownames(Wgene.krebs) <- w.genes.cancer
+
+colnames(Wgene.krebs) <- c("Frequency in list.targets", "mean prism.achilles", "mean prism.exp", "cnv value", "p-value from achilles.genes.adj", "treatments", "mutation", "hallmark")
+
+```
+
+
+
+```{r}
+mean.achilles.dif <- as.data.frame(breast_achilles_mean - other_achilles_mean)
+colnames(mean.achilles.dif) <- c("difference")
+ggplot(mean.achilles.dif)+
+  geom_histogram(aes(x = difference, fill = difference >0.5))+
+  scale_y_continuous(trans ='log10')+
+  labs(title = "Differences in mean prism.achilles-score between breast cancer and other lineages",
+       x = "mean differences",
+       y = "count log10-transformed")
+```
+
+
+
+
+```{r}
+#Sharu Quatsch
+pca_scores <- pca$x[, c(1, 2)]
+pca_data <- data.frame(PC1 = pca_scores[, 1], PC2 = pca_scores[, 2])
+
+rows <- c()
+for (i in 1:nrow(breast_prism.cl)){
+  rows <- rbind(rows, which(rownames(pca_data)%in%breast_prism.cl$DepMap_ID[i]))
+  }
+pca_data <- pca_data[rows,]
+pca_data <- cbind(pca_data, breast_prism.cl$lineage_subtype)
+colnames(pca_data)[3] <- c("subtype")
+ggplot(pca_data) +
+  geom_point(aes(x = PC1, y = PC2, colour = subtype))
+```
+
+```{r}
+#Für Sharu
+
+name.id <- as.data.frame(prism.treat$name)
+name.id <- cbind(name.id, rownames(prism.treat))
+colnames(name.id) <- c("name", "ID")
+```
+Test
+```{r}
+ach.treat.cor <- data.frame()
+
+ach.order <- c() 
+for (i in 1:nrow(prism.achilles.breast)){
+  ach.order <- rbind(ach.order, which(rownames(breast_prism_lowest)%in%rownames(prism.achilles.breast)[i]))
+  }
+
+test.breast.lowest <- breast_prism_lowest[ach.order,]
+
+for (y in 1:ncol(test.breast.lowest)) {
+  correlation <- c()
+  
+  for (x in 1:ncol(prism.achilles.breast)) {
+    ach.score <- prism.achilles.breast[, x]
+    correlation[x] <- cor(test.breast.lowest[, y], ach.score)
+  }
+  
+  
+  
+  if (y == 1) {
+    ach.treat.cor <- correlation  
+  } else {
+    ach.treat.cor <- cbind(ach.treat.cor, correlation)  
+  }
+}
+colnames(ach.treat.cor) <- colnames(test.breast.lowest)
+rownames(ach.treat.cor) <- colnames(prism.achilles.breast)
+```
+
+```{r}
+max.ach.treat.cor <- apply(abs(ach.treat.cor), 2, max)
+mean(max.ach.treat.cor)
+hist(colMeans(ach.treat.cor))
+
+
+```
+```{r}
+
+rownames(install.packages())
+
+```
+
+
+```{r}
+#junkyard
+
+
+```
+
+

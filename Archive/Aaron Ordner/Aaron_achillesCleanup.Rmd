@@ -96,7 +96,7 @@ hist(prism.achilles.overview[,5], main = "maximum of all the prism.achilles gene
 breast.cl <- which(prism.cl[,"lineage"] == "breast")
 prism.achilles.breast <- prism.achilles.rm[rownames(prism.achilles.rm) %in% prism.cl[breast.cl, 1], ]
 library(pheatmap)
-#pheatmap(prism.achilles.breast, show_colnames = FALSE)
+pheatmap(prism.achilles.breast, show_colnames = FALSE)
 ```
 
 
