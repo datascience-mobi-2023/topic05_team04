@@ -7,10 +7,12 @@ library(umap) #install.packages("umap")
 library(readxl) #install.packages("readxl")
 library(scales) #install.packages("scales")
 library(dplyr)  #install.packages("dplyr")
+library(httr) #install.packages("httr")
 #library(tidyverse) #install.packages("tidyverse")
 # --------------------------------- #
 load("Data/prism_datasets.rda")
 load("Data/cellline_datasets.rda")
+url <- "https://raw.githubusercontent.com/datascience-mobi-2023/topic05_team04/tree/main/07_extdata/oncological_treatments.xlsx"
 ```
 ```{r}
 ## Checkt wie viele Zeilen und Spalten NA`s drin habe
