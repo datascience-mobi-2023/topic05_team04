@@ -19,6 +19,10 @@ targets.treat <- prism.treat_subset[which(prism.treat_subset$`rownames(prism.tre
 
 breast_cnv.mean <- apply(breast_prism.cnv, 2, mean)
 
+exp.mean.mean <- as.data.frame(breast_exp_mean)
+
+apply(exp.mean.mean, 2, mean)
+
 
 #class(hallmarks.geneSym)
 
@@ -148,7 +152,6 @@ geneSearchEngine <- function(x) {
 }
 
 geneSearchEngine("ESR1")
-
 
 
 ```
