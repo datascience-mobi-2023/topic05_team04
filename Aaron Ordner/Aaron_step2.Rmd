@@ -705,6 +705,9 @@ hist(colMeans(ach.treat.cor))
 
 rownames(install.packages())
 
+
+sum(abs(exp.treat.cor["AURKA",])>0.75)
+
 ```
 
 
