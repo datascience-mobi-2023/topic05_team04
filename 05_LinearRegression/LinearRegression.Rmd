@@ -22,6 +22,7 @@ for(i in 1:length(duplicate_drugs_b)) {
     }
 }
 ```
+
 ```{r}
 ###############################
 ###### LINEAR REGRESSION ###### Luis
@@ -77,6 +78,7 @@ plot_reg <- function(drugname) {
     return(ggplot)
 }
 ```
+
 ```{r}
 #######################
 ### PREDICTION TOOL ###

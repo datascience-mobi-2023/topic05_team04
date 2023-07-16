@@ -552,7 +552,7 @@ breast_cnv.mean <- apply(breast_prism.cnv, 2, mean)
 breast_prism.snv <- prism.snv[which(prism.snv$DepMap_ID%in%breast_prism.cl$DepMap_ID),]
 
 #For me to make Sharus code work
-#hallmarks <- fromJSON("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/h.all.v2023.1.Hs.json.txt")
+hallmarks <- fromJSON("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/h.all.v2023.1.Hs.json.txt")
 hallmark.genes <- as.data.frame(hallmarks.geneSym)
 rownames(hallmark.genes)[which(hallmark.genes$hallmarks.geneSym%in%w.genes.cancer[1])]
 
@@ -663,6 +663,11 @@ name.id <- as.data.frame(prism.treat$name)
 name.id <- cbind(name.id, rownames(prism.treat))
 colnames(name.id) <- c("name", "ID")
 ```
+```{r}
+ hist.targets[list.targets$genes == "AURKA", ]
+```
+
+
 Test
 ```{r}
 ach.treat.cor <- data.frame()

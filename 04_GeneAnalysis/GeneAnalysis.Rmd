@@ -2,6 +2,8 @@
 
 ***hallmark dataset***
 ```{r}
+
+#######Problems with data loading
 library(jsonlite)
 hallmarks <- fromJSON("~/Downloads/h.all.v2023.1.Hs.json.txt")
 
@@ -106,6 +108,7 @@ hist.targets <- as.data.frame(table(list.targets))
 ```{r}
 #achilles mean tests
 
+breast.cl <- which(prism.cl[,"lineage"] == "breast")
 
 ach.pos <- unlist(apply(hist.targets, 2, function(x){
   which(colnames(prism.achilles)%in%x)
@@ -173,12 +176,12 @@ names.target <- as.vector(targets.treat$name)
 
 hallmark.genes <- as.data.frame(hallmarks.geneSym)
 
+breast_cnv.mean <- apply(breast_prism.cnv, 2, mean)
 ```
 
 #Function to shorten names in hallmark data
 
 ```{r}
-input_string <- rownames(hallmark.genes)[which(hallmark.genes$hallmarks.geneSym%in%w.genes.cancer[1])]
 
 extract_transform <- function(input_string) {
   modified_string <- gsub("^HALLMARK_", "", input_string)
@@ -195,13 +198,13 @@ extract_transform <- function(input_string) {
 #Final data frame with interesting genes
 
 ```{r}
-
 Wgene.krebs <- data.frame()
 
 for (gene_name in w.genes.cancer) {
     frequency_value <- hist.targets[hist.targets$genes == gene_name, "Freq"]
     achilles_value <- breast.achilles.mean[gene_name]
     exp_value <- breast_exp_mean[gene_name]
+    cnv_value <- breast_cnv.mean[gene_name]
     p_value <- achilles.genes.adj[gene_name,]
     if (gene_name%in%hallmark.genes$hallmarks.geneSym){
       hall.output <- rownames(hallmark.genes)[which(hallmark.genes$hallmarks.geneSym%in%gene_name)]
@@ -218,13 +221,6 @@ for (gene_name in w.genes.cancer) {
       else {
         mutation <- c("none")
       } 
-    if (gene_name%in%breast_prism.snv$Hugo_Symbol){
-      variant.anno <- which(gene_name%in%breast_prism.snv$Hugo_Symbol)
-      annotation.var <- as.vector(breast_prism.snv$Variant_annotation[variant.anno])
-    }
-      else {
-        annotation.var <- c("none")
-      } 
     if (gene_name%in%targets.treat$target){
       names <- paste(names.target[which(targets.treat$target==gene_name)], collapse = ", ")
       treatments <- trimws(names, whitespace = "right")
@@ -233,7 +229,7 @@ for (gene_name in w.genes.cancer) {
         treatments <- c("none")
       }
       
-    new_row <- c(frequency_value, achilles_value, exp_value, p_value, treatments, mutation, hallmark, annotation.var)
+    new_row <- c(frequency_value, achilles_value, exp_value, cnv_value, p_value, treatments, mutation, hallmark)
   if (gene_name == w.genes.cancer[1]) {
     Wgene.krebs <- new_row
   } 
@@ -244,7 +240,7 @@ for (gene_name in w.genes.cancer) {
 
 rownames(Wgene.krebs) <- w.genes.cancer
 
-colnames(Wgene.krebs) <- c("Frequency in list.targets", "mean prism.achilles", "mean prism.exp", "p-value from achilles.genes.adj", "treatments", "mutation", "hallmark", "Mutation consequence")
+colnames(Wgene.krebs) <- c("Frequency in list.targets", "mean prism.achilles", "mean prism.exp", "cnv value", "p-value from achilles.genes.adj", "treatments", "mutation", "hallmark")
 ```
 
 
