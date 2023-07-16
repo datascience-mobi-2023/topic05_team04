@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heidelberg/Module/BioInfo/BioInfoProjekt/prism_datasets.rda")
 load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heidelberg/Module/BioInfo/BioInfoProjekt/cellline_datasets.rda")
-rm(prism, prism.achilles, prism.exp, prism.snv, prism.treat)
+#rm(prism, prism.achilles, prism.exp, prism.snv, prism.treat)
 ```
 
 **Prism.cl:** contains information about the different celllines    
