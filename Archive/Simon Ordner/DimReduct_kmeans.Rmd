@@ -226,11 +226,10 @@ plot(breast_cancer_umap$layout[,1], breast_cancer_umap$layout[,2],
      main='Clustering of drugs'); abline(h = 0, col = 'orange'); abline(v = 0, col = 'orange')
 ```
 
+```{r }
 
-```{r Umap from luis and cluster by simon}
-prism_umap1 <- umap(t(prism_lowest), n_neighbors = 7, min_dist = 0.5, n_epochs = 200, n_components = 2) 
-umap_layout_prism <- as.data.frame(prism_umap1$layout)
-
+prism_umap <- umap(t(prism_lowest), n_neighbors = 7, min_dist = 0.5, n_epochs = 200, n_components = 2) 
+umap_layout_prism <- as.data.frame(prism_umap$layout)
 umap_layout_prism$levels <- meta_eff_treat$levels
 
 umap_layout_prism <- umap_layout_prism %>%
@@ -242,53 +241,10 @@ ggplot(umap_layout_prism, aes(x = V1, y = V2, color = levels, alpha = alpha_leve
     theme_bw() +
     ggtitle("UMAP of all celllines")
 
-##clustering of this UMAP
-silhouette_score <- function(k){
-  km <- kmeans(prism_umap1$layout, centers = k)
-  s <- silhouette(km$cluster, dist(prism_umap1$layout))
-  mean(s[, 3])
-}
-k <- 2:20
-avg_s <- sapply(k, silhouette_score)
-#best cluster size through silhouette method -> size 3 works best .> trotzdem 20 genommen
-plot(k, type = 'b', avg_s,xlim = c(2,20), ylim = c(0.34,0.59), xlab='Number of clusters', ylab='Average Silhouette Scores'); abline(h = max(avg_s), col = 'red')
-
-##trying 20 centers for clustering to cluster unknown moa
-cancer_km1 <- kmeans(prism_umap1$layout, centers = 20)
-umap_layout_prism$cluster <- cancer_km1$cluster
-cancercol0 <- c(setNames(rainbow(20)[cancer_km1$cluster], top_x_levels))
-#plot(umap_layout_prism[,1], umap_layout_prism[,2], 
-#     col= cancercol0, pch=19,
-#     xlab='V1',ylab='V2',
-#     main='Clustering of drugs')#; abline(h = 0, col = 'orange'); abline(v = 0, col = 'orange')
-
-ggplot(umap_layout_prism, aes(x = V1, y = V2, color = cancercol0)) +
-    geom_point(size = 3) +
-    theme_bw() +
-    ggtitle("UMAP of clustered celllines") +
-    theme(legend.position = "none")
-
-```
-
-```{r}
-
-prism_umap2 <- umap(t(prism_lowest), n_neighbors = 7, min_dist = 0.5, n_epochs = 200, n_components = 2) 
-umap2_layout_prism <- as.data.frame(prism_umap2$layout)
-umap2_layout_prism$levels <- meta_eff_treat$levels
-
-umap2_layout_prism <- umap2_layout_prism %>%
-  mutate(alpha_level = ifelse(levels == "Other", 0.2, 1))
-
-ggplot(umap2_layout_prism, aes(x = V1, y = V2, color = levels, alpha = alpha_level)) +
-    geom_point(size = 3) +
-    scale_color_manual(values = color_palette0) +
-    theme_bw() +
-    ggtitle("UMAP of all celllines")
-
 
 silhouette_score <- function(k){
-  km <- kmeans(prism_umap2$layout, centers = k)
-  s <- silhouette(km$cluster, dist(prism_umap2$layout))
+  km <- kmeans(prism_umap$layout, centers = k)
+  s <- silhouette(km$cluster, dist(prism_umap$layout))
   mean(s[, 3])
 }
 k <- 2:20
@@ -297,21 +253,38 @@ avg_s <- sapply(k, silhouette_score)
 plot(k, type = 'b', avg_s,xlim = c(2,20), ylim = c(0.34,0.59), xlab='Number of clusters', ylab='Average Silhouette Scores'); abline(h = max(avg_s), col = 'red')
 
 ##trying 20 centers for clustering to cluster
-cancer_km2 <- kmeans(prism_umap2$layout, centers = 20)
-umap2_layout_prism$cluster <- factor(cancer_km2$cluster)
-cancercol1 <- rainbow(20)[cancer_km2$cluster]
-#plot(umap2_layout_prism[,1], umap2_layout_prism[,2], 
-#     col= cancercol1, pch=19,
+cancer_km <- kmeans(prism_umap$layout, centers = 20)
+umap_layout_prism$cluster <- factor(cancer_km$cluster)
+cancercol <- rainbow(20)[cancer_km$cluster]
+#plot(umap_layout_prism[,1], umap_layout_prism[,2], 
+#     col= cancercol, pch=19,
 #     xlab='V1',ylab='V2',
 #     main='Clustering of drugs')
-
-p <- ggplot(umap2_layout_prism, aes(x = V1, y = V2, color = levels, alpha = alpha_level)) +
+ggplot(umap_layout_prism, aes(x = V1, y = V2, color = cancercol)) +
+    geom_point(size = 3) +
+    theme_bw() +
+    ggtitle("UMAP of clustered celllines") +
+    theme(legend.position = "none")
+p <- ggplot(umap_layout_prism, aes(x = V1, y = V2, color = levels, alpha = alpha_level)) +
   geom_point(size = 3) +
   geom_mark_hull(aes(group = cluster), concavity = 5, expand = 0, radius = 0, color = "black", alpha = 1, show.legend = FALSE) +
   scale_color_manual(values = color_palette0) +
   theme_bw() +
   ggtitle("UMAP of all cell lines")
 p
-ggsave("plot.png", plot = p, width = 29.7, height = 21, units = "cm", dpi = 600)
+#ggsave("plot.png", plot = p, width = 29.7, height = 21, units = "cm", dpi = 600)
+```
+
+```{r}
+prism_pca <- prcomp(t(prism_lowest))
+prism_pca_var <- (prism_pca$sdev)^2
+prism_pca_prop.var <- prism_pca_var/sum(prism_pca_var)
+names(prism_pca_prop.var) <- 1:length(prism_pca_prop.var)
+barplot(prism_pca_prop.var[1:20],ylab='Proportion of variance') # we only plot the first 20 PCs
+ggplot(prism_pca, aes(x = V1, y = V2, color = levels, alpha = alpha_level)) +
+    geom_point(size = 3) +
+    scale_color_manual(values = color_palette0) +
+    theme_bw() +
+    ggtitle("UMAP of all celllines")
 ```
 
