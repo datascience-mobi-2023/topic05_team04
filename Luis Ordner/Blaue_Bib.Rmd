@@ -255,7 +255,7 @@ for(i in 1:length(duplicate_drugs_b)) {
         r_squared_b <- c(r_squared_b, summary(act_reg_b)$r.squared)
     }
 }
-testname <- "BRD-A07986123-001-02-8"
+testname <- "BRD-K99383816-001-03-5"
 #######################
 ### PLOT REGRESSION ###
 #######################
@@ -460,6 +460,29 @@ summary(model_prism) # <---! linear regression of the drugs on prism-->
 ######################
 ### VISUALISATIONS ###
 ######################
+# --------------------------- #
+### Concentraion comparison ###
+# -------------------------- #
+#hist(as.numeric(lowest_mean_duplicate_b$concentration_b))
+#### Plot 1
+ggplot() +
+    geom_histogram(aes(x = lowest_mean_duplicate_b$concentration_b), bins = 10, fill = "coral") + 
+    labs(title = "Lowest mean Cell growth and respective concentraions", x = "Concentration", y = "Count")
+#hist(as.numeric(highest_mean_duplicate_b$concentration_b))
+#### Plot 2
+ggplot() +
+    geom_histogram(aes(x = highest_mean_duplicate_b$concentration_b), bins = 10, fill = "steelblue") + 
+    labs(title = "Highest mean Cell growth and respective concentraions", x = "Concentration", y = "Count")
+# --------------------------------- #
+### Cell Growth of filtered drugs ###
+# --------------------------------- #
+#### Plot 3
+inhibitory_fil <- lowest_mean_duplicate_b$colMeans_breast < -2
+ggplot() +
+    geom_histogram(aes(x = lowest_mean_duplicate_b$colMeans_breast, fill = inhibitory_fil), bins = 30) +
+    labs(title = "Cell Growth of filtered drugs", x = "log2FC", y = "Count", fill = "Inhibitory") +
+    scale_fill_discrete(labels = c("> -2", "< -2")) +
+    scale_fill_manual(values = c("coral", "steelblue2"))
 # ---------------------------- #
 ### Cell Growth of all drugs ###
 # ---------------------------- #
@@ -470,13 +493,16 @@ ggplot() +
     geom_histogram(aes(x = vec_breast, fill = inhibitory), bins = 111) +
     scale_fill_manual(values = c("coral2", "steelblue2")) +
     labs(title = "Cell Growth of breast cancer cells after treatment", x = "log2FC", y = "Count")
+
 # ------------------------------------ #
 ### Correlation drug ~ concentration ###
 # ------------------------------------ #
-high_cor <- highest_cor_b$correlation < -0.9
+high_cor <- highest_cor_b$correlation < -0.7
 ggplot() +
-    geom_histogram(aes(x = highest_cor_b$correlation, fill = high_cor), bins = 121) +
-    scale_fill_manual(values = c("coral2", "steelblue2"))
+    geom_histogram(aes(x = highest_cor_b$correlation, fill = high_cor), bins = 75) +
+    labs(title = "Correlation of drug and concentration", x = "Pearson Correlation", y = "Count", fill = " ") +
+    scale_fill_discrete(labels = c("> 0.7", "< 0.7")) +
+    scale_fill_manual(values = c("coral", "steelblue2"))
 # -------------------------------------- #
 ### UMAP of most effizient drugs prism ###
 # -------------------------------------- #
