@@ -292,6 +292,7 @@ geneSearchEngine <- function(x) {
   
   achilles_value <- breast.achilles.mean[gene_name]
   exp_value <- breast_exp_mean[gene_name]
+  cnv_value <- breast_cnv.mean[gene_name]
   
   if (gene_name %in% hist.targets$genes) {
     frequency_value <- hist.targets[hist.targets$genes == gene_name, "Freq"]
@@ -323,8 +324,8 @@ geneSearchEngine <- function(x) {
   }
   
   if (gene_name %in% prism.treat_subset$target) {
-    names <- which(gene_name %in% prism.treat_subset$target)
-    treatments <- as.vector(prism.treat_subset$name[names])
+    names <- paste(names.target[which(targets.treat$target==gene_name)], collapse = ", ")
+    treatments <- trimws(names, whitespace = "right")
   } else {
     treatments <- "none"
   }
@@ -332,6 +333,7 @@ geneSearchEngine <- function(x) {
   cat("Frequency Value:", frequency_value, "\n")
   cat("Achilles Value:", achilles_value, "\n")
   cat("Exp Value:", exp_value, "\n")
+  cat("Cnv Value:", cnv_value, "\n")
   cat("Mutation:", mutation, "\n")
   cat("Hallmark:", hallmark, "\n")
   cat("Variant Annotation:", annotation.var, "\n")
@@ -339,7 +341,7 @@ geneSearchEngine <- function(x) {
   cat("\n")
 }
 
-geneSearchEngine("LPL")
+geneSearchEngine("ESR1")
 
 
 
