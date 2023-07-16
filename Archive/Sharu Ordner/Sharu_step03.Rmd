@@ -244,6 +244,7 @@ for (gene_name in prism.snv.breast_damage$Hugo_Symbol) {
 ```
 
 **same code, but looks for the gene out of our own relevant genes list instead of prism.snv.**
+
 ```{r}
   
 for (gene_name in list.targets$`unlist(all.rel.genes)`) {
@@ -309,9 +310,7 @@ for (gene_name in list.targets$`unlist(all.rel.genes)`) {
   }
 }
 
-
-````
-
+```
 
 ***Search engine for treatments, needs further improvement***
 
@@ -557,6 +556,7 @@ important_ductal.gene_list <- colnames(important_ductal.gene_exp)
 ```
 
 **this loop was the start to create our own data frame with relevant information**
+
 ```{r}
 achilles.cnv.exp_breast <- data.frame(row.names = rownames(breast_prism.exp), stringsAsFactors = FALSE)
 
