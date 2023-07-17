@@ -102,24 +102,10 @@ By leveraging the genetic association approach and focusing on gene expression a
 
 ### Prism Datasets  
 
-**Prism:** contains the effect of the treatment (columns) on cell growth of the cell lines (rows). The values represent a log2FC with a control DMSO experiment.
-
-**Prism.treat:** provides supplementary data for the different treatments (row), such as the target of the treatment, the mechanism of action, the drug name and more information.
-
-**Prism.cl:** provides supplementary data for the different cell lines (row), such as the the disease type, the cell line name and more information.
-
-### Cellline Datasets  
-
-**Prism.exp:** contains levels of gene expression. Celllines (rows) and genes (columns)
-
-The copy number data frame contains the copy number of each gene for each cell line used in the PRISM screen. Each row of the data frame represents a specific cell line, while the columns correspond to different genes. The row names and column names of the data frame are assigned using the respective cell line IDs and gene designations.
-The copy number of a gene refers to the number of copies present in the genome of an individual cell. Theoretically, each gene has a copy number of two, because one gene copy of each parent exists in the genome. However, mutations can lead to variations in the copy numbers, resulting in either higher or lower values than the expected two copies.
-
-
-**Prism.snv:** marks mutation in the different celllines als functional or nonfunctional to the cancer.
-
-**Prism.achilles:** has information on how important a gene is for cell survival. Was generated using knockdown celllines. Gene names (rows) and celllines (colums)
-Lastly, a data frame containing the gene knockout scores for the cancer cell lines. This means that each gene has been silenced via CRISPR or another method and the resulting effect on cell proliferation was tested. A low gene knockout score indicates shows that the cell proliferation has been severly inhibited. Therefore the importance of genes can be estimated by how low the gene knockout score is.
+Seven datasets were provided for further data analysis. These datasets can be divided into to two subsets, the PRISM datasets and gene-related datasets. 
+Our main PRISM dataset describes treatment response on cell growth of different cell lines. Assigned columns are code ID names from the treatments and the cell lines are ordered row-wise. The values represent the log 2 fold change in comparison with a DMSO experiment and are referred to as prism scores. Additional information about the treatments used in PRISM can be found in the second dataset including its mechanism of action, common purpose etc.. Lastly, the PRISM cell line data set presents detailed information about all cell lines and their cancer origin.
+Furthermore, the three of the four given gene-related datasets present gene designations as column names and cell line IDs as row names, each containing different measurement values.
+The expression data frame describes expression levels of each gene in different cell lines. The copy number data frame contains the copy number of each gene for every cell line used in the PRISM screen. The gene importance data frame displays the gene importance measured by knockout scores of each gene in every cell line. With different format the last gene-related data set offers valuable information about the gene including the common function, mutation and so on.
    
 
 ## Data clean up/Filtering
@@ -140,7 +126,7 @@ describe goal, describe process, describe outcome
 
 ## Gene search engine
 
-Analysing the main datasets led to many individual data formats such as data frames, lists etc.; which contain relevant information gathered by our code. The aim of the function of the search engine was to quickly search for a gene of interest and display its attached values out of our main cell line datasets (prism.exp, prism.achilles, prism.cnv) for a more simple process of gene analysis. Based on this code, applications like looking for suitable treatments in prism.treat, loops which undergo printing every gene and their attached values in breast cancer celllines and the first approach for a relevant final data frame were realized.
+Analysing the main datasets led to many individual data formats such as data frames, lists etc.; which contain relevant information gathered by our code. The aim of the function of the search engine was to quickly search for a gene of interest and display its attached values out of our main gene-related cell line datasets for a more simple process of gene analysis. Based on this code, applications like looking for suitable treatments in prism.treat, loops which undergo printing every gene and their attached values in breast cancer cell lines and the first approach for a relevant final data frame were realized.
 The conclusive outcome of this engine development was a final modified search engine, in which one can type in the gene of interest and it prints every relevant value or information to get a decisive overview for drug repurposing applications. 
 
 
@@ -401,7 +387,7 @@ ggplot() +
 # Discussion
 
 gene search engine:
-An informative gene search engine is a promising advancement in the field of genomic data analysis. Regarding large screenings, utilizing a specific profile as an input to the engine, offers accurate results, enabling other researchers to identify genes and their possible association to another treatment. Respectively, one could have got a possible important gene through literature analysis or comparing every meaningful value in our big database manually, but it is time-consuming and one could lose the overview. The demonstrated scalability and function of our engine does not display the current standard of such engines with a wide range of abilities, being GEMINI and Sigcom LINCS. While further improvements may be considered, our gene search engine occurred to be a usable tool for exploring gene-associated data for an overview and contributes to helping researchers to find their specific gene-treatment interaction.
+An informative gene search engine is a promising advancement in the field of genomic data analysis. Regarding large screenings, utilizing a specific profile as an input to the engine, offers accurate results, enabling other researchers to identify genes and their possible association to another treatment. Respectively, one could have got a possible important gene through literature analysis or comparing every meaningful value in our big database manually, but it is time-consuming and one could lose the overview. The demonstrated scalability and function of our engine does not display the current standard of such engines with a wide range of abilities. While further improvements may be considered, our gene search engine occurred to be a usable tool for exploring gene-associated data for an overview and contributes to helping researchers to find their specific gene-treatment interaction.
 
 The analyis of the different doses revealed a trend, Figure 1 shows that higher doses result in a lower average prism score. Figue ?? also validates this discovery, 79 % of the treatments have a high correlation between concentration and average prism score. This can also be seen when looking at the distribution of R^2 values of the linear regression models (Figure ???) that were computed for every drug. The majority of drugs have a R^2 value above 0.5 and higher, which indicates a decent fit of the regression line. The Shapiro Wilk normality test performed on the residuals of the linear regression models showed that the residuals are normally distributed for 72 % of drugs. This is important because it indicates that the model captures the underlying pattern of the data quite well. However, there are some drugs that have a low R^2 value and a p-value below 0.05 for the Shapiro Wilk normality test. This indicates that not all patterns in the data are captured by the model, this could be improved with for example multiple linear regression taking in accound more factors or a completly different approach.
 

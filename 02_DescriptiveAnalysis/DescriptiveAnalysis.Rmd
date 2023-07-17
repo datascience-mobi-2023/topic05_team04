@@ -133,8 +133,8 @@ for (gene_name in prism.snv.breast_damage$Hugo_Symbol) {
     } else {
       cat("Matching treatment(s) for Gene:", gene_name, "\n")
       for (row in matchingRows) {
-        rowName <- row.names(prism.treat)[row]
-        rowValue <- as.character(prism.treat$name[row])
+        rowName <- row.names(prism.treat_subset)[row]
+        rowValue <- as.character(prism.treat_subset$name[row])
         cat("Row Name:", rowName, "\tTreatment:", rowValue, "\n")
       }
     }
