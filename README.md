@@ -29,3 +29,6 @@ The expression data frame describes expression levels of each gene in different 
 
 **[05_LinearRegression](/05_LinearRegression):** Linear regression between concentration and average prism score for every drug
 
+**[06_figures](/06_figures):** Contains figures
+
+**[07_extdata](/07_extdata):** Contains external data used in the report for a broader analysis
