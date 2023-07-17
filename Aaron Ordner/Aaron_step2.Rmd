@@ -664,7 +664,9 @@ name.id <- cbind(name.id, rownames(prism.treat))
 colnames(name.id) <- c("name", "ID")
 ```
 ```{r}
- hist.targets[list.targets$genes == "AURKA", ]
+prism.treat[rownames(list.targets)[which(list.targets$genes == "AURKA")],]
+
+list.targets["BRD-K03289018-001-02-7::10::HTS0023",]
 ```
 
 
@@ -713,7 +715,39 @@ rownames(install.packages())
 
 sum(abs(exp.treat.cor["AURKA",])>0.75)
 
+
+
+which(colnames(breast_prism_imp)%in%pref_drug_con_combo_breast)
+
 ```
+
+####Important plots
+
+```{r}
+ggplot(exp.copy.cor)+
+  geom_histogram(aes(x = correlation))+
+  geom_vline(xintercept = 0.324, linetype = "dashed", color = "red")+
+  geom_vline(xintercept = 0.345, linetype = "dashed", color = "blue")+
+  theme_minimal()+
+  labs(title = "Correlation between gene expression and copy number",
+       x = "Correlation",
+       y = "Count",
+       )+
+  theme(plot.title = element_text(hjust = 0.5),
+        text = element_text(''))
+
+ggplot(achilles.boxplot)+
+  geom_boxplot(aes(x = lineage, y = SDHC), fill = "lightgrey")+
+  theme_minimal()+
+  labs(title = "Prism.achilles scores for gene SDHC",
+       x = "Lineage",
+       y = "Achilles score",
+       )+
+  theme(plot.title = element_text(hjust = 0.5),
+        text = element_text(''))
+```
+
+
 
 
 ```{r}

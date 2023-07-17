@@ -14,6 +14,7 @@ output:
 ```{r, include=FALSE}
 # das ist das package was man braucht. mit dem dahinter sollte eigentlich alles was man braucht runter geladen werden
 install.packages("bookdown", dependencies = TRUE)
+library(bookdown)
 ```
 
 
@@ -73,6 +74,12 @@ Hier muss das Abstract eingefügt werden
 \newpage
 \pagenumbering{arabic}
 ```
+# Abstract
+Breast cancer still presents a significant global health challenge, requiring improved treatment options with minimized side effects. Since traditional drug development is costly, time-consuming, and risky, hindering progress. Drug repurposing offers a potential solution by finding new applications for approved drugs, therefore reducing costs and development time.
+This research project focuses on a computational approach, utilizing genetic associations to identify target genes for drug development. By analysing treatment response and genetic data, including gene expression profiles, the research project aims to identify promising gene candidates as potential drug targets. The evaluation includes assessing gene knockout scores and predicting drug effectiveness at different treatment doses. The goal is to contribute to personalized and efficient treatment options for breast cancer patients.
+It was shown that associations between genes and treatments could be made even though with only slight potential for drug repurposing use. However, predicting treatment response by drug dose is able to accurately help in evaluating potential drug repurposing candidates. In general, this research project highlights an approach in finding new gene targets and drugs applications by analysing genetic data and evaluating the potential usefulness of such repurposed drugs.
+
+
 # Introduction
 
 As breast cancer is the most common type of cancer in women, accounting for approximately 2.3 million cases each year, treating breast cancer is still a major objective in global research (Łukasiewicz *et al.*, 2021). “Even though a significant number of cancers do not always need to result in death, they significantly lower the quality of life and require larger costs in general.” (Łukasiewicz *et al.*, 2021) While therapies such as chemotherapy have significantly improved outcomes, they are often accompanied by notable side effects. Therefore, there is a critical need to discover new compounds that can enhance treatment outcomes for breast cancer while minimizing adverse effects. (Kumbhar *et al.*, 2023)
@@ -202,7 +209,7 @@ Moreover, we obtained a mean expression level value of 4.736, which indicates a 
 Finally, our results reinforce the significance of mTOR in breast cancer. However, targeting mTOR in breast cancer should be investigated to develop safe treatment strategies. Nevertheless, our study about mTOR is similar to the groundwork findings, consequently suited for future research.
 
 The basis of our gene analysis is the correlation analysis of treatment response and gene expression. The idea was that high absolute correlation could show genes that are associated with breast cancer. This means that a particular gene could be linked to a treatment. However, this does not imply causality meaning that the treatment could possibly not be affected directly by the treatment. The next selection process was on the importance of the genes via gene knockout score. The findings conclude genes and treatments that have been associated with cancer or further breast cancer but some only slightly. Novel opportunities for drug repurposing have not been found.
-In hindsight, this approach may not be optimal to further decrease the number of potential targets. As stated before, correlation of gene expression does not imply the direct causality between the treatment and the gene expression. So, looking at the importance of a gene via gene knockout score does not show that a gene could be a good target. 
+In hindsight, this approach may not be optimal to further decrease the number of potential targets. As stated before, correlation of gene expression does not imply the direct causality between the treatment and the gene expression. So, looking at the importance of a gene via gene knockout score does not show that a gene could be a good target. With more time to analyse the data, we would want to test new ways in looking into the data and selecting genes. Possible approaches could be as following. 
 
 
 
