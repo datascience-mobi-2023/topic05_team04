@@ -124,8 +124,12 @@ The conclusive outcome of this engine development was a final modified search en
 To compile a list of inhibitory drugs, the first step involved filtering of the prism dataset. This dataset consists of 1396 distinct drugs that were tested on their effect on cell growth at concentrations ranging from 0.000194147 nM to 12.655 nM. Further Analysis showed that every drug was tested at 4 – 8 different doses. In the prism data set, the lowest values, indicate the highest effectiveness. To identify inhibitory drugs, we calculated the average prism score for every drug. Then we specifically chose the concentration that exhibited the lowest average prism score for every drug. To further understand the impact of the doses on the prism score, we compared the concentrations associated with the lowest and highest average prism score for every drug. 
 
 ```{r, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\ Histogram of which concentration concentrations results in the lowest (left) or highest (right) average prism score.', out.width='0.65\\linewidth'}
-load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heidelberg/Module/BioInfo/BioInfoProjekt/prism_datasets.rda")
-load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heidelberg/Module/BioInfo/BioInfoProjekt/cellline_datasets.rda")
+#load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heidelberg/Module/BioInfo/BioInfoProjekt/prism_datasets.rda")
+#load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heidelberg/Module/BioInfo/BioInfoProjekt/cellline_datasets.rda")
+
+load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/prism_datasets.rda")
+load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/cellline_datasets.rda")
+
 #url3 <- "https://figshare.com/ndownloader/files/27670806?private_link=65b1d32c2be53afb00c9"
 #file3 <- "prism_datasets.rda"
 #download.file(url3, destfile = file3, method = "auto")
@@ -215,6 +219,51 @@ This resulted in a data frame containing 582 inhibitory drugs (columns) and the 
 The initial step in gene analysis was examining the correlation between different variables to determine if there were any connections between them. This approach aimed to identify genes that could potentially serve as indicators of a drug's effectiveness.
 To begin, a correlation analysis between the gene expression data in prism.exp and the gene copy number data in prism.cnv was conducted. The method used was the Pearson correlation. Our hypothesis was that the copy number would correlate highly with gene expression. This was important to see if the number of gene copies can be an indicator for gene expression.  Figure XX presents the histogram of the correlation calculations, which demonstrates that, for the majority of genes, a positive correlation indeed exists. The mean correlation was approximately 0.325, with a median of 0.345. Yet, the correlation is not as high as was expected. Around 15.23% of the correlations are negative.
 In the subsequent step, we constructed a correlation matrix using Pearson correlation to examine the relationship between gene expression data from prism.exp and treatment response data from prism.treat. This correlation matrix allowed us to further refine our understanding of which genes were associated with specific treatments. The resulting matrix contains correlations between 18,805 genes and 1,395 treatments. The data was then used in the further gene analysis.
+
+```{r, echo = FALSE, message=FALSE, fig.align='center', fig.cap='Histogram of the correlation between gene expression and gene copy number. Mean and median are shown by red and blue dashed lines.', out.width='0.65\\linewidth'}
+breast_prism.cl <- prism.cl[which(prism.cl$lineage == 'breast'), ]
+ID_breast_prism.cl <- breast_prism.cl$DepMap_ID
+rows_breast_prism.cnv <- which(rownames(prism.cnv) %in% ID_breast_prism.cl)
+breast_prism.cnv <- prism.cnv[rows_breast_prism.cnv, ]
+
+lineage.breast <- prism.cl[which(prism.cl$lineage == "breast"),]
+breast_prism.exp <- prism.exp[which(rownames(prism.exp) %in% lineage.breast$DepMap_ID),]
+breastzero.col <- apply(breast_prism.exp, 2, function(x) all(x == 0))
+breast_PRISM.exp <- breast_prism.exp[, !breastzero.col]
+
+row.order <- c() 
+for (i in 1:nrow(breast_prism.cnv)){
+  row.order <- rbind(row.order, which(rownames(breast_prism.cnv)%in%rownames(breast_PRISM.exp)[i]))
+  }
+#order of rows in the two data frames are not the same
+exp.copy.cor <- data.frame()
+copy.names <- c()
+for (x in 1:ncol(breast_PRISM.exp)){
+  copy.gene <- which(colnames(breast_prism.cnv)%in%colnames(breast_PRISM.exp)[x])
+  if (length(copy.gene) > 0) {
+    copy.cor <- cor(breast_PRISM.exp[,x], breast_prism.cnv[row.order,copy.gene])
+    exp.copy.cor <- rbind(exp.copy.cor, copy.cor)
+    copy.names <- c(copy.names, colnames(breast_PRISM.exp)[x])
+  }
+}
+
+rownames(exp.copy.cor) <- as.vector(copy.names)
+colnames(exp.copy.cor) <- c("correlation")
+ggplot(exp.copy.cor)+
+  geom_histogram(aes(x = correlation), fill = "lightgray")+
+  geom_vline(xintercept = 0.324, linetype = "dashed", color = "red")+
+  geom_vline(xintercept = 0.345, linetype = "dashed", color = "blue")+
+  geom_text(x = 0.23, y = 500, label = "mean", color = "red", vjust = -1) +
+  geom_text(x = 0.45, y = 500, label = "median", color = "blue", vjust = -1) +
+  theme_minimal()+
+  labs(title = "Correlation between gene expression and copy number",
+       x = "Correlation",
+       y = "Count",
+       )+
+  theme(plot.title = element_text(hjust = 0.5),
+        text = element_text(''))
+
+```
 
 ### Statistical testing of important genes
 
@@ -360,6 +409,31 @@ In hindsight, this approach may not be optimal to further decrease the number of
 
 # Appendix
 
+```{r, echo = FALSE, message=FALSE, fig.align='center', fig.cap='Boxplott of the gene knockout scores for the gene SDHC for breast cancer lineages compared to all the other lineages', out.width='0.65\\linewidth'}
+prism.achilles.rm <-apply(prism.achilles, 2, function(x) {
+  x[which(is.na(x))] <- median(x, na.rm = TRUE)
+  return(x)
+})
+breast.cl <- which(prism.cl[,"lineage"] == "breast")
+prism.achilles.breast <- prism.achilles.rm[rownames(prism.achilles.rm) %in% prism.cl[breast.cl, 1], ]
+boxplot.data.breast <- as.data.frame(prism.achilles.breast[,"SDHC"])
+colnames(boxplot.data.breast) <- "SDHC"
+boxplot.data.breast$lineage<- "breast"
+boxplot.data.other <- as.data.frame(prism.achilles.rm[-breast.cl,"SDHC"])
+colnames(boxplot.data.other) <- "SDHC"
+boxplot.data.other$lineage <- "other"
+achilles.boxplot <- rbind(boxplot.data.breast, boxplot.data.other)
+ggplot(achilles.boxplot)+
+  geom_boxplot(aes(x = lineage, y = SDHC), fill = "lightgrey")+
+  theme_minimal()+
+  labs(title = "Gene knockout scores for gene SDHC",
+       x = "Lineage",
+       y = "Achilles score",
+       )+
+  theme(plot.title = element_text(hjust = 0.5),
+        text = element_text(''))
+
+```
 ```{r, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift', out.width='0.65\\linewidth'}
 #### Plot 7
 ggplot() +

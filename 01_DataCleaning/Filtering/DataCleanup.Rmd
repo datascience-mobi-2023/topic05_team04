@@ -153,6 +153,7 @@ lineage.breast <- prism.cl[which(prism.cl$lineage == "breast"),]
 breast_prism.exp <- prism.exp[which(rownames(prism.exp) %in% lineage.breast$DepMap_ID),]
 breastzero.col <- apply(breast_prism.exp, 2, function(x) all(x == 0))
 breast_PRISM.exp <- breast_prism.exp[, !breastzero.col]
+
 ```
 
 ```{r}
