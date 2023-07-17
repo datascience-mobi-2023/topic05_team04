@@ -766,14 +766,14 @@ for (x in 1:ncol(breast_PRISM.exp)){
   }
 }
 
-sum(exp.copy.cor<0)/nrow(exp.copy.cor)
-median(exp.copy.cor[,1])
 rownames(exp.copy.cor) <- as.vector(copy.names)
 colnames(exp.copy.cor) <- c("correlation")
 ggplot(exp.copy.cor)+
-  geom_histogram(aes(x = correlation))+
+  geom_histogram(aes(x = correlation), fill = "lightgray")+
   geom_vline(xintercept = 0.324, linetype = "dashed", color = "red")+
   geom_vline(xintercept = 0.345, linetype = "dashed", color = "blue")+
+  geom_text(x = 0.22, y = 500, label = "mean", color = "red", vjust = -1) +
+  geom_text(x = 0.46, y = 500, label = "median", color = "blue", vjust = -1) +
   theme_minimal()+
   labs(title = "Correlation between gene expression and copy number",
        x = "Correlation",
