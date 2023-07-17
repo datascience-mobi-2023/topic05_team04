@@ -8,21 +8,33 @@ library(readxl) #install.packages("readxl")
 library(scales) #install.packages("scales")
 library(dplyr)  #install.packages("dplyr")
 library(gridExtra) #install.packages("gridExtra")
+library(jsonlite) #install.packages("jsonlite")
 #library(tidyverse) #install.packages("tidyverse")
 # --------------------------------- #
-load("~/prism_datasets.rda")
-load("Data/cellline_datasets.rda")
 url1 <- "https://raw.githubusercontent.com/datascience-mobi-2023/topic05_team04/main/07_extdata/oncological_treatments.xlsx"
 file1 <- "oncological_treatments.xlsx"
-download.file(url, destfile = file1, method = "auto")
+download.file(url1, destfile = file1, method = "auto")
 downloaded_file_path1 <- file.path(getwd(), file1)
-oncological_treatments <- read_excel(downloaded_file_path, sheet = 1)
+cancer.therapy <- read_excel(downloaded_file_path1, sheet = 1)
 
 url2 <- "https://raw.githubusercontent.com/datascience-mobi-2023/topic05_team04/main/07_extdata/h.all.v2023.1.Hs.json.txt"
 file2 <- "h.all.v2023.1.Hs.json.txt"
-download.file(url, destfile = file2, method = "auto")
-downloaded_file_path1 <- file.path(getwd(), file2)
-oncological_treatments <- read_json(downloaded_file_path, sheet = 1)
+download.file(url2, destfile = file2, method = "auto")
+downloaded_file_path2 <- file.path(getwd(), file2)
+hallmarks <- fromJSON(downloaded_file_path2)
+
+
+url3 <- "https://figshare.com/ndownloader/files/27670806?private_link=65b1d32c2be53afb00c9"
+file3 <- "prism_datasets.rda"
+download.file(url3, destfile = file3, method = "auto")
+downloaded_file_path3 <- file.path(getwd(), file3)
+load(downloaded_file_path3)
+
+url4 <- "https://figshare.com/ndownloader/files/27453818?private_link=0a47128e7c487d6f9867"
+file4 <- "cellline_datasets.rda"
+download.file(url4, destfile = file4, method = "auto")
+downloaded_file_path4 <- file.path(getwd(), file4)
+load(downloaded_file_path4)
 ```
 ```{r}
 ## Checkt wie viele Zeilen und Spalten NA`s drin habe
@@ -169,13 +181,49 @@ hist(prism.achilles.overview[,2], main = "median of all the prism.achilles genes
 hist(prism.achilles.overview[,3], main = "standard deviation of all the prism.achilles genes", xlab = "standard deviation")
 hist(prism.achilles.overview[,4], main = "minimum of all the prism.achilles genes", xlab = "minimum")
 hist(prism.achilles.overview[,5], main = "maximum of all the prism.achilles genes", xlab = "maximum")
+```
+
+```{r}
+#for prism.exp
+
+prism.exp.mean <- apply(prism.exp, 2, mean)
+prism.exp.median <- apply(prism.exp, 2, median)
+prism.exp.sd <- apply(prism.exp, 2, sd)
+prism.exp.min <- apply(prism.exp , 2, min)
+prism.exp.max <- apply(prism.exp, 2, max)
+prism.exp.overview <- cbind(prism.exp.mean, prism.exp.median, prism.exp.sd, prism.exp.min, prism.exp.max)
+colnames(prism.exp.overview) <- c("mean", "median", "standard deviation", "minimum", "maximum")
+
+hist(prism.exp.overview[,1], main = "mean of all the prism.exp genes", xlab = "mean")
+hist(prism.exp.overview[,2], main = "median of all the prism.exp genes", xlab = "median")
+hist(prism.exp.overview[,3], main = "standard deviation of all the prism.exp genes", xlab = "standard deviation")
+hist(prism.exp.overview[,4], main = "minimum of all the prism.exp genes", xlab = "minimum")
+hist(prism.exp.overview[,5], main = "maximum of all the prism.exp genes", xlab = "maximum")
+````
+
+```{r}
+#for prism.cnv
+
+prism.cnv.mean <- apply(prism.cnv, 2, mean)
+prism.cnv.median <- apply(prism.cnv, 2, median)
+prism.cnv.sd <- apply(prism.cnv, 2, sd)
+prism.cnv.min <- apply(prism.cnv , 2, min)
+prism.cnv.max <- apply(prism.cnv, 2, max)
+prism.cnv.overview <- cbind(prism.cnv.mean, prism.cnv.median, prism.cnv.sd, prism.cnv.min, prism.cnv.max)
+colnames(prism.exp.overview) <- c("mean", "median", "standard deviation", "minimum", "maximum")
+
+hist(prism.cnv.overview[,1], main = "mean of all the prism.cnv genes", xlab = "mean")
+hist(prism.cnv.overview[,2], main = "median of all the prism.cnv genes", xlab = "median")
+hist(prism.cnv.overview[,3], main = "standard deviation of all the prism.cnv genes", xlab = "standard deviation")
+hist(prism.cnv.overview[,4], main = "minimum of all the prism.cnv genes", xlab = "minimum")
+hist(prism.cnv.overview[,5], main = "maximum of all the prism.cnv genes", xlab = "maximum")
 
 ```
+
 ```{r}
 ##########################################
 ###### FILTERING NON-ONCOLOGY DRUGS ###### Aaron
 ##########################################
-cancer.therapy <- read_excel("/Users/luisherfurth/Codenmachtspass/Data/oncological_treatments.xlsx")
 cancer.therapy <- as.data.frame(cancer.therapy)
 treat.names <- as.data.frame(prism.treat$name)
 drug.overlap <- apply(treat.names, 1, function(x){
