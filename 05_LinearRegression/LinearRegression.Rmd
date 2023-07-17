@@ -32,6 +32,7 @@ for(i in 1:length(duplicate_drugs_b)) {
 ##############
 regression_list_b <- list()
 r_squared_b <- c()
+p_value_b <- c()
 for(i in 1:length(duplicate_drugs_b)) {
     act_rows_b <- which(df_nam_con_mean_b$drugnames_b == duplicate_drugs_b[i])
     act_df_b <- df_nam_con_mean_b[act_rows_b,]
@@ -43,6 +44,7 @@ for(i in 1:length(duplicate_drugs_b)) {
         regression_list_b[[i]] <- list(Summary_reg = summary(act_reg_b), Model = act_reg_b, Residuals = act_residuals_b, R_squared = summary(act_reg_b)$r.squared, Plotdata = act_plot_b, Shapiro_test = act_shapiro_b, prediction = act_df_b)
         names(regression_list_b)[i] <- duplicate_drugs_b[i]
         r_squared_b <- c(r_squared_b, summary(act_reg_b)$r.squared)
+        p_value_b <- c(p_value_b, act_shapiro_b$p.value)
     }
 }
 testname <- "BRD-K99383816-001-03-5"

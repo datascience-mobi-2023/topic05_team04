@@ -22,7 +22,7 @@ url2 <- "https://raw.githubusercontent.com/datascience-mobi-2023/topic05_team04/
 file2 <- "h.all.v2023.1.Hs.json.txt"
 download.file(url, destfile = file2, method = "auto")
 downloaded_file_path1 <- file.path(getwd(), file2)
-oncological_treatments <- read_excel(downloaded_file_path, sheet = 1)
+oncological_treatments <- read_json(downloaded_file_path, sheet = 1)
 ```
 ```{r}
 ## Checkt wie viele Zeilen und Spalten NA`s drin habe
