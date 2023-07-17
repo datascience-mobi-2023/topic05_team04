@@ -724,18 +724,19 @@ which(colnames(breast_prism_imp)%in%pref_drug_con_combo_breast)
 ####Important plots
 
 ```{r}
-ggplot(exp.copy.cor)+
-  geom_histogram(aes(x = correlation))+
-  geom_vline(xintercept = 0.324, linetype = "dashed", color = "red")+
-  geom_vline(xintercept = 0.345, linetype = "dashed", color = "blue")+
-  theme_minimal()+
-  labs(title = "Correlation between gene expression and copy number",
-       x = "Correlation",
-       y = "Count",
-       )+
-  theme(plot.title = element_text(hjust = 0.5),
-        text = element_text(''))
-
+prism.achilles.rm <-apply(prism.achilles, 2, function(x) {
+  x[which(is.na(x))] <- median(x, na.rm = TRUE)
+  return(x)
+})
+breast.cl <- which(prism.cl[,"lineage"] == "breast")
+prism.achilles.breast <- prism.achilles.rm[rownames(prism.achilles.rm) %in% prism.cl[breast.cl, 1], ]
+boxplot.data.breast <- as.data.frame(prism.achilles.breast[,"SDHC"])
+colnames(boxplot.data.breast) <- "SDHC"
+boxplot.data.breast$lineage<- "breast"
+boxplot.data.other <- as.data.frame(prism.achilles.rm[-breast.cl,"SDHC"])
+colnames(boxplot.data.other) <- "SDHC"
+boxplot.data.other$lineage <- "other"
+achilles.boxplot <- rbind(boxplot.data.breast, boxplot.data.other)
 ggplot(achilles.boxplot)+
   geom_boxplot(aes(x = lineage, y = SDHC), fill = "lightgrey")+
   theme_minimal()+
@@ -748,6 +749,41 @@ ggplot(achilles.boxplot)+
 ```
 
 
+```{r}
+row.order <- c() 
+for (i in 1:nrow(breast_prism.cnv)){
+  row.order <- rbind(row.order, which(rownames(breast_prism.cnv)%in%rownames(breast_PRISM.exp)[i]))
+  }
+#order of rows in the two data frames are not the same
+exp.copy.cor <- data.frame()
+copy.names <- c()
+for (x in 1:ncol(breast_PRISM.exp)){
+  copy.gene <- which(colnames(breast_prism.cnv)%in%colnames(breast_PRISM.exp)[x])
+  if (length(copy.gene) > 0) {
+    copy.cor <- cor(breast_PRISM.exp[,x], breast_prism.cnv[row.order,copy.gene])
+    exp.copy.cor <- rbind(exp.copy.cor, copy.cor)
+    copy.names <- c(copy.names, colnames(breast_PRISM.exp)[x])
+  }
+}
+
+sum(exp.copy.cor<0)/nrow(exp.copy.cor)
+median(exp.copy.cor[,1])
+rownames(exp.copy.cor) <- as.vector(copy.names)
+colnames(exp.copy.cor) <- c("correlation")
+ggplot(exp.copy.cor)+
+  geom_histogram(aes(x = correlation))+
+  geom_vline(xintercept = 0.324, linetype = "dashed", color = "red")+
+  geom_vline(xintercept = 0.345, linetype = "dashed", color = "blue")+
+  theme_minimal()+
+  labs(title = "Correlation between gene expression and copy number",
+       x = "Correlation",
+       y = "Count",
+       )+
+  theme(plot.title = element_text(hjust = 0.5),
+        text = element_text(''))
+ 
+ 
+```
 
 
 ```{r}
