@@ -2,8 +2,8 @@
 title: "  "
 author: " "
 date: " "
-bibliography: references/ref.bib 
-csl: references/citation_style.csl
+#bibliography: references/ref.bib 
+#csl: references/citation_style.csl
 geometry: "margin=2.3cm"
 linestretch: 1.15
 fontsize: 11pt
@@ -11,13 +11,7 @@ output:
   pdf_document:
     number_sections: true
 ---
-```{r, include=FALSE}
-# das ist das package was man braucht. mit dem dahinter sollte eigentlich alles was man braucht runter geladen werden
-#install.packages("bookdown", dependencies = TRUE)
-library(ggplot2)
-library(gridExtra)
 
-```
 
 
 ```{=tex}
@@ -147,31 +141,11 @@ The conclusive outcome of this engine development was a final modified search en
 To compile a list of inhibitory drugs, the first step involved filtering of the prism dataset. This dataset consists of 1396 distinct drugs that were tested on their effect on cell growth at concentrations ranging from 0.000194147 nM to 12.655 nM. Further Analysis showed that every drug was tested at 4 – 8 different doses. In the prism data set, the lowest values, indicate the highest effectiveness. To identify inhibitory drugs, we calculated the average prism score for every drug. Then we specifically chose the concentration that exhibited the lowest average prism score for every drug. To further understand the impact of the doses on the prism score, we compared the concentrations associated with the lowest and highest average prism score for every drug. 
 
 PLOT 1 and PLOT 2
-```{r, label= 'Mylabel1', echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift', out.width='0.65\\linewidth'}
-# hier dann code für den plot eingeben. Oben schreiben wir, dass man die entsprechenden Variablen aus den anderen rmd files laden muss. können wir auch nochmal ganz oben als disclaimer in den package download chunk packen.
-#### Plot 1
-ggplot1 <- ggplot() +
-    geom_histogram(aes(x = lowest_mean_duplicate_b$concentration_b), bins = 10, fill = "coral") + 
-    labs(title = "Lowest average prism score", x = "Concentration", y = "Count")
-#hist(as.numeric(highest_mean_duplicate_b$concentration_b))
-#### Plot 2
-ggplot2 <- ggplot() +
-    geom_histogram(aes(x = highest_mean_duplicate_b$concentration_b), bins = 10, fill = "steelblue") + 
-    labs(title = "Highest average prism score", x = "Concentration", y = "Count")
 
-grid.arrange(ggplot1, ggplot2, nrow = 1)
-```
 
 Once the most effective drug concentration combinations were identified, we proceeded with an additional round of filtering. This time only the drugs resulting in an average prism score lower than -2 were selected. This threshold was chosen because its allowing the removal of 60 % of the provided drugs. 
 
-```{r, label= 'Mylabel2', echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift', out.width='0.65\\linewidth'}
-inhibitory_fil <- lowest_mean_duplicate_b$colMeans_breast < -2
-ggplot() +
-    geom_histogram(aes(x = lowest_mean_duplicate_b$colMeans_breast, fill = inhibitory_fil), bins = 30) +
-    labs(title = "Cell Growth of filtered drugs", x = "log2FC", y = "Count", fill = "Inhibitory") +
-    scale_fill_discrete(labels = c("> -2", "< -2")) +
-    scale_fill_manual(values = c("coral", "steelblue2"))
-```
+
 
 This resulted in a data frame containing 582 inhibitory drugs (columns) and the respective prism scores on 481 cell lines (rows).
 
@@ -199,25 +173,15 @@ Moreover, the 3925 preselected genes were compiled into a data frame for further
 ## Linear regression
 Linear regression is a statistical technique to model the relationship between a dependent variable and one or more independent variables and fitting a straight line to the data. We used linear regression models to predict the average prism score based on the concentration for every drug. We created a function that takes drug names as inputs and returns a scatter plot with a linear fit on top and additional information about how well the model performs. This includes the R2 value, and a Shapiro Wilk normality test performed on the residuals. The R2 value is an indicator of how well the straight line fights the data point and if there is a linear relation between the points. The Shapiro Wilk normality test is commonly used to assess if the residuals follow a normal distribution. This is important to evaluate the performance because deviations from normal distribution suggest an underlying true pattern, that is not captured by the model. 
 
-```{r, label= 'Mylabel3', echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift', out.width='0.65\\linewidth'}
-plot_reg(testname)
-```
+
 
 Next we created a function which takes drug names and concentration values as an Input and returns  predicted mean cell growth values for the concentration values. 
 
-```{r, label= 'Mylabel4', echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift', out.width='0.65\\linewidth'}
-prediction_tool(testname, c(0.1, 0.3, 6.4, 8.9, 10.5))
-```
+
 
 To further confirm the relationship between concentration and the mean cell growth, we calculated the Pearson correlation for each drug. 
 
-```{r, label= 'Mylabel5', echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift', out.width='0.65\\linewidth'}
-high_cor <- highest_cor_b$correlation < -0.7
-ggplot() +
-    geom_histogram(aes(x = highest_cor_b$correlation, fill = high_cor), bins = 75) +
-    labs(title = "Correlation of drug and concentration", x = "Pearson Correlation", y = "Count", fill = " ") +
-    scale_fill_discrete(labels = c("> 0.7", "< 0.7")) 
-```
+
 
 # Discussion
 
@@ -243,14 +207,3 @@ In hindsight, this approach may not be optimal to further decrease the number of
 # References
 
 # Appendix
-```{r, label= 'Mylabel6', echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift', out.width='0.65\\linewidth'}
-ggplot() +
-    geom_histogram(aes(x = r_squared_b), bins = 75, fill = "steelblue") +
-    labs(title = "R^2 of linear regressions for every treatment", x = "R^2 value", y = "Count")
-
-singificance_b <- p_value_b > 0.05
-ggplot() +
-    geom_histogram(aes(x = p_value_b, fill = singificance_b), bins = 75) +
-    labs(title = "Distribution of p-values of the Shapiro-test performed on all models", x = "p-value", y = "Count", fill = "") +
-    scale_fill_discrete(labels = c("< 0.05", "non significant")) 
-```
