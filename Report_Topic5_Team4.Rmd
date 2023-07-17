@@ -5,9 +5,12 @@ date: " "
 geometry: "margin=2.3cm"
 linestretch: 1.15
 fontsize: 11pt
+header-includes: 
+  - \usepackage{float}
 output: 
   pdf_document:
     number_sections: true
+    extra_dependencies: ["float"]
 ---
 ```{r, warning = FALSE, echo=FALSE, message=FALSE}
 # das ist das package was man braucht. mit dem dahinter sollte eigentlich alles was man braucht runter geladen werden
@@ -115,14 +118,14 @@ Uniform Manifold Approximation and Projection (UMAP) was utilized as a method fo
 
 ## Gene search engine
 
-Analysing the main datasets led to many individual data formats such as data frames, lists etc. which contain relevant information gathered by our code. The aim of the search engine was to quickly look up a gene of interest and display its attached values out of our main gene-related cell line datasets for a more simple process of gene analysis. Based on this code, applications like looking for suitable treatments in the prism data frame, loops which undergo printing every gene and their attached values in breast cancer celllines and the first approach for a relevant final data frame were realized.
+Analysing the main datasets led to many individual data formats such as data frames, lists etc.; which contain relevant information gathered by our code. The aim of the function of the search engine was to quickly search for a gene of interest and display its attached values out of our main gene-related cell line datasets for a more simple process of gene analysis. Based on this code, applications like looking for suitable treatments in the treatment information dataset, loops which undergo printing every gene and their attached values in breast cancer cell lines and the first approach for a relevant final data frame were realized.  
 The conclusive outcome of this engine development was a final modified search engine, in which one can type in the gene of interest and it prints every relevant value or information to get a decisive overview for drug repurposing applications. 
 
 ## List of inhibitory drugs
 
 To compile a list of inhibitory drugs, the first step involved filtering of the prism dataset. This dataset consists of 1396 distinct drugs that were tested on their effect on cell growth at concentrations ranging from 0.000194147 nM to 12.655 nM. Further Analysis showed that every drug was tested at 4 – 8 different doses. In the prism data set, the lowest values, indicate the highest effectiveness. To identify inhibitory drugs, we calculated the average prism score for every drug. Then we specifically chose the concentration that exhibited the lowest average prism score for every drug. To further understand the impact of the doses on the prism score, we compared the concentrations associated with the lowest and highest average prism score for every drug as seen in Fig. 1. 
 
-```{r, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\ Histogram of which concentration concentrations results in the lowest (left) or highest (right) average prism score.', out.width='0.65\\linewidth'}
+```{r, fig.pos= "H", echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\ Histogram of which concentration concentrations results in the lowest (left) or highest (right) average prism score.', out.width='0.65\\linewidth'}
 load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heidelberg/Module/BioInfo/BioInfoProjekt/prism_datasets.rda")
 load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heidelberg/Module/BioInfo/BioInfoProjekt/cellline_datasets.rda")
 
@@ -198,7 +201,7 @@ grid.arrange(ggplot1, ggplot2, nrow = 1)
 
 Once the most effective drug concentration combinations were identified, we proceeded with an additional round of filtering. This time only the drugs resulting in an average prism score lower than -2 were selected. This threshold was chosen because its allowing the removal of 60 % of the provided drugs. 
 
-```{r, echo = FALSE, message=FALSE, fig.align='center', fig.cap='Histogram of the mean log 2 fold change of the drugs after the first round of filtering. The colors indicate if the drugs is below or above the selected threshold of -2.', out.width='0.65\\linewidth'}
+```{r, fig.pos= "H", echo = FALSE, message=FALSE, fig.align='center', fig.cap='Histogram of the mean log 2 fold change of the drugs after the first round of filtering. The colors indicate if the drugs is below or above the selected threshold of -2.', out.width='0.65\\linewidth'}
 #### Plot 3
 inhibitory_fil <- lowest_mean_duplicate_b$colMeans_breast < -2
 ggplot() +
@@ -215,7 +218,7 @@ The initial goal was to utilize the UMAP technique to recreate the UMAP from Cor
 We then applied the UMAP function to the same data, using the parameters mentioned in Corsello's paper: seven neighbors and a minimal distance of 0.5. Surprisingly, the resulting UMAP differed from Corsello *et al.*, despite using the same parameters. Similar to the UMAP created by Corsello *et al.*, MOAs tended to cluster together. By visually inspecting the plot, we could identify clusters of HSP inhibitors, tubulin polymerization inhibitors, and, to a lesser extent, HDAC inhibitors, MEK inhibitors, and glucocorticoid receptor agonists. This is depicted in Figure 2.
 Next, we applied K-means clustering to the UMAP, using the 20 MOAs we selected as labels for the data points as centres for the clustering despite three being the best centre number proven by the silhouette method. However, a limitation of this method is that with a large number of data points, the clusters tend to vary slightly with each run. As shown in Figure 3, the clusters included MOAs labeled as "Other" and even some data points from different MOAs. Among the previously mentioned clusters, only the cluster of tubulin polymerization inhibitors remained mostly intact. MEK inhibitors, HSP inhibitors, and HDAC inhibitors were more frequently divided between two clusters, and when they formed their own clusters, they shared those clusters with a few other treatments.
 
-```{r, fig.dim=c(10,6), echo = FALSE, message=FALSE, fig.align='center', fig.cap='UMAP of the inhibitory treatments with the PRISM scores labelled by the MOA', out.width='0.65\\linewidth'}
+```{r, fig.pos= "H", fig.dim=c(10,6), echo = FALSE, message=FALSE, fig.align='center', fig.cap='UMAP of the inhibitory treatments with the PRISM scores labelled by the MOA', out.width='0.65\\linewidth'}
 p_onlyNA.col <- colnames(prism[which(sapply(prism, class) == "logical")]) 
 rem.pNAcol <- which(colnames(prism) %in% p_onlyNA.col)
 prismNA <- prism[, -rem.pNAcol]
@@ -266,7 +269,7 @@ umap_layout_prism$cluster <- factor(cancer_km$cluster)
 cancercol <- rainbow(20)[cancer_km$cluster]
 ```
 
-```{r, fig.dim=c(10,6), echo = FALSE, message=FALSE, fig.align='center', fig.cap='UMAP of the inhibitory treatments with the PRISM scores labelled by the MOA with cluster encircelment', out.width='0.65\\linewidth'}
+```{r, fig.pos= "H", fig.dim=c(10,6), echo = FALSE, message=FALSE, fig.align='center', fig.cap='UMAP of the inhibitory treatments with the PRISM scores labelled by the MOA with cluster encircelment', out.width='0.65\\linewidth'}
 ggplot(umap_layout_prism, aes(x = V1, y = V2, color = levels, alpha = alpha_level)) +
   geom_point(size = 3) +
   geom_mark_hull(aes(group = cluster), concavity = 5, expand = 0, radius = 0, color = "black", alpha = 1, show.legend = FALSE) +
@@ -284,7 +287,7 @@ The initial step in gene analysis was examining the correlation between differen
 To begin, a correlation analysis between the gene expression data and the gene copy number data was conducted. The method used was the Pearson correlation. Our hypothesis was that the copy number would correlate highly with gene expression. This was important to see if the number of gene copies can be an indicator for gene expression.  Figure ***XX*** presents the histogram of the correlation calculations, which demonstrates that, for the majority of genes, a positive correlation indeed exists. The mean correlation was approximately 0.325, with a median of 0.345. Yet, the correlation is not as high as was expected. Around 15.23% of the correlations are negative.
 In the subsequent step, we constructed a correlation matrix using Pearson correlation to examine the relationship between gene expression data and treatment response data. This correlation matrix allowed us to further refine our understanding of which genes were associated with specific treatments. The resulting matrix contains correlations between 18,805 genes and 1,395 treatments. The data was then used in the further gene analysis.
 
-```{r,warning = FALSE, echo = FALSE, message=FALSE, fig.align='center', fig.cap='Histogram of the correlation between gene expression and gene copy number. Mean and median are shown by red and blue dashed lines.', out.width='0.65\\linewidth'}
+```{r, fig.pos= "H",warning = FALSE, echo = FALSE, message=FALSE, fig.align='center', fig.cap='Histogram of the correlation between gene expression and gene copy number. Mean and median are shown by red and blue dashed lines.', out.width='0.65\\linewidth'}
 breast_prism.cl <- prism.cl[which(prism.cl$lineage == 'breast'), ]
 ID_breast_prism.cl <- breast_prism.cl$DepMap_ID
 rows_breast_prism.cnv <- which(rownames(prism.cnv) %in% ID_breast_prism.cl)
@@ -344,7 +347,7 @@ Moreover, the 3925 preselected genes were compiled into a data frame for further
 Linear regression is a statistical technique to model the relationship between a dependent variable and one or more independent variables and fitting a straight line to the data. We used linear regression models to predict the average prism score based on the concentration for every drug. We created a function that takes drug names as inputs and returns a scatter plot with a linear fit on top and additional information about how well the model performs. This includes the R2 value, and a Shapiro Wilk normality test performed on the residuals. The R2 value is an indicator of how well the straight line fights the data point and if there is a linear relation between the points. The Shapiro Wilk normality test is commonly used to assess if the residuals follow a normal distribution. This is important to evaluate the performance because deviations from normal distribution suggest an underlying true pattern, that is not captured by the model. 
 
 Next we created a function which takes drug names and concentration values as an Input and returns  predicted mean cell growth values for the concentration values. 
-```{r, warning = FALSE, echo = FALSE, message=FALSE, fig.align='center', fig.cap='Scatter plot with a regression line for the drug “BRD-K99383816-001-03-5”. The black dots represent the original values that were used to for the linear regression model. The red dots represent the predicted average prism score for the concentrations: 0.1 nM, 0.3 nM, 6.4 nM, 8.9 nM and 10.5 nM.', out.width='0.65\\linewidth'}
+```{r, fig.pos= "H", warning = FALSE, echo = FALSE, message=FALSE, fig.align='center', fig.cap='Scatter plot with a regression line for the drug “BRD-K99383816-001-03-5”. The black dots represent the original values that were used to for the linear regression model. The red dots represent the predicted average prism score for the concentrations: 0.1 nM, 0.3 nM, 6.4 nM, 8.9 nM and 10.5 nM.', out.width='0.65\\linewidth'}
 ###############################
 # 9. # LINEAR REGRESSION ###### Luis
 ###############################
@@ -421,7 +424,7 @@ prediction_tool(testname, c(0.1, 0.3, 6.4, 8.9, 10.5))
 
 To further confirm the relationship between concentration and the mean cell growth, we calculated the Pearson correlation for each drug. 
 
-```{r, echo = FALSE, message=FALSE, fig.align='center', fig.cap='Histogram of the correlation between the different concentrations and the respective average prism score. Correlations below the set threshold of -0.7 are colored red and correlations higher that -0.7 are colored blue.', out.width='0.65\\linewidth'}
+```{r, fig.pos= "H", echo = FALSE, message=FALSE, fig.align='center', fig.cap='Histogram of the correlation between the different concentrations and the respective average prism score. Correlations below the set threshold of -0.7 are colored red and correlations higher that -0.7 are colored blue.', out.width='0.65\\linewidth'}
 ####################################
 # 9.1 # CORRELATION DRUG ~ CONC ###### Luis
 ####################################
@@ -499,7 +502,7 @@ Zhu, K., Wu, Y., He, P., Fan, Y., Zhong, X., Zheng, H., and Luo, T. (2022). PI3K
 
 # Appendix
 
-```{r, echo = FALSE, message=FALSE, fig.align='center', fig.cap='Boxplott of the gene knockout scores for the gene SDHC for breast cancer lineages compared to all the other lineages', out.width='0.65\\linewidth'}
+```{r, fig.pos= "H", echo = FALSE, message=FALSE, fig.align='center', fig.cap='Boxplott of the gene knockout scores for the gene SDHC for breast cancer lineages compared to all the other lineages', out.width='0.65\\linewidth'}
 prism.achilles.rm <-apply(prism.achilles, 2, function(x) {
   x[which(is.na(x))] <- median(x, na.rm = TRUE)
   return(x)
@@ -524,14 +527,15 @@ ggplot(achilles.boxplot)+
         text = element_text(''))
 
 ```
-```{r, echo = FALSE, message=FALSE, fig.align='center', fig.cap='Bild unterschrift', out.width='0.65\\linewidth'}
+
+```{r, fig.pos= "H", echo = FALSE, message=FALSE, fig.align='center', fig.cap='Bild unterschrift', out.width='0.65\\linewidth'}
 #### Plot 7
 ggplot() +
     geom_histogram(aes(x = r_squared_b), bins = 75, fill = "steelblue") +
     labs(title = "R^2 of linear regressions for every treatment", x = "R^2 value", y = "Count")
 ```
 
-```{r, echo = FALSE, message=FALSE, fig.align='center', fig.cap='Bild unterschrift', out.width='0.65\\linewidth'}
+```{r, fig.pos= "H", echo = FALSE, message=FALSE, fig.align='center', fig.cap='Bild unterschrift', out.width='0.65\\linewidth'}
 #### Plot 8
 singificance_b <- p_value_b > 0.05
 ggplot() +
