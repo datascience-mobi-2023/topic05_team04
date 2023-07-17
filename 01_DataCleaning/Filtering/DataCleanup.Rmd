@@ -9,7 +9,7 @@ library(scales) #install.packages("scales")
 library(dplyr)  #install.packages("dplyr")
 library(gridExtra) #install.packages("gridExtra")
 library(jsonlite) #install.packages("jsonlite")
-#library(tidyverse) #install.packages("tidyverse")
+library(tidyverse) #install.packages("tidyverse")
 # --------------------------------- #
 ```
 
@@ -240,8 +240,6 @@ non.onco.treat <- non.onco.treat[-which("oncology" == non.onco.treat$disease.are
 ***prism.treat subset***
 
 ```{r}
-
-library(tidyverse)
 
 prism.treat.test <-cbind(prism.treat, rownames(prism.treat))
 
