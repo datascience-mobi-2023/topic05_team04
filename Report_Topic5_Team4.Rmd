@@ -19,6 +19,7 @@ library(scales) #install.packages("scales")
 library(dplyr)  #install.packages("dplyr")
 library(gridExtra) #install.packages("gridExtra")
 library(jsonlite) #install.packages("jsonlite")
+library(ggforce) #install.packages("ggforce")
 ```
 
 ```{=tex}
@@ -124,11 +125,11 @@ The conclusive outcome of this engine development was a final modified search en
 To compile a list of inhibitory drugs, the first step involved filtering of the prism dataset. This dataset consists of 1396 distinct drugs that were tested on their effect on cell growth at concentrations ranging from 0.000194147 nM to 12.655 nM. Further Analysis showed that every drug was tested at 4 – 8 different doses. In the prism data set, the lowest values, indicate the highest effectiveness. To identify inhibitory drugs, we calculated the average prism score for every drug. Then we specifically chose the concentration that exhibited the lowest average prism score for every drug. To further understand the impact of the doses on the prism score, we compared the concentrations associated with the lowest and highest average prism score for every drug. 
 
 ```{r, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\ Histogram of which concentration concentrations results in the lowest (left) or highest (right) average prism score.', out.width='0.65\\linewidth'}
-#load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heidelberg/Module/BioInfo/BioInfoProjekt/prism_datasets.rda")
-#load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heidelberg/Module/BioInfo/BioInfoProjekt/cellline_datasets.rda")
+load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heidelberg/Module/BioInfo/BioInfoProjekt/prism_datasets.rda")
+load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heidelberg/Module/BioInfo/BioInfoProjekt/cellline_datasets.rda")
 
-load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/prism_datasets.rda")
-load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/cellline_datasets.rda")
+#load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/prism_datasets.rda")
+#load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/cellline_datasets.rda")
 
 #url3 <- "https://figshare.com/ndownloader/files/27670806?private_link=65b1d32c2be53afb00c9"
 #file3 <- "prism_datasets.rda"
@@ -211,6 +212,71 @@ ggplot() +
 This resulted in a data frame containing 582 inhibitory drugs (columns) and the respective prism scores on 481 cell lines (rows).
 
 ## UMAP
+
+The initial goal was to utilize the UMAP technique to recreate the UMAP from Corsello *et al.*. In their paper, they used the selected and filtered prism dataset for further analysis of the prism scores of the treatments, with the MOA as the label for the data points. We employed Principal Component Analysis (PCA) on our version of the filtered prism dataset. However, upon examining the variance of the different principal components, we found that further analysis provided no new information and less information than Corsello *et al.* with their UMAP. The PCA plot showed that the data points were densely packed together, and only one cluster of tubulin polymerization inhibitors could be discerned.
+We then applied the UMAP function to the same data, using the parameters mentioned in Corsello's paper: seven neighbors and a minimal distance of 0.5. Surprisingly, the resulting UMAP differed from Corsello *et al.*, despite using the same parameters. Similar to the UMAP created by Corsello *et al.*, MOAs tended to cluster together. By visually inspecting the plot, we could identify clusters of HSP inhibitors, tubulin polymerization inhibitors, and, to a lesser extent, HDAC inhibitors, MEK inhibitors, and glucocorticoid receptor agonists. This is depicted in Figure 2.
+Next, we applied K-means clustering to the UMAP, using the 20 MOAs we selected as labels for the data points as centres for the clustering despite three being the best centre number proven by the silhouette method. However, a limitation of this method is that with a large number of data points, the clusters tend to vary slightly with each run. As shown in Figure 3, the clusters included MOAs labeled as "Other" and even some data points from different MOAs. Among the previously mentioned clusters, only the cluster of tubulin polymerization inhibitors remained mostly intact. MEK inhibitors, HSP inhibitors, and HDAC inhibitors were more frequently divided between two clusters, and when they formed their own clusters, they shared those clusters with a few other treatments.
+
+```{r, echo = FALSE, message=FALSE, fig.align='center', fig.cap='UMAP of the inhibitory treatments with the PRISM scores labelled by the MOA', out.width='0.65\\linewidth'}
+p_onlyNA.col <- colnames(prism[which(sapply(prism, class) == "logical")]) 
+rem.pNAcol <- which(colnames(prism) %in% p_onlyNA.col)
+prismNA <- prism[, -rem.pNAcol]
+prism_imp <- as.data.frame(apply(prismNA, 2, function(x) {
+    is_na <- is.na(x)
+    x[is_na] <- mean(x, na.rm = TRUE)
+    return(x)
+})) 
+drugnames <- sub("::.*", "", colnames(prism_imp))
+concentration <- as.numeric(sub(".*::(.*?)::.*", "\\1", colnames(prism_imp)))
+names_conc_drug <- sub("::.*", "", sub("::", ":", colnames(prism_imp)))
+colMeans <- apply(prism_imp, 2, mean)
+duplicate_drugs <- unique(drugnames[duplicated(drugnames)])
+df_nam_con_mean <- data.frame(colMeans, drugnames, concentration, names_conc_drug)
+lowest_mean_duplicate <- data.frame()
+for(i in 1:length(duplicate_drugs)) {
+    act_rows <- which(df_nam_con_mean$drugnames == duplicate_drugs[i])
+    act_df <- df_nam_con_mean[act_rows,]
+    lowest_colmean <- min(act_df$colMeans, na.rm = TRUE)
+    lowest_mean_duplicate <- rbind(lowest_mean_duplicate, act_df[which(act_df$colMeans == lowest_colmean),])
+}
+pref_drug_con_combo <- rownames(lowest_mean_duplicate)
+prism_lowest <- prism_imp[,pref_drug_con_combo]
+meta_eff_treat <- prism.treat[pref_drug_con_combo,]
+level_counts <- table(meta_eff_treat$moa)
+sorted_levels <- names(sort(level_counts, decreasing = TRUE))
+top_x_levels <- sorted_levels[1:20]  ### <---! USER INPUT --->
+levels <- factor(meta_eff_treat$moa, levels = c("Other", top_x_levels))
+meta_eff_treat$levels <- levels
+meta_eff_treat$levels[is.na(meta_eff_treat$levels)] <- "Other"
+level_colors <- rainbow(length(top_x_levels))
+color_palette0 <- c(setNames(level_colors, top_x_levels), Other = "lightgray")
+# making umap
+prism_umap <- umap(t(prism_lowest), n_neighbors = 7, min_dist = 0.5, n_epochs = 200, n_components = 2) # extracting layout for easy plotting
+umap_layout_prism <- as.data.frame(prism_umap$layout)
+umap_layout_prism$levels <- meta_eff_treat$levels
+# hiding other
+umap_layout_prism <- umap_layout_prism %>%
+  mutate(alpha_level = ifelse(levels == "Other", 0.2, 1))
+# ploting umap 
+ggplot(umap_layout_prism, aes(x = V1, y = V2, color = levels, alpha = alpha_level)) +
+    geom_point(size = 3) +
+    scale_color_manual(values = color_palette0) +
+    theme_bw() +
+    ggtitle("UMAP of MOAs")
+cancer_km <- kmeans(prism_umap$layout, centers = 20)
+umap_layout_prism$cluster <- factor(cancer_km$cluster)
+cancercol <- rainbow(20)[cancer_km$cluster]
+```
+
+```{r, echo = FALSE, message=FALSE, fig.align='center', fig.cap='UMAP of the inhibitory treatments with the PRISM scores labelled by the MOA with cluster encircelment', out.width='0.65\\linewidth'}
+ggplot(umap_layout_prism, aes(x = V1, y = V2, color = levels, alpha = alpha_level)) +
+  geom_point(size = 3) +
+  geom_mark_hull(aes(group = cluster), concavity = 5, expand = 0, radius = 0, color = "black", alpha = 1, show.legend = FALSE) +
+  scale_color_manual(values = color_palette0) +
+  theme_bw() +
+  ggtitle("UMAP of MOAs with encirceld clusters")
+```
+
 
 ## Gene analysis
 
