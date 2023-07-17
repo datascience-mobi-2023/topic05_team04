@@ -128,7 +128,7 @@ legend('bottomleft',legend=levels(breast_subtype_p_cl),pch=19,col=color)
 
 ```{r breast UMAP by Simon}
 #I created this UMAP with the parameters mentioned in the Paper from Corsello
-breast_umap <- umap(t(breast_prism_imp[,pref_drug_con_combo]), n_neighbors = 7, min_dist = 0.5, n_epochs = 200, n_components = 2)
+breast_umap <- umap(t(breast_prism_imp[,pref_drug_con_combo_breast]), n_neighbors = 7, min_dist = 0.5, n_epochs = 200, n_components = 2)
 
 umap_layout_mamma <- as.data.frame(breast_umap$layout)
 
@@ -182,14 +182,14 @@ invisible(t.col)
 mycol <- t_col(color = 'grey', name = 'transparent')
 
 # Create a named vector of colors including "Other"
-color_palette2 <- c(setNames(level_colors, top_10_levels), Other = 'transparent')
+color_palette <- c(setNames(level_colors, top_10_level), Other = 'transparent')
 ```
 
 ```{r UMAP Plot by Simon}
 ##### Plot the UMAP
-ggplot(umap_layout_breast %>% arrange(imp_treat[order(imp_treat$levels), ]), aes(x = V1, y = V2, colour = imp_treat$levels)) +
+ggplot(umap_layout_mamma %>% arrange(imp_treat2[order(imp_treat2$levels), ]), aes(x = V1, y = V2, colour = imp_treat2$levels)) +
     geom_point(size = 3, alpha = 0.5) +
-    scale_color_manual(values = color_palette2) +
+    scale_color_manual(values = color_palette) +
     theme_bw() +
     ggtitle("UMAP of the Breastcancer celllines") +
     geom_vline(xintercept = 0, color = 'red') +
@@ -198,7 +198,7 @@ ggplot(umap_layout_breast %>% arrange(imp_treat[order(imp_treat$levels), ]), aes
 
 ```{r kmeans of UMAP with elbow by Simon}
 wss <- sapply(2:20,function(k) { 
-  kmeans(breast_cancer_umap$layout, centers =k)$tot.withinss
+  kmeans(breast_umap$layout, centers =k)$tot.withinss
 })
 #best clustersize with elbow method -> hard to see propably 3
 plot(2:20,wss,type='b',pch=19,xlab="Number of clusters K",
@@ -208,8 +208,8 @@ plot(2:20,wss,type='b',pch=19,xlab="Number of clusters K",
 ```{r kmeans of UMAP with silhouette by Simon}
 #silhouette method for umap
 silhouette_score <- function(k){
-  km <- kmeans(breast_cancer_umap$layout, centers = k)
-  s <- silhouette(km$cluster, dist(breast_cancer_umap$layout))
+  km <- kmeans(breast_umap$layout, centers = k)
+  s <- silhouette(km$cluster, dist(breast_umap$layout))
   mean(s[, 3])
 }
 k <- 2:20
@@ -218,9 +218,9 @@ avg_s <- sapply(k, silhouette_score)
 plot(k, type = 'b', avg_s,xlim = c(2,20), ylim = c(0.34,0.59), xlab='Number of clusters', ylab='Average Silhouette Scores'); abline(h = max(avg_s), col = 'red')
 
 ## plotting the clusters
-breast_km <- kmeans(breast_cancer_umap$layout, centers = 3)
+breast_km <- kmeans(breast_umap$layout, centers = 3)
 colclust = c('green', 'blue', 'red')[breast_km$cluster] 
-plot(breast_cancer_umap$layout[,1], breast_cancer_umap$layout[,2], 
+plot(breast_umap$layout[,1], breast_umap$layout[,2], 
      col= colclust, pch=19,
      xlab='V1',ylab='V2',
      main='Clustering of drugs'); abline(h = 0, col = 'orange'); abline(v = 0, col = 'orange')
