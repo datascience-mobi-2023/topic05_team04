@@ -2,6 +2,8 @@
 title: "  "
 author: " "
 date: " "
+bibliography: references/ref.bib 
+csl: references/citation_style.csl
 geometry: "margin=2.3cm"
 linestretch: 1.15
 fontsize: 11pt
@@ -12,12 +14,9 @@ output:
 ```{r, include=FALSE}
 # das ist das package was man braucht. mit dem dahinter sollte eigentlich alles was man braucht runter geladen werden
 #install.packages("bookdown", dependencies = TRUE)
-library(ggplot2) #install.packages("ggplot2")
-library(umap) #install.packages("umap")
-library(readxl) #install.packages("readxl")
-library(scales) #install.packages("scales")
-library(dplyr)  #install.packages("dplyr")
-library(gridExtra) #install.packages("gridExtra")
+library(ggplot2)
+library(gridExtra)
+
 ```
 
 
@@ -102,10 +101,24 @@ By leveraging the genetic association approach and focusing on gene expression a
 
 ### Prism Datasets  
 
-Seven datasets were provided for further data analysis. These datasets can be divided into to two subsets, the PRISM datasets and gene-related datasets. 
-Our main PRISM dataset describes treatment response on cell growth of different cell lines. Assigned columns are code ID names from the treatments and the cell lines are ordered row-wise. The values represent the log 2 fold change in comparison with a DMSO experiment and are referred to as prism scores. Additional information about the treatments used in PRISM can be found in the second dataset including its mechanism of action, common purpose etc.. Lastly, the PRISM cell line data set presents detailed information about all cell lines and their cancer origin.
-Furthermore, the three of the four given gene-related datasets present gene designations as column names and cell line IDs as row names, each containing different measurement values.
-The expression data frame describes expression levels of each gene in different cell lines. The copy number data frame contains the copy number of each gene for every cell line used in the PRISM screen. The gene importance data frame displays the gene importance measured by knockout scores of each gene in every cell line. With different format the last gene-related data set offers valuable information about the gene including the common function, mutation and so on.
+**Prism:** contains the effect of the treatment (columns) on cell growth of the cell lines (rows). The values represent a log2FC with a control DMSO experiment.
+
+**Prism.treat:** provides supplementary data for the different treatments (row), such as the target of the treatment, the mechanism of action, the drug name and more information.
+
+**Prism.cl:** provides supplementary data for the different cell lines (row), such as the the disease type, the cell line name and more information.
+
+### Cellline Datasets  
+
+**Prism.exp:** contains levels of gene expression. Celllines (rows) and genes (columns)
+
+The copy number data frame contains the copy number of each gene for each cell line used in the PRISM screen. Each row of the data frame represents a specific cell line, while the columns correspond to different genes. The row names and column names of the data frame are assigned using the respective cell line IDs and gene designations.
+The copy number of a gene refers to the number of copies present in the genome of an individual cell. Theoretically, each gene has a copy number of two, because one gene copy of each parent exists in the genome. However, mutations can lead to variations in the copy numbers, resulting in either higher or lower values than the expected two copies.
+
+
+**Prism.snv:** marks mutation in the different celllines als functional or nonfunctional to the cancer.
+
+**Prism.achilles:** has information on how important a gene is for cell survival. Was generated using knockdown celllines. Gene names (rows) and celllines (colums)
+Lastly, a data frame containing the gene knockout scores for the cancer cell lines. This means that each gene has been silenced via CRISPR or another method and the resulting effect on cell proliferation was tested. A low gene knockout score indicates shows that the cell proliferation has been severly inhibited. Therefore the importance of genes can be estimated by how low the gene knockout score is.
    
 
 ## Data clean up/Filtering
@@ -126,7 +139,7 @@ describe goal, describe process, describe outcome
 
 ## Gene search engine
 
-Analysing the main datasets led to many individual data formats such as data frames, lists etc.; which contain relevant information gathered by our code. The aim of the function of the search engine was to quickly search for a gene of interest and display its attached values out of our main gene-related cell line datasets for a more simple process of gene analysis. Based on this code, applications like looking for suitable treatments in prism.treat, loops which undergo printing every gene and their attached values in breast cancer cell lines and the first approach for a relevant final data frame were realized.
+Analysing the main datasets led to many individual data formats such as data frames, lists etc.; which contain relevant information gathered by our code. The aim of the function of the search engine was to quickly search for a gene of interest and display its attached values out of our main cell line datasets (prism.exp, prism.achilles, prism.cnv) for a more simple process of gene analysis. Based on this code, applications like looking for suitable treatments in prism.treat, loops which undergo printing every gene and their attached values in breast cancer celllines and the first approach for a relevant final data frame were realized.
 The conclusive outcome of this engine development was a final modified search engine, in which one can type in the gene of interest and it prints every relevant value or information to get a decisive overview for drug repurposing applications. 
 
 
@@ -134,21 +147,18 @@ The conclusive outcome of this engine development was a final modified search en
 To compile a list of inhibitory drugs, the first step involved filtering of the prism dataset. This dataset consists of 1396 distinct drugs that were tested on their effect on cell growth at concentrations ranging from 0.000194147 nM to 12.655 nM. Further Analysis showed that every drug was tested at 4 – 8 different doses. In the prism data set, the lowest values, indicate the highest effectiveness. To identify inhibitory drugs, we calculated the average prism score for every drug. Then we specifically chose the concentration that exhibited the lowest average prism score for every drug. To further understand the impact of the doses on the prism score, we compared the concentrations associated with the lowest and highest average prism score for every drug. 
 
 PLOT 1 and PLOT 2
-```{r, label='Chunk Titel1', echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift', out.width='0.65\\linewidth'}
-#url3 <- "https://figshare.com/ndownloader/files/27670806?private_link=65b1d32c2be53afb00c9"
-#file3 <- "prism_datasets.rda"
-#download.file(url3, destfile = file3, method = "auto")
-#downloaded_file_path3 <- file.path(getwd(), file3)
-#load(downloaded_file_path3)
+```{r Chunk Titel, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Figure 4: Histogram of which concentration concentrations results in the lowest (left) or highest (right) average prism score. , out.width='0.65\\linewidth'}
+url3 <- "https://figshare.com/ndownloader/files/27670806?private_link=65b1d32c2be53afb00c9"
+file3 <- "prism_datasets.rda"
+download.file(url3, destfile = file3, method = "auto")
+downloaded_file_path3 <- file.path(getwd(), file3)
+load(downloaded_file_path3)
 
-#url4 <- "https://figshare.com/ndownloader/files/27453818?private_link=0a47128e7c487d6f9867"
-#file4 <- "cellline_datasets.rda"
-#download.file(url4, destfile = file4, method = "auto")
-#downloaded_file_path4 <- file.path(getwd(), file4)
-#load(downloaded_file_path4)
-load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heidelberg/Module/BioInfo/BioInfoProjekt/prism_datasets.rda")
-load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heidelberg/Module/BioInfo/BioInfoProjekt/cellline_datasets.rda")
-#### Plot 1
+url4 <- "https://figshare.com/ndownloader/files/27453818?private_link=0a47128e7c487d6f9867"
+file4 <- "cellline_datasets.rda"
+download.file(url4, destfile = file4, method = "auto")
+downloaded_file_path4 <- file.path(getwd(), file4)
+load(downloaded_file_path4)
 ######################################
 # 3. # BREAST PRISM IMPUTATION #######
 ######################################
@@ -194,6 +204,7 @@ breast_prism_lowest <- breast_prism_imp[,pref_drug_con_combo_breast]
 lowest_mean_duplicate_tsh_b <- lowest_mean_duplicate_b[lowest_mean_duplicate_b$colMeans_breast < -2,]
 pref_drug_ths_b <- rownames(lowest_mean_duplicate_tsh_b)
 breast_prism_lowest_ths <- breast_prism_imp[,pref_drug_ths_b]
+#### Plot 1
 ggplot1 <- ggplot() +
     geom_histogram(aes(x = lowest_mean_duplicate_b$concentration_b), bins = 10, fill = "coral") + 
     labs(title = "Lowest average prism score", x = "Concentration", y = "Count")
@@ -208,13 +219,13 @@ grid.arrange(ggplot1, ggplot2, nrow = 1)
 
 Once the most effective drug concentration combinations were identified, we proceeded with an additional round of filtering. This time only the drugs resulting in an average prism score lower than -2 were selected. This threshold was chosen because its allowing the removal of 60 % of the provided drugs. 
 
-```{r, label='Chunk Titel2', echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift', out.width='0.65\\linewidth'}
+```{r Chunk Titel, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Figure 5: Histogram of the mean log 2 fold change of the drugs after the first round of filtering. The colors indicate if the drugs is below or above the selected threshold of -2., out.width='0.65\\linewidth'}
+#### Plot 3
 inhibitory_fil <- lowest_mean_duplicate_b$colMeans_breast < -2
 ggplot() +
     geom_histogram(aes(x = lowest_mean_duplicate_b$colMeans_breast, fill = inhibitory_fil), bins = 30) +
     labs(title = "Cell Growth of filtered drugs", x = "log2FC", y = "Count", fill = "Inhibitory") +
-    scale_fill_discrete(labels = c("> -2", "< -2")) +
-    scale_fill_manual(values = c("coral", "steelblue2"))
+    scale_fill_discrete(labels = c("> -2", "< -2")) 
 ```
 
 This resulted in a data frame containing 582 inhibitory drugs (columns) and the respective prism scores on 481 cell lines (rows).
@@ -243,7 +254,8 @@ Moreover, the 3925 preselected genes were compiled into a data frame for further
 ## Linear regression
 Linear regression is a statistical technique to model the relationship between a dependent variable and one or more independent variables and fitting a straight line to the data. We used linear regression models to predict the average prism score based on the concentration for every drug. We created a function that takes drug names as inputs and returns a scatter plot with a linear fit on top and additional information about how well the model performs. This includes the R2 value, and a Shapiro Wilk normality test performed on the residuals. The R2 value is an indicator of how well the straight line fights the data point and if there is a linear relation between the points. The Shapiro Wilk normality test is commonly used to assess if the residuals follow a normal distribution. This is important to evaluate the performance because deviations from normal distribution suggest an underlying true pattern, that is not captured by the model. 
 
-```{r, label='Chunk Titel3', echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift', out.width='0.65\\linewidth'}
+Next we created a function which takes drug names and concentration values as an Input and returns  predicted mean cell growth values for the concentration values. 
+```{r Chunk Titel, warning = FALSE, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Figure 6: Scatter plot with a regression line for the drug “BRD-K99383816-001-03-5”. The black dots represent the original values that were used to for the linear regression model. The red dots represent the predicted average prism score for the concentrations: 0.1 nM, 0.3 nM, 6.4 nM, 8.9 nM and 10.5 nM., out.width='0.65\\linewidth'}
 ###############################
 # 9. # LINEAR REGRESSION ###### Luis
 ###############################
@@ -268,41 +280,6 @@ for(i in 1:length(duplicate_drugs_b)) {
     }
 }
 testname <- "BRD-K99383816-001-03-5"
-#######################
-### PLOT REGRESSION ###
-#######################
-plot_reg <- function(drugname) {
-    position <- which(drugname == names(regression_list_b))
-    #### Summary model ####
-    act_summary_b <- regression_list_b[[position]][[2]]
-    #### Model ####
-    act_model_b <- regression_list_b[[position]][[1]]
-    #### Shapiro-Wilk test ####
-    act_shapiro <- regression_list_b[[position]][[6]]
-
-    #### Metadata ####
-    eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2, 
-    list(a = format(unname(coef(act_model_b)[1]), digits = 2),
-         b = format(unname(coef(act_model_b)[2]), digits = 2),
-         r2 = format(act_model_b$r.squared, digits = 3)))
-    as.character(as.expression(eq))
-
-    #### Plot the regression ####
-    ggplot <- ggplot(data = regression_list_b[[position]][[5]], aes(x = concentration_b, y = colMeans)) +
-        stat_smooth(method = "lm", formula = y ~ x, geom = "smooth") +
-        geom_point() +
-        labs(x = "Concentration", y = "Mean of PRISM score", title = paste("Regression for:", drugname)) +
-        annotate("text", x = 6.5, y = 1.5, label = eq, size = 3) +
-        annotate("text", x = 6.5, y = 1, label = paste("Shapiro-Wilk normality test for Residuals:", "\n", "W =", round(act_shapiro$statistic, 3), "|  p-value =", format(act_shapiro$p.value, scientific = TRUE)), size = 3)
-
-    return(ggplot)
-}
-plot_reg(testname)
-```
-
-Next we created a function which takes drug names and concentration values as an Input and returns  predicted mean cell growth values for the concentration values. 
-
-```{r, label='Chunk Titel4', echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift', out.width='0.65\\linewidth'}
 #######################
 ### PREDICTION TOOL ###
 #######################
@@ -349,12 +326,13 @@ prediction_tool <- function(drugname, conc_values) {
 
     return(ggplot)
 }
+#### Plot 5
 prediction_tool(testname, c(0.1, 0.3, 6.4, 8.9, 10.5))
 ```
 
 To further confirm the relationship between concentration and the mean cell growth, we calculated the Pearson correlation for each drug. 
 
-```{r, label='Chunk Titel5', echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift', out.width='0.65\\linewidth'}
+```{r Chunk Titel, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Figure 7: Histogram of the correlation between the different concentrations and the respective average prism score. Correlations below the set threshold of -0.7 are colored red and correlations higher that -0.7 are colored blue. , out.width='0.65\\linewidth'}
 ####################################
 # 9.1 # CORRELATION DRUG ~ CONC ###### Luis
 ####################################
@@ -378,16 +356,17 @@ for(i in 1:length(duplicate_drugs_b)) {
     }
 }
 high_cor <- highest_cor_b$correlation < -0.7
+#### Plot 6
 ggplot() +
     geom_histogram(aes(x = highest_cor_b$correlation, fill = high_cor), bins = 75) +
     labs(title = "Correlation of drug and concentration", x = "Pearson Correlation", y = "Count", fill = " ") +
-    scale_fill_discrete(labels = c("> 0.7", "< 0.7")) 
+    scale_fill_discrete(labels = c("> -0.7", "< -0.7")) 
 ```
 
 # Discussion
 
 gene search engine:
-An informative gene search engine is a promising advancement in the field of genomic data analysis. Regarding large screenings, utilizing a specific profile as an input to the engine, offers accurate results, enabling other researchers to identify genes and their possible association to another treatment. Respectively, one could have got a possible important gene through literature analysis or comparing every meaningful value in our big database manually, but it is time-consuming and one could lose the overview. The demonstrated scalability and function of our engine does not display the current standard of such engines with a wide range of abilities. While further improvements may be considered, our gene search engine occurred to be a usable tool for exploring gene-associated data for an overview and contributes to helping researchers to find their specific gene-treatment interaction.
+An informative gene search engine is a promising advancement in the field of genomic data analysis. Regarding large screenings, utilizing a specific profile as an input to the engine, offers accurate results, enabling other researchers to identify genes and their possible association to another treatment. Respectively, one could have got a possible important gene through literature analysis or comparing every meaningful value in our big database manually, but it is time-consuming and one could lose the overview. The demonstrated scalability and function of our engine does not display the current standard of such engines with a wide range of abilities, being GEMINI and Sigcom LINCS. While further improvements may be considered, our gene search engine occurred to be a usable tool for exploring gene-associated data for an overview and contributes to helping researchers to find their specific gene-treatment interaction.
 
 The analyis of the different doses revealed a trend, Figure 1 shows that higher doses result in a lower average prism score. Figue ?? also validates this discovery, 79 % of the treatments have a high correlation between concentration and average prism score. This can also be seen when looking at the distribution of R^2 values of the linear regression models (Figure ???) that were computed for every drug. The majority of drugs have a R^2 value above 0.5 and higher, which indicates a decent fit of the regression line. The Shapiro Wilk normality test performed on the residuals of the linear regression models showed that the residuals are normally distributed for 72 % of drugs. This is important because it indicates that the model captures the underlying pattern of the data quite well. However, there are some drugs that have a low R^2 value and a p-value below 0.05 for the Shapiro Wilk normality test. This indicates that not all patterns in the data are captured by the model, this could be improved with for example multiple linear regression taking in accound more factors or a completly different approach.
 
@@ -408,11 +387,13 @@ In hindsight, this approach may not be optimal to further decrease the number of
 # References
 
 # Appendix
-```{r, label='Chunk Titel6', echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift', out.width='0.65\\linewidth'}
+```{r Chunk Titel, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift, out.width='0.65\\linewidth'}
+#### Plot 7
 ggplot() +
     geom_histogram(aes(x = r_squared_b), bins = 75, fill = "steelblue") +
     labs(title = "R^2 of linear regressions for every treatment", x = "R^2 value", y = "Count")
 
+#### Plot 8
 singificance_b <- p_value_b > 0.05
 ggplot() +
     geom_histogram(aes(x = p_value_b, fill = singificance_b), bins = 75) +
