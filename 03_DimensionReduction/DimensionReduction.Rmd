@@ -1,0 +1,236 @@
+```{r Load Data}
+load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heidelberg/Module/BioInfo/BioInfoProjekt/prism_datasets.rda")
+load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heidelberg/Module/BioInfo/BioInfoProjekt/cellline_datasets.rda")
+```
+```{r Load Libraries}
+library(dplyr)
+library(umap)
+library(cluster)
+library(ggplot2)
+library(ggforce)
+```
+```{r Further Filtering of Prism by luis}
+p_onlyNA.col <- colnames(prism[which(sapply(prism, class) == "logical")]) 
+rem.pNAcol <- which(colnames(prism) %in% p_onlyNA.col)
+prismNA <- prism[, -rem.pNAcol]
+prism_imp <- as.data.frame(apply(prismNA, 2, function(x) {
+    is_na <- is.na(x)
+    x[is_na] <- mean(x, na.rm = TRUE)
+    return(x)
+})) 
+drugnames <- sub("::.*", "", colnames(prism_imp))
+concentration <- as.numeric(sub(".*::(.*?)::.*", "\\1", colnames(prism_imp)))
+names_conc_drug <- sub("::.*", "", sub("::", ":", colnames(prism_imp)))
+colMeans <- apply(prism_imp, 2, mean)
+duplicate_drugs <- unique(drugnames[duplicated(drugnames)])
+df_nam_con_mean <- data.frame(colMeans, drugnames, concentration, names_conc_drug)
+lowest_mean_duplicate <- data.frame()
+for(i in 1:length(duplicate_drugs)) {
+    act_rows <- which(df_nam_con_mean$drugnames == duplicate_drugs[i])
+    act_df <- df_nam_con_mean[act_rows,]
+    lowest_colmean <- min(act_df$colMeans, na.rm = TRUE)
+    lowest_mean_duplicate <- rbind(lowest_mean_duplicate, act_df[which(act_df$colMeans == lowest_colmean),])
+}
+
+pref_drug_con_combo <- rownames(lowest_mean_duplicate)
+prism_lowest <- prism_imp[,pref_drug_con_combo]
+breast_prism.cl <- prism.cl[which(prism.cl$lineage == 'breast'), ]
+breast_prism <- prism[which(rownames(prism) %in% breast_prism.cl$DepMap_ID), ]
+bp_onlyNA.col <- colnames(breast_prism[which(colSums(is.na(breast_prism)) == 22)]) 
+rem.bpNAcol <- which(colnames(breast_prism) %in% bp_onlyNA.col)
+breast_prism_imp <- breast_prism[, -rem.bpNAcol] 
+
+breast_prism_imp <- as.data.frame(apply(breast_prism_imp, 2, function(x) {
+    is_na <- is.na(x)
+    x[is_na] <- mean(x, na.rm = TRUE)
+    return(x)
+}))
+drugnames_b <- sub("::.*", "", colnames(breast_prism_imp))
+concentration_b <- as.numeric(sub(".*::(.*?)::.*", "\\1", colnames(breast_prism_imp)))
+names_conc_drug_b <- sub("::.*", "", sub("::", ":", colnames(breast_prism_imp)))
+colMeans_breast <- apply(breast_prism_imp, 2, mean)
+duplicate_drugs_b <- unique(drugnames_b[duplicated(drugnames_b)])
+df_nam_con_mean_b <- data.frame(colMeans_breast, drugnames_b, concentration_b, names_conc_drug_b)
+lowest_mean_duplicate_b <- data.frame()
+for(i in 1:length(duplicate_drugs_b)) {
+    act_rows_b <- which(df_nam_con_mean_b$drugnames_b == duplicate_drugs_b[i])
+    act_df_b <- df_nam_con_mean_b[act_rows_b,]
+    lowest_colmean_b <- min(act_df_b$colMeans_breast, na.rm = TRUE)
+    lowest_mean_duplicate_b <- rbind(lowest_mean_duplicate_b, act_df_b[which(act_df_b$colMeans_breast == lowest_colmean_b),])
+}
+
+pref_drug_con_combo_breast <- rownames(lowest_mean_duplicate_b)
+breast_prism_lowest <- breast_prism_imp[,pref_drug_con_combo_breast]
+meta_eff_treat <- prism.treat[pref_drug_con_combo,]
+level_counts <- table(meta_eff_treat$moa)
+sorted_levels <- names(sort(level_counts, decreasing = TRUE))
+top_x_levels <- sorted_levels[1:20]  ### <---! USER INPUT --->
+levels <- factor(meta_eff_treat$moa, levels = c("Other", top_x_levels))
+meta_eff_treat$levels <- levels
+meta_eff_treat$levels[is.na(meta_eff_treat$levels)] <- "Other"
+level_colors <- rainbow(length(top_x_levels))
+color_palette0 <- c(setNames(level_colors, top_x_levels), Other = "lightgray")
+```
+```{r breast UMAP by Simon}
+#I created this UMAP with the parameters mentioned in the Paper from Corsello
+breast_umap <- umap(t(breast_prism_imp[,pref_drug_con_combo_breast]), n_neighbors = 7, min_dist = 0.5, n_epochs = 200, n_components = 2)
+
+umap_layout_mamma <- as.data.frame(breast_umap$layout)
+
+## Create levels for differentiation
+imp_treat2 <- prism.treat[pref_drug_con_combo,]
+
+# Find the Top MOA 
+level_counters <- table(imp_treat2$moa)
+sorted_bylevel <- names(sort(level_counters, decreasing = TRUE))
+top_10_level <- sorted_bylevel[1:20]
+
+# Create a factor with the top 10 MOA levels
+level <- factor(imp_treat2$moa, level = c("Other", top_10_level))
+imp_treat2$levels <- level
+
+# Make the MOA levels that are not in the top "Other"
+imp_treat2$levels[is.na(imp_treat2$levels)] <- "Other"
+
+# Define the colors for each level (excluding "Other")
+levels_colors <- rainbow(length(top_10_level))
+
+# Colors for "Other"
+color_palette1 <- c(setNames(levels_colors, top_10_level), Other = 'grey')
+
+# Umap Plot with breast_umap
+ggplot(umap_layout_mamma, aes(x = V1, y = V2, colour = imp_treat2$levels)) +
+    geom_point(size = 3, alpha = 0.5) +
+    scale_color_manual(values = color_palette1) +
+    theme_bw() +
+    ggtitle("UMAP of the Breastcancer celllines")
+```
+```{r Trying to solve grey dots with white color by Simon}
+#Create transparent color to remove not named dots
+t_col <- function(color, name = NULL) {
+  #      color = color name
+  #       name = an optional name for the color
+
+  ## Get RGB values for named color
+  rgb.val <- col2rgb(color)
+
+  ## Make new color using input color as base and alpha set by transparency
+  t.col <- rgb(rgb.val[1], rgb.val[2], rgb.val[3],
+             max = 255,
+             alpha = 0.001,
+             name = name)
+
+## Save the color
+invisible(t.col)
+}
+mycol <- t_col(color = 'grey', name = 'transparent')
+
+# Create a named vector of colors including "Other"
+color_palette <- c(setNames(level_colors, top_10_level), Other = 'transparent')
+```
+```{r UMAP Plot by Simon}
+##### Plot the UMAP
+ggplot(umap_layout_mamma %>% arrange(imp_treat2[order(imp_treat2$levels), ]), aes(x = V1, y = V2, colour = imp_treat2$levels)) +
+    geom_point(size = 3, alpha = 0.5) +
+    scale_color_manual(values = color_palette) +
+    theme_bw() +
+    ggtitle("UMAP of the Breastcancer celllines") +
+    geom_vline(xintercept = 0, color = 'red') +
+    geom_hline(yintercept = 0, color = 'red')
+```
+```{r PCA for comparison by Simon}
+# pca with same data as umap
+prism_pca <- prcomp(t(prism_lowest))
+# calculating variance and plotting them
+prism_pca_var <- (prism_pca$sdev)^2
+prism_pca_prop.var <- prism_pca_var/sum(prism_pca_var)
+names(prism_pca_prop.var) <- 1:length(prism_pca_prop.var)
+barplot(prism_pca_prop.var[1:20],ylab='Proportion of variance') # only first 20 PCs
+# further processing for plotting
+df_prism_pca <- as.data.frame(prism_pca$x)
+df_prism_pca$levels <- meta_eff_treat$levels
+df_prism_pca <- df_prism_pca %>%
+  mutate(alpha_level = ifelse(levels == "Other", 0.2, 1))
+# plot
+ggplot(df_prism_pca, aes(x = PC1, y = PC2, color = levels, alpha = alpha_level)) +
+    geom_point(size = 3) +
+    scale_color_manual(values = color_palette0) +
+    theme_bw() +
+    ggtitle("PCA of MOAs")
+# calculating silhouette score for clustering
+silhouette_score1 <- function(k){
+  km <- kmeans(prism_pca$x, centers = k)
+  s <- silhouette(km$cluster, dist(prism_pca$x))
+  mean(s[, 3])
+}
+k <- 2:20
+avg_s1 <- sapply(k, silhouette_score1) # takes long to calculate
+#best cluster size through silhouette method -> size 2 works best -> anyways 20 beacause moas
+plot(k, type = 'b', avg_s1,xlim = c(2,20), ylim = c(min(avg_s1)-1,max(avg_s1)+1), xlab='Number of clusters', ylab='Average Silhouette Scores'); abline(h = max(avg_s1), col = 'red')
+# clustering with kmeans
+pca_km <- kmeans(prism_pca$x, centers = 20)
+# integrating for clustering plot
+df_prism_pca$cluster <- factor(pca_km$cluster)
+pcacol <- rainbow(20)[pca_km$cluster]
+# cluster plot
+ggplot(df_prism_pca, aes(x = PC1, y = PC2, color = pcacol)) +
+    geom_point(size = 3) +
+    theme_bw() +
+    ggtitle("PCA of clustered MOAs") +
+    theme(legend.position = "none")
+# encirceled clusters plot
+ggplot(df_prism_pca, aes(x = PC1, y = PC2, color = levels, alpha = alpha_level)) +
+  geom_point(size = 3) +
+  geom_mark_hull(aes(group = cluster), concavity = 5, expand = 0, radius = 0, color = "black", alpha = 1, show.legend = FALSE) +
+  scale_color_manual(values = color_palette0) +
+  theme_bw() +
+  ggtitle("PCA of MOAs with encirceld clusters")
+```
+```{r Final UMAO by Simon}
+# making umap
+prism_umap <- umap(t(prism_lowest), n_neighbors = 7, min_dist = 0.5, n_epochs = 200, n_components = 2) # extracting layout for easy plotting
+umap_layout_prism <- as.data.frame(prism_umap$layout)
+umap_layout_prism$levels <- meta_eff_treat$levels
+# hiding other
+umap_layout_prism <- umap_layout_prism %>%
+  mutate(alpha_level = ifelse(levels == "Other", 0.2, 1))
+# ploting umap 
+ggplot(umap_layout_prism, aes(x = V1, y = V2, color = levels, alpha = alpha_level)) +
+    geom_point(size = 3) +
+    scale_color_manual(values = color_palette0) +
+    theme_bw() +
+    ggtitle("UMAP of MOAs")
+
+# silhouette score for best kmeans
+silhouette_score2 <- function(k){
+  km <- kmeans(prism_umap$layout, centers = k)
+  s <- silhouette(km$cluster, dist(prism_umap$layout))
+  mean(s[, 3])
+}
+k <- 2:20
+avg_s2 <- sapply(k, silhouette_score2)
+# best cluster size through silhouette method -> size 3 works best -> trotzdem 20
+plot(k, type = 'b', avg_s2,xlim = c(2,20), ylim = c(min(avg_s2)-1,max(avg_s2)+1), xlab='Number of clusters', ylab='Average Silhouette Scores'); abline(h = max(avg_s2), col = 'red')
+
+# trying 20 centers for clustering to cluster
+cancer_km <- kmeans(prism_umap$layout, centers = 20)
+umap_layout_prism$cluster <- factor(cancer_km$cluster)
+cancercol <- rainbow(20)[cancer_km$cluster]
+#plot(umap_layout_prism[,1], umap_layout_prism[,2], 
+#     col= cancercol, pch=19,
+#     xlab='V1',ylab='V2',
+#     main='Clustering of drugs')
+ggplot(umap_layout_prism, aes(x = V1, y = V2, color = cancercol)) +
+    geom_point(size = 3) +
+    theme_bw() +
+    ggtitle("PCA of clustered MOAs") +
+    theme(legend.position = "none")
+p <- ggplot(umap_layout_prism, aes(x = V1, y = V2, color = levels, alpha = alpha_level)) +
+  geom_point(size = 3) +
+  geom_mark_hull(aes(group = cluster), concavity = 5, expand = 0, radius = 0, color = "black", alpha = 1, show.legend = FALSE) +
+  scale_color_manual(values = color_palette0) +
+  theme_bw() +
+  ggtitle("UMAP of MOAs with encirceld clusters")
+p
+#ggsave("plot.png", plot = p, width = 29.7, height = 21, units = "cm", dpi = 600)
+```
