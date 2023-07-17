@@ -23,6 +23,7 @@ library(dplyr)  #install.packages("dplyr")
 library(gridExtra) #install.packages("gridExtra")
 library(jsonlite) #install.packages("jsonlite")
 library(ggforce) #install.packages("ggforce")
+library(cluster) #
 ```
 
 ```{=tex}
@@ -240,7 +241,7 @@ The initial goal was to utilize the UMAP technique to recreate the UMAP from Cor
 We then applied the UMAP function to the same data, using the parameters mentioned in Corsello's paper: seven neighbors and a minimal distance of 0.5. Surprisingly, the resulting UMAP differed from Corsello *et al.*, despite using the same parameters. Similar to the UMAP created by Corsello *et al.*, MOAs tended to cluster together. By visually inspecting the plot, we could identify clusters of HSP inhibitors, tubulin polymerization inhibitors, and, to a lesser extent, HDAC inhibitors, MEK inhibitors, and glucocorticoid receptor agonists. This is depicted in Figure 2.
 Next, we applied K-means clustering to the UMAP, using the 20 MOAs we selected as labels for the data points as centres for the clustering despite three being the best centre number proven by the silhouette method. However, a limitation of this method is that with a large number of data points, the clusters tend to vary slightly with each run. As shown in Figure 3, the clusters included MOAs labeled as "Other" and even some data points from different MOAs. Among the previously mentioned clusters, only the cluster of tubulin polymerization inhibitors remained mostly intact. MEK inhibitors, HSP inhibitors, and HDAC inhibitors were more frequently divided between two clusters, and when they formed their own clusters, they shared those clusters with a few other treatments.
 
-```{r, fig.pos= "H", fig.dim=c(10,6), echo = FALSE, message=FALSE, fig.align='center', fig.cap='UMAP of the inhibitory treatments with the PRISM scores labelled by the MOA', out.width='0.65\\linewidth'}
+```{r, fig.pos= "H", fig.dim=c(12,6), echo = FALSE, message=FALSE, fig.align='center', fig.cap='UMAP of the inhibitory treatments with the PRISM scores labelled by the MOA', out.width='0.65\\linewidth'}
 p_onlyNA.col <- colnames(prism[which(sapply(prism, class) == "logical")]) 
 rem.pNAcol <- which(colnames(prism) %in% p_onlyNA.col)
 prismNA <- prism[, -rem.pNAcol]
@@ -280,18 +281,11 @@ umap_layout_prism$levels <- meta_eff_treat$levels
 # hiding other
 umap_layout_prism <- umap_layout_prism %>%
   mutate(alpha_level = ifelse(levels == "Other", 0.2, 1))
-# ploting umap 
-ggplot(umap_layout_prism, aes(x = V1, y = V2, color = levels, alpha = alpha_level)) +
-    geom_point(size = 3) +
-    scale_color_manual(values = color_palette0) +
-    theme_bw() +
-    ggtitle("UMAP of MOAs")
+# kmeans clustering
 cancer_km <- kmeans(prism_umap$layout, centers = 20)
 umap_layout_prism$cluster <- factor(cancer_km$cluster)
 cancercol <- rainbow(20)[cancer_km$cluster]
-```
-
-```{r, fig.pos= "H", fig.dim=c(10,6), echo = FALSE, message=FALSE, fig.align='center', fig.cap='UMAP of the inhibitory treatments with the PRISM scores labelled by the MOA with cluster encircelment', out.width='0.65\\linewidth'}
+# ploting umap
 ggplot(umap_layout_prism, aes(x = V1, y = V2, color = levels, alpha = alpha_level)) +
   geom_point(size = 3) +
   geom_mark_hull(aes(group = cluster), concavity = 5, expand = 0, radius = 0, color = "black", alpha = 1, show.legend = FALSE) +
@@ -300,7 +294,6 @@ ggplot(umap_layout_prism, aes(x = V1, y = V2, color = levels, alpha = alpha_leve
   ggtitle("UMAP of MOAs with encirceld clusters")
 ```
 
-
 ## Gene analysis
 
 ### Correlation analysis
@@ -308,53 +301,6 @@ ggplot(umap_layout_prism, aes(x = V1, y = V2, color = levels, alpha = alpha_leve
 The initial step in gene analysis was examining the correlation between different variables to determine if there were any connections between them. This approach aimed to identify genes that could potentially serve as indicators of a drug's effectiveness.
 To begin, a correlation analysis between the gene expression data and the gene copy number data was conducted. The method used was the Pearson correlation. Our hypothesis was that the copy number would correlate highly with gene expression. This was important to see if the number of gene copies can be an indicator for gene expression.  Figure ***XX*** presents the histogram of the correlation calculations, which demonstrates that, for the majority of genes, a positive correlation indeed exists. The mean correlation was approximately 0.325, with a median of 0.345. Yet, the correlation is not as high as was expected. Around 15.23% of the correlations are negative.
 In the subsequent step, we constructed a correlation matrix using Pearson correlation to examine the relationship between gene expression data and treatment response data. This correlation matrix allowed us to further refine our understanding of which genes were associated with specific treatments. The resulting matrix contains correlations between 18,805 genes and 1,395 treatments. The data was then used in the further gene analysis.
-
-```{r, fig.pos= "H",warning = FALSE, echo = FALSE, message=FALSE, fig.align='center', fig.cap='Histogram of the correlation between gene expression and gene copy number. Mean and median are shown by red and blue dashed lines.', out.width='0.65\\linewidth'}
-breast_prism.cl <- prism.cl[which(prism.cl$lineage == 'breast'), ]
-ID_breast_prism.cl <- breast_prism.cl$DepMap_ID
-rows_breast_prism.cnv <- which(rownames(prism.cnv) %in% ID_breast_prism.cl)
-breast_prism.cnv <- prism.cnv[rows_breast_prism.cnv, ]
-
-lineage.breast <- prism.cl[which(prism.cl$lineage == "breast"),]
-breast_prism.exp <- prism.exp[which(rownames(prism.exp) %in% lineage.breast$DepMap_ID),]
-breastzero.col <- apply(breast_prism.exp, 2, function(x) all(x == 0))
-breast_PRISM.exp <- breast_prism.exp[, !breastzero.col]
-
-row.order <- c() 
-for (i in 1:nrow(breast_prism.cnv)){
-  row.order <- rbind(row.order, which(rownames(breast_prism.cnv)%in%rownames(breast_PRISM.exp)[i]))
-  }
-#order of rows in the two data frames are not the same
-exp.copy.cor <- data.frame()
-copy.names <- c()
-for (x in 1:ncol(breast_PRISM.exp)){
-  copy.gene <- which(colnames(breast_prism.cnv)%in%colnames(breast_PRISM.exp)[x])
-  if (length(copy.gene) > 0) {
-    copy.cor <- cor(breast_PRISM.exp[,x], breast_prism.cnv[row.order,copy.gene])
-    exp.copy.cor <- rbind(exp.copy.cor, copy.cor)
-    copy.names <- c(copy.names, colnames(breast_PRISM.exp)[x])
-  }
-}
-
-rownames(exp.copy.cor) <- as.vector(copy.names)
-colnames(exp.copy.cor) <- c("correlation")
-ggplot(exp.copy.cor)+
-  geom_histogram(aes(x = correlation), fill = "lightgray")+
-  geom_vline(xintercept = 0.324, linetype = "dashed", color = "#BE3428FF", size = 1)+
-  geom_vline(xintercept = 0.345, linetype = "dashed", color = "#088BBEFF", size = 1)+
-  geom_text(x = 0.18, y = 500, label = "mean", color = "#BE3428FF", vjust = -1, size = 7) +
-  geom_text(x = 0.52, y = 500, label = "median", color = "#088BBEFF", vjust = -1, size = 7) +
-  theme_minimal()+
-  labs(title = "Correlation between gene expression and copy number",
-       x = "Correlation",
-       y = "Count",
-       )+
-  theme(plot.title = element_text(hjust = 0.5),
-        text = element_text(''))
- 
- 
-
-```
 
 ### Statistical testing of important genes
 
@@ -446,6 +392,134 @@ prediction_tool(testname, c(0.1, 0.3, 6.4, 8.9, 10.5))
 
 To further confirm the relationship between concentration and the mean cell growth, we calculated the Pearson correlation for each drug. 
 
+# Discussion
+
+An informative gene search engine is a promising advancement in the field of genomic data analysis. Regarding large screenings, utilizing a specific profile as an input to the engine, offers accurate results, enabling other researchers to identify genes and their possible association to another treatment. Respectively, one could have got a possible important gene through literature analysis or comparing every meaningful value in our big database manually, but it is time-consuming and one could lose the overview. The demonstrated scalability and function of our engine does not display the current standard of such engines with a wide range of abilities. While further improvements may be considered, our gene search engine occurred to be a usable tool for exploring gene-associated data for an overview and contributes to helping researchers to find their specific gene-treatment interaction.
+
+The analysis of the different doses revealed a trend, Figure 1 shows that higher doses result in a lower average prism score. Figure ***??*** also validates this discovery, 79 % of the treatments have a high correlation between concentration and average prism score. This can also be seen when looking at the distribution of R^2 values of the linear regression models (Figure ***???***) that were computed for every drug. The majority of drugs have a R^2 value above 0.5 and higher, which indicates a decent fit of the regression line. The Shapiro Wilk normality test performed on the residuals of the linear regression models showed that the residuals are normally distributed for 72 % of drugs. This is important because it indicates that the model captures the underlying pattern of the data quite well. However, there are some drugs that have a low R^2 value and a p-value below 0.05 for the Shapiro Wilk normality test. This indicates that not all patterns in the data are captured by the model, this could be improved with for example multiple linear regression taking in account more factors or a completely different approach.
+
+With the data filtered, cleaned, and utilized by Corsello et al., a different UMAP than ours was generated, which deviated from our initial goal. Nevertheless, the findings are not significantly different. In both plots, treatments with MEK inhibition as the MOA still exhibited a relatively clear clustering. This phenomenon likely indicates the preservation of local structures within the UMAP representation. However, the behavior of other clusters mentioned in the results varied between our UMAP and the UMAP by Corsello et al.. While our UMAP displayed less dense clusters of HDAC inhibitors and glucocorticoid receptor agonists, Corsello et al.'s UMAP revealed one less dense cluster for HDAC inhibitors and two distinct clusters for glucocorticoid receptor agonists. Moreover, the two prominent clusters observed in our UMAP corresponded to looser clusters in Corsello et al.'s UMAP.  
+In conclusion, the original paper employed a more extensive range of evaluation methods to extract information from the generated UMAP. Unfortunately, we did not have sufficient time to pursue these analyses. Nevertheless, the clusters we identified in our UMAP were also evident in Corsello et al.'s UMAP.
+
+
+The Pearson correlation analysis of the gene expression and the copy number validated our hypothesis partially. A trend of high positive correlation can be seen on the Fig. ***XX*** as shown in the results. This indicates that if there are more copies of a gene it is likely that the gene expression is upregulated for this gene as well. But as the graph shows, this is not always the case as 15,23% of the correlations are negative. This might be the case since gene regulation isn’t as simple as only the gene copy. Other regulatory units that are on another part of the genome could be involved. It could also be that after some point the higher the copy number gets, the less effect it has on gene expression. Further research across cancer cell lines shows similar results (Shao *et al.*, 2019). They conclude that there is a mostly positive correlation between copy number and gene expression as well.
+
+Correlation analysis of breast cancer concluded one gene that is particularly interesting, SDHC. The correlation score of SDHC is -0.751 which means that a high gene expression indicates low treatment score and therefore a good treatment response. The Wilcoxon-rank-sum test showed that the SDHC gene has a significantly lower mean knockout score compared to the other lineages. This suggest that SDHC has particular importance in the breast cancer cell lines in our research project. The gene SDHC codes for the succinate dehydrogenase complex subunit c, a subunit of the succinate dehydrogenase important for anchoring and stabilization. The succinate dehydrogenase is part of the respiratory chain in mitochondria. Potential risks of mutations are a disbalance in the respiratory chain and oxidative stress (Cerqua *et al.*, 2021). SDHC has been linked in the correlation analysis to only one treatment, known as tegafur. This drug targets the thymidylate synthase (Lee *et al.*, 2015). Using the prediction model from this research project shows that tegafur response in breast cancer has a high correlation with the dosage. The r-squared value is 0.672 and the residuals are normally distributed, which indicate that the model is a good fit. Literature research have shown that tegafur already has been used on some cases in breast cancer with positive results (Brancíková *et al.*, 2015). Yet, it is unclear how effective the treatment is and if it opens a new potential for targeted application if a high gene expression in patients can be detected. As it has already been tested if tegafur has a potential effect in breast cancer, the objective of finding novel applications for treatments has not been met.
+
+Our final dataframe revealed results regarding the importance of mTOR in breast cancer cell lines. A mean importance value of -1.268 emphasizes that the knock-out of mTOR could play a crucial role in breast cancer development. This matches with existing literature, which has shown that dysregulation of mTOR in the PAM pathway is associated with increased tumor growth in breast cancer (Zhu *et al.*, 2022). 
+The mechanistic target of rapamycin (mTOR) encodes a protein kinase, functioning as a central regulator of essential cellular pathways involved in growth, proliferation and survival (Zhu *et al.*, 2022). The regulatory function of mTOR makes it a possible cause for various cancer types when mutated and consequently an attractive target for therapeutic interventions.
+Moreover, we obtained a mean expression level value of 4.736, which indicates a high expression as the average of all genes are 2.729. This supports the previous literature findings, which suggest that mTOR is commonly overexpressed in breast cancer, further stressing its potential oncogenic involvement (Zhu *et al.*, 2022). In addition to that, we examined the copy number variation of the mTOR gene in breast cancer cell lines and the mean value of 0.912 could display genomic instability due to partial deletion of the gene as the copy number is lower than two. This discovery would further promote the role of mTOR in cancer development. Including the hypothesis, we made out the three values, possible treatments should be able to downregulate the function of the mTOR gene. In fact, the associated treatments presented in the final dataframe are mTOR inhibitors.
+Finally, our results reinforce the significance of mTOR in breast cancer. However, targeting mTOR in breast cancer should be investigated to develop safe treatment strategies. Nevertheless, our study about mTOR is similar to the groundwork findings, consequently suited for future research.
+
+The basis of our gene analysis is the correlation analysis of treatment response and gene expression. The idea was that high absolute correlation could show genes that are associated with breast cancer. This means that a particular gene could be linked to a treatment. However, this does not imply causality meaning that the treatment could possibly not be affected directly by the treatment. The next selection process was on the importance of the genes via gene knockout score. The findings conclude genes and treatments that have been associated with cancer or further breast cancer but some only slightly. Novel opportunities for drug repurposing have not been found.
+In hindsight, this approach may not be optimal to further decrease the number of potential targets. As stated before, correlation of gene expression does not imply the direct causality between the treatment and the gene expression. So, looking at the importance of a gene via gene knockout score does not show that a gene could be a good target. With more time to analyse the data, we would want to test new ways in looking into the data and selecting genes. Possible approaches could be as follows. It might improve the correlation analysis if we did it separately with each sub lineage of breast cancer. To detect potential targets, a correlation analysis between gene knockout score and gene expression could be used with further sub selection via negative mean knockout scores. The gene expression and treatment response correlation could be used as markers for potential new targeted therapy on base of individual gene expression. 
+Finding such as the UMAP clustering could be investigated by applying the available data.
+
+
+# References
+
+Brancíková, D., Mechl, Z., Adam, Z., Jandáková, E., Pavlovský, Z., Válek, V., and Andrašina, Z. (2015). Patient with inoperable pheochromocytoma. Curr Oncol 22, e216-219.  
+Cerqua, C., Buson, L., and Trevisson, E. (2021). Mutations in Assembly Factors Required for the Biogenesis of Mitochondrial Respiratory Chain. In Mitochondrial Diseases: Theory, Diagnosis and Therapy, P. Navas, and L. Salviati, eds. (Springer International Publishing), pp. 33-68.  
+Chawla, S., Rockstroh, A., Lehman, M., Ratther, E., Jain, A., Anand, A., Gupta, A., Bhattacharya, N., Poonia, S., Rai, P., et al. (2022). Gene expression based inference of cancer drug sensitivity. Nature Communications 13, 5680.  
+Corsello, S.M., Nagari, R.T., Spangler, R.D., Rossen, J., Kocak, M., Bryan, J.G., Humeidi, R., Peck, D., Wu, X., Tang, A.A., et al. (2020). Discovering the anticancer potential of non-oncology drugs by systematic viability profiling. Nature Cancer 1, 235-248.  
+Gonçalves, E., Segura-Cabrera, A., Pacini, C., Picco, G., Behan, F.M., Jaaks, P., Coker, E.A., van der Meer, D., Barthorpe, A., Lightfoot, H., et al. (2020). Drug mechanism-of-action discovery through the integration of pharmacological and CRISPR screens. Molecular Systems Biology 16, e9405.  
+Joshua, M.D., Jordan, R., Mariya, K., Joshua, P., Guillaume, K., David, E.R., and Aviad, T. (2019). Extracting Biological Insights from the Project Achilles Genome-Scale CRISPR Screens in Cancer Cell Lines. bioRxiv, 720243.  
+Kumbhar, P., Kole, K., Manjappa, A., Jha, N.K., Disouza, J., and Patravale, V. (2023). Drug Repurposing Opportunities in Cancer. In Drug Repurposing for Emerging Infectious Diseases and Cancer, R.C. Sobti, S.K. Lal, and R.K. Goyal, eds. (Springer Nature Singapore), pp. 53-87.  
+Lee, B.R., Yu, J.Y., Yoon, S.H., Ban, H.J., Kwon, Y.S., Oh, I.J., Kim, K.S., Kim, Y.I., Lim, S.C., and Kim, Y.C. (2015). Variability in the anti-tumor effect of tegafur-uracil depending on histologic types of lung cancer. J Thorac Dis 7, 433-438.  
+Łukasiewicz, S., Czeczelewski, M., Forma, A., Baj, J., Sitarz, R., and Stanisławek, A. (2021). Breast Cancer-Epidemiology, Risk Factors, Classification, Prognostic Markers, and Current Treatment Strategies-An Updated Review. Cancers (Basel) 13.
+McInnes, L., and Healy, J. (2018). UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction.  
+Nosengo, N. (2016). Can you teach old drugs new tricks? Nature 534, 314-316.
+Pushpakom, S., Iorio, F., Eyers, P.A., Escott, K.J., Hopper, S., Wells, A., Doig, A., Guilliams, T., Latimer, J., McNamee, C., et al. (2019). Drug repurposing: progress, challenges and recommendations. Nature Reviews Drug Discovery 18, 41-58.
+Shao, X., Lv, N., Liao, J., Long, J., Xue, R., Ai, N., Xu, D., and Fan, X. (2019). Copy number variation is highly correlated with differential gene expression: a pan-cancer study. BMC Medical Genetics 20, 175.  
+Sleire, L., Førde, H.E., Netland, I.A., Leiss, L., Skeie, B.S., and Enger, P.Ø. (2017). Drug repurposing in cancer. Pharmacological Research 124, 74-91.  
+Wouters, O.J., McKee, M., and Luyten, J. (2020). Estimated Research and Development Investment Needed to Bring a New Medicine to Market, 2009-2018. JAMA 323, 844-853.  
+Yu, C., Mannan, A.M., Yvone, G.M., Ross, K.N., Zhang, Y.-L., Marton, M.A., Taylor, B.R., Crenshaw, A., Gould, J.Z., Tamayo, P., et al. (2016). High-throughput identification of genotype-specific cancer vulnerabilities in mixtures of barcoded tumor cell lines. Nature Biotechnology 34, 419-423.  
+Zhu, K., Wu, Y., He, P., Fan, Y., Zhong, X., Zheng, H., and Luo, T. (2022). PI3K/AKT/mTOR-Targeted Therapy for Breast Cancer. Cells 11, 2508.
+
+
+# Appendix
+
+```{r, fig.pos= "H", fig.dim=c(12,6), echo = FALSE, message=FALSE, fig.align='center', fig.cap='UMAP of the inhibitory treatments with the PRISM scores labelled by the MOA with cluster encircelment', out.width='0.65\\linewidth'}
+ggplot(umap_layout_prism, aes(x = V1, y = V2, color = levels, alpha = alpha_level)) +
+    geom_point(size = 3) +
+    scale_color_manual(values = color_palette0) +
+    theme_bw() +
+    ggtitle("UMAP of MOAs")
+```
+
+```{r, fig.pos= "H",warning = FALSE, echo = FALSE, message=FALSE, fig.align='center', fig.cap='Histogram of the correlation between gene expression and gene copy number. Mean and median are shown by red and blue dashed lines.', out.width='0.65\\linewidth'}
+breast_prism.cl <- prism.cl[which(prism.cl$lineage == 'breast'), ]
+ID_breast_prism.cl <- breast_prism.cl$DepMap_ID
+rows_breast_prism.cnv <- which(rownames(prism.cnv) %in% ID_breast_prism.cl)
+breast_prism.cnv <- prism.cnv[rows_breast_prism.cnv, ]
+
+lineage.breast <- prism.cl[which(prism.cl$lineage == "breast"),]
+breast_prism.exp <- prism.exp[which(rownames(prism.exp) %in% lineage.breast$DepMap_ID),]
+breastzero.col <- apply(breast_prism.exp, 2, function(x) all(x == 0))
+breast_PRISM.exp <- breast_prism.exp[, !breastzero.col]
+
+row.order <- c() 
+for (i in 1:nrow(breast_prism.cnv)){
+  row.order <- rbind(row.order, which(rownames(breast_prism.cnv)%in%rownames(breast_PRISM.exp)[i]))
+  }
+#order of rows in the two data frames are not the same
+exp.copy.cor <- data.frame()
+copy.names <- c()
+for (x in 1:ncol(breast_PRISM.exp)){
+  copy.gene <- which(colnames(breast_prism.cnv)%in%colnames(breast_PRISM.exp)[x])
+  if (length(copy.gene) > 0) {
+    copy.cor <- cor(breast_PRISM.exp[,x], breast_prism.cnv[row.order,copy.gene])
+    exp.copy.cor <- rbind(exp.copy.cor, copy.cor)
+    copy.names <- c(copy.names, colnames(breast_PRISM.exp)[x])
+  }
+}
+
+rownames(exp.copy.cor) <- as.vector(copy.names)
+colnames(exp.copy.cor) <- c("correlation")
+ggplot(exp.copy.cor)+
+  geom_histogram(aes(x = correlation), fill = "lightgray")+
+  geom_vline(xintercept = 0.324, linetype = "dashed", color = "#BE3428FF", size = 1)+
+  geom_vline(xintercept = 0.345, linetype = "dashed", color = "#088BBEFF", size = 1)+
+  geom_text(x = 0.18, y = 500, label = "mean", color = "#BE3428FF", vjust = -1, size = 7) +
+  geom_text(x = 0.52, y = 500, label = "median", color = "#088BBEFF", vjust = -1, size = 7) +
+  theme_minimal()+
+  labs(title = "Correlation between gene expression and copy number",
+       x = "Correlation",
+       y = "Count",
+       )+
+  theme(plot.title = element_text(hjust = 0.5),
+        text = element_text(''))
+ 
+ 
+
+```
+
+```{r, fig.pos= "H", echo = FALSE, message=FALSE, fig.align='center', fig.cap='Boxplott of the gene knockout scores for the gene SDHC for breast cancer lineages compared to all the other lineages', out.width='0.65\\linewidth'}
+prism.achilles.rm <-apply(prism.achilles, 2, function(x) {
+  x[which(is.na(x))] <- median(x, na.rm = TRUE)
+  return(x)
+})
+breast.cl <- which(prism.cl[,"lineage"] == "breast")
+prism.achilles.breast <- prism.achilles.rm[rownames(prism.achilles.rm) %in% prism.cl[breast.cl, 1], ]
+boxplot.data.breast <- as.data.frame(prism.achilles.breast[,"SDHC"])
+colnames(boxplot.data.breast) <- "SDHC"
+boxplot.data.breast$lineage<- "breast"
+boxplot.data.other <- as.data.frame(prism.achilles.rm[-breast.cl,"SDHC"])
+colnames(boxplot.data.other) <- "SDHC"
+boxplot.data.other$lineage <- "other"
+achilles.boxplot <- rbind(boxplot.data.breast, boxplot.data.other)
+ggplot(achilles.boxplot)+
+  geom_boxplot(aes(x = lineage, y = SDHC), fill = "lightgrey")+
+  theme_minimal()+
+  labs(title = "Gene knockout scores for gene SDHC",
+       x = "Lineage",
+       y = "Achilles score",
+       )+
+  theme(plot.title = element_text(hjust = 0.5),
+        text = element_text(''))
+
+```
+
 ```{r, fig.pos= "H", echo = FALSE, message=FALSE, fig.align='center', fig.cap='Histogram of the correlation between the different concentrations and the respective average prism score. Correlations below the set threshold of -0.7 are colored red and correlations higher that -0.7 are colored blue.', out.width='0.65\\linewidth'}
 ####################################
 # 9.1 # CORRELATION DRUG ~ CONC ###### Luis
@@ -475,79 +549,6 @@ ggplot() +
     geom_histogram(aes(x = highest_cor_b$correlation, fill = high_cor), bins = 75) +
     labs(title = "Correlation of drug and concentration", x = "Pearson Correlation", y = "Count", fill = " ") +
     scale_fill_discrete(labels = c("> -0.7", "< -0.7")) 
-```
-
-# Discussion
-
-gene search engine:
-An informative gene search engine is a promising advancement in the field of genomic data analysis. Regarding large screenings, utilizing a specific profile as an input to the engine, offers accurate results, enabling other researchers to identify genes and their possible association to another treatment. Respectively, one could have got a possible important gene through literature analysis or comparing every meaningful value in our big database manually, but it is time-consuming and one could lose the overview. The demonstrated scalability and function of our engine does not display the current standard of such engines with a wide range of abilities. While further improvements may be considered, our gene search engine occurred to be a usable tool for exploring gene-associated data for an overview and contributes to helping researchers to find their specific gene-treatment interaction.
-
-The analyis of the different doses revealed a trend, Figure 1 shows that higher doses result in a lower average prism score. Figue ***??*** also validates this discovery, 79 % of the treatments have a high correlation between concentration and average prism score. This can also be seen when looking at the distribution of R^2 values of the linear regression models (Figure ***???***) that were computed for every drug. The majority of drugs have a R^2 value above 0.5 and higher, which indicates a decent fit of the regression line. The Shapiro Wilk normality test performed on the residuals of the linear regression models showed that the residuals are normally distributed for 72 % of drugs. This is important because it indicates that the model captures the underlying pattern of the data quite well. However, there are some drugs that have a low R^2 value and a p-value below 0.05 for the Shapiro Wilk normality test. This indicates that not all patterns in the data are captured by the model, this could be improved with for example multiple linear regression taking in account more factors or a completely different approach.
-
-With the data filtered, cleaned, and utilized by Corsello et al., a different UMAP than ours was generated, which deviated from our initial goal. Nevertheless, the findings are not significantly different. In both plots, treatments with MEK inhibition as the MOA still exhibited a relatively clear clustering. This phenomenon likely indicates the preservation of local structures within the UMAP representation. However, the behavior of other clusters mentioned in the results varied between our UMAP and the UMAP by Corsello et al.. While our UMAP displayed less dense clusters of HDAC inhibitors and glucocorticoid receptor agonists, Corsello et al.'s UMAP revealed one less dense cluster for HDAC inhibitors and two distinct clusters for glucocorticoid receptor agonists. Moreover, the two prominent clusters observed in our UMAP corresponded to looser clusters in Corsello et al.'s UMAP.  
-In conclusion, the original paper employed a more extensive range of evaluation methods to extract information from the generated UMAP. Unfortunately, we did not have sufficient time to pursue these analyses. Nevertheless, the clusters we identified in our UMAP were also evident in Corsello et al.'s UMAP.
-
-
-The Pearson correlation analysis of the gene expression and the copy number validated our hypothesis partially. A trend of high positive correlation can be seen on the Fig. ***XX*** as shown in the results. This indicates that if there are more copies of a gene it is likely that the gene expression is upregulated for this gene as well. But as the graph shows, this is not always the case as 15,23% of the correlations are negative. This might be the case since gene regulation isn’t as simple as only the gene copy. Other regulatory units that are on another part of the genome could be involved. It could also be that after some point the higher the copy number gets, the less effect it has on gene expression. Further research across cancer cell lines shows similar results (Shao *et al.*, 2019). They conclude that there is a mostly positive correlation between copy number and gene expression as well.
-
-Correlation analysis of breast cancer concluded one gene that is particularly interesting, SDHC. The correlation score of SDHC is -0.751 which means that a high gene expression indicates low treatment score and therefore a good treatment response. The Wilcoxon-rank-sum test showed that the SDHC gene has a significantly lower mean knockout score compared to the other lineages. This suggest that SDHC has particular importance in the breast cancer cell lines in our research project. The gene SDHC codes for the succinate dehydrogenase complex subunit c, a subunit of the succinate dehydrogenase important for anchoring and stabilization. The succinate dehydrogenase is part of the respiratory chain in mitochondria. Potential risks of mutations are a disbalance in the respiratory chain and oxidative stress (Cerqua *et al.*, 2021). SDHC has been linked in the correlation analysis to only one treatment, known as tegafur. This drug targets the thymidylate synthase (Lee *et al.*, 2015). Using the prediction model from this research project shows that tegafur response in breast cancer has a high correlation with the dosage. The r-squared value is 0.672 and the residuals are normally distributed, which indicate that the model is a good fit. Literature research have shown that tegafur already has been used on some cases in breast cancer with positive results (Brancíková *et al.*, 2015). Yet, it is unclear how effective the treatment is and if it opens a new potential for targeted application if a high gene expression in patients can be detected. As it has already been tested if tegafur has a potential effect in breast cancer, the objective of finding novel applications for treatments has not been met.
-
-Our final dataframe revealed results regarding the importance of mTOR in breast cancer cell lines. A mean importance value of -1.268 emphasizes that the knock-out of mTOR could play a crucial role in breast cancer development. This matches with existing literature, which has shown that dysregulation of mTOR in the PAM pathway is associated with increased tumor growth in breast cancer (Zhu *et al.*, 2022). 
-The mechanistic target of rapamycin (mTOR) encodes a protein kinase, functioning as a central regulator of essential cellular pathways involved in growth, proliferation and survival (Zhu *et al.*, 2022). The regulatory function of mTOR makes it a possible cause for various cancer types when mutated and consequently an attractive target for therapeutic interventions.
-Moreover, we obtained a mean expression level value of 4.736, which indicates a high expression as the average of all genes are 2.729. This supports the previous literature findings, which suggest that mTOR is commonly overexpressed in breast cancer, further stressing its potential oncogenic involvement (Zhu *et al.*, 2022). In addition to that, we examined the copy number variation of the mTOR gene in breast cancer cell lines and the mean value of 0.912 could display genomic instability due to partial deletion of the gene as the copy number is lower than two. This discovery would further promote the role of mTOR in cancer development. Including the hypothesis, we made out the three values, possible treatments should be able to downregulate the function of the mTOR gene. In fact, the associated treatments presented in the final dataframe are mTOR inhibitors.
-Finally, our results reinforce the significance of mTOR in breast cancer. However, targeting mTOR in breast cancer should be investigated to develop safe treatment strategies. Nevertheless, our study about mTOR is similar to the groundwork findings, consequently suited for future research.
-
-The basis of our gene analysis is the correlation analysis of treatment response and gene expression. The idea was that high absolute correlation could show genes that are associated with breast cancer. This means that a particular gene could be linked to a treatment. However, this does not imply causality meaning that the treatment could possibly not be affected directly by the treatment. The next selection process was on the importance of the genes via gene knockout score. The findings conclude genes and treatments that have been associated with cancer or further breast cancer but some only slightly. Novel opportunities for drug repurposing have not been found.
-In hindsight, this approach may not be optimal to further decrease the number of potential targets. As stated before, correlation of gene expression does not imply the direct causality between the treatment and the gene expression. So, looking at the importance of a gene via gene knockout score does not show that a gene could be a good target. With more time to analyse the data, we would want to test new ways in looking into the data and selecting genes. Possible approaches could be as follows. It might improve the correlation analysis if we did it separately with each sub lineage of breast cancer. To detect potential targets, a correlation analysis between gene knockout score and gene expression could be used with further sub selection via negative mean knockout scores. The gene expression and treatment response correlation could be used as markers for potential new targeted therapy on base of individual gene expression. 
-Finding such as the UMAP clustering could be investigated by applying the available data.
-
-
-# References
-
-Cerqua, C., Buson, L., and Trevisson, E. (2021). Mutations in Assembly Factors Required for the Biogenesis of Mitochondrial Respiratory Chain. In Mitochondrial Diseases: Theory, Diagnosis and Therapy, P. Navas, and L. Salviati, eds. (Springer International Publishing), pp. 33-68.  
-Chawla, S., Rockstroh, A., Lehman, M., Ratther, E., Jain, A., Anand, A., Gupta, A., Bhattacharya, N., Poonia, S., Rai, P., et al. (2022). Gene expression based inference of cancer drug sensitivity. Nature Communications 13, 5680.  
-Corsello, S.M., Nagari, R.T., Spangler, R.D., Rossen, J., Kocak, M., Bryan, J.G., Humeidi, R., Peck, D., Wu, X., Tang, A.A., et al. (2020). Discovering the anticancer potential of non-oncology drugs by systematic viability profiling. Nature Cancer 1, 235-248.  
-Gonçalves, E., Segura-Cabrera, A., Pacini, C., Picco, G., Behan, F.M., Jaaks, P., Coker, E.A., van der Meer, D., Barthorpe, A., Lightfoot, H., et al. (2020). Drug mechanism-of-action discovery through the integration of pharmacological and CRISPR screens. Molecular Systems Biology 16, e9405.  
-Joshua, M.D., Jordan, R., Mariya, K., Joshua, P., Guillaume, K., David, E.R., and Aviad, T. (2019). Extracting Biological Insights from the Project Achilles Genome-Scale CRISPR Screens in Cancer Cell Lines. bioRxiv, 720243.  
-Kumbhar, P., Kole, K., Manjappa, A., Jha, N.K., Disouza, J., and Patravale, V. (2023). Drug Repurposing Opportunities in Cancer. In Drug Repurposing for Emerging Infectious Diseases and Cancer, R.C. Sobti, S.K. Lal, and R.K. Goyal, eds. (Springer Nature Singapore), pp. 53-87.  
-Lee, B.R., Yu, J.Y., Yoon, S.H., Ban, H.J., Kwon, Y.S., Oh, I.J., Kim, K.S., Kim, Y.I., Lim, S.C., and Kim, Y.C. (2015). Variability in the anti-tumor effect of tegafur-uracil depending on histologic types of lung cancer. J Thorac Dis 7, 433-438.  
-Łukasiewicz, S., Czeczelewski, M., Forma, A., Baj, J., Sitarz, R., and Stanisławek, A. (2021). Breast Cancer-Epidemiology, Risk Factors, Classification, Prognostic Markers, and Current Treatment Strategies-An Updated Review. Cancers (Basel) 13.
-McInnes, L., and Healy, J. (2018). UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction.  
-Nosengo, N. (2016). Can you teach old drugs new tricks? Nature 534, 314-316.
-Pushpakom, S., Iorio, F., Eyers, P.A., Escott, K.J., Hopper, S., Wells, A., Doig, A., Guilliams, T., Latimer, J., McNamee, C., et al. (2019). Drug repurposing: progress, challenges and recommendations. Nature Reviews Drug Discovery 18, 41-58.
-Shao, X., Lv, N., Liao, J., Long, J., Xue, R., Ai, N., Xu, D., and Fan, X. (2019). Copy number variation is highly correlated with differential gene expression: a pan-cancer study. BMC Medical Genetics 20, 175.  
-Sleire, L., Førde, H.E., Netland, I.A., Leiss, L., Skeie, B.S., and Enger, P.Ø. (2017). Drug repurposing in cancer. Pharmacological Research 124, 74-91.  
-Wouters, O.J., McKee, M., and Luyten, J. (2020). Estimated Research and Development Investment Needed to Bring a New Medicine to Market, 2009-2018. JAMA 323, 844-853.  
-Yu, C., Mannan, A.M., Yvone, G.M., Ross, K.N., Zhang, Y.-L., Marton, M.A., Taylor, B.R., Crenshaw, A., Gould, J.Z., Tamayo, P., et al. (2016). High-throughput identification of genotype-specific cancer vulnerabilities in mixtures of barcoded tumor cell lines. Nature Biotechnology 34, 419-423.  
-Zhu, K., Wu, Y., He, P., Fan, Y., Zhong, X., Zheng, H., and Luo, T. (2022). PI3K/AKT/mTOR-Targeted Therapy for Breast Cancer. Cells 11, 2508.
-
-
-# Appendix
-
-```{r, fig.pos= "H", echo = FALSE, message=FALSE, fig.align='center', fig.cap='Boxplott of the gene knockout scores for the gene SDHC for breast cancer lineages compared to all the other lineages', out.width='0.65\\linewidth'}
-prism.achilles.rm <-apply(prism.achilles, 2, function(x) {
-  x[which(is.na(x))] <- median(x, na.rm = TRUE)
-  return(x)
-})
-breast.cl <- which(prism.cl[,"lineage"] == "breast")
-prism.achilles.breast <- prism.achilles.rm[rownames(prism.achilles.rm) %in% prism.cl[breast.cl, 1], ]
-boxplot.data.breast <- as.data.frame(prism.achilles.breast[,"SDHC"])
-colnames(boxplot.data.breast) <- "SDHC"
-boxplot.data.breast$lineage<- "breast"
-boxplot.data.other <- as.data.frame(prism.achilles.rm[-breast.cl,"SDHC"])
-colnames(boxplot.data.other) <- "SDHC"
-boxplot.data.other$lineage <- "other"
-achilles.boxplot <- rbind(boxplot.data.breast, boxplot.data.other)
-ggplot(achilles.boxplot)+
-  geom_boxplot(aes(x = lineage, y = SDHC), fill = "lightgrey")+
-  theme_minimal()+
-  labs(title = "Gene knockout scores for gene SDHC",
-       x = "Lineage",
-       y = "Achilles score",
-       )+
-  theme(plot.title = element_text(hjust = 0.5),
-        text = element_text(''))
-
 ```
 
 ```{r, fig.pos= "H", echo = FALSE, message=FALSE, fig.align='center', fig.cap='Bild unterschrift', out.width='0.65\\linewidth'}
