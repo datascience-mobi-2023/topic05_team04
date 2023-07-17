@@ -7,14 +7,23 @@ library(umap) #install.packages("umap")
 library(readxl) #install.packages("readxl")
 library(scales) #install.packages("scales")
 library(dplyr)  #install.packages("dplyr")
-library(httr) #install.packages("httr")
+library(gridExtra) #install.packages("gridExtra")
 #library(tidyverse) #install.packages("tidyverse")
 # --------------------------------- #
-load("Data/prism_datasets.rda")
+load("~/prism_datasets.rda")
 load("Data/cellline_datasets.rda")
-url <- "https://raw.githubusercontent.com/datascience-mobi-2023/topic05_team04/tree/main/07_extdata/oncological_treatments.xlsx"
-```
+url1 <- "https://raw.githubusercontent.com/datascience-mobi-2023/topic05_team04/main/07_extdata/oncological_treatments.xlsx"
+file1 <- "oncological_treatments.xlsx"
+download.file(url, destfile = file1, method = "auto")
+downloaded_file_path1 <- file.path(getwd(), file1)
+oncological_treatments <- read_excel(downloaded_file_path, sheet = 1)
 
+url2 <- "https://raw.githubusercontent.com/datascience-mobi-2023/topic05_team04/main/07_extdata/h.all.v2023.1.Hs.json.txt"
+file2 <- "h.all.v2023.1.Hs.json.txt"
+download.file(url, destfile = file2, method = "auto")
+downloaded_file_path1 <- file.path(getwd(), file2)
+oncological_treatments <- read_excel(downloaded_file_path, sheet = 1)
+```
 ```{r}
 ## Checkt wie viele Zeilen und Spalten NA`s drin habe
 sum(is.na(prism)) ##432639
@@ -51,7 +60,6 @@ breast_prism_imp <- as.data.frame(apply(breast_prism_imp, 2, function(x) {
 mean(colMeans(is.na(prism[,-rem.pNAcol]))) #0.07698 => 7.7% NA`s in jeder Spalte
 hist(colMeans(is.na(prism[,-rem.pNAcol])), breaks = 100, xlab = "NA Anteil", main = "Histogramm der NA Anteile")
 ```
-
 ```{r}
 #########################################
 ###### SELECT MOST EFFIZIENT DRUGS ###### Luis
@@ -114,7 +122,6 @@ lowest_mean_duplicate_tsh <- lowest_mean_duplicate[lowest_mean_duplicate$colMean
 pref_drug_ths <- rownames(lowest_mean_duplicate_tsh)
 prism_lowest_ths <- prism_imp[,pref_drug_ths]
 ```
-
 ```{r}
 ##############################
 ###### PRISM.CNV BREAST ###### Simon
@@ -124,7 +131,6 @@ ID_breast_prism.cl <- breast_prism.cl$DepMap_ID
 rows_breast_prism.cnv <- which(rownames(prism.cnv) %in% ID_breast_prism.cl)
 breast_prism.cnv <- prism.cnv[rows_breast_prism.cnv, ]
 ```
-
 ```{r}
 ##############################
 ###### PRISM.EXP BREAST ###### Sharu
@@ -134,7 +140,6 @@ breast_prism.exp <- prism.exp[which(rownames(prism.exp) %in% lineage.breast$DepM
 breastzero.col <- apply(breast_prism.exp, 2, function(x) all(x == 0))
 breast_PRISM.exp <- breast_prism.exp[, !breastzero.col]
 ```
-
 ```{r}
 #############################
 ###### PRISM.ACHILLES ####### Aaron
@@ -165,7 +170,6 @@ hist(prism.achilles.overview[,4], main = "minimum of all the prism.achilles gene
 hist(prism.achilles.overview[,5], main = "maximum of all the prism.achilles genes", xlab = "maximum")
 
 ```
-
 ```{r}
 ##########################################
 ###### FILTERING NON-ONCOLOGY DRUGS ###### Aaron
