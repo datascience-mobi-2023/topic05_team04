@@ -146,7 +146,8 @@ prism.achilles.rm <-apply(prism.achilles, 2, function(x) {
   x[which(is.na(x))] <- median(x, na.rm = TRUE)
   return(x)
 })
-prism.achilles.breast <- prism.achilles.rm[rownames(prism.achilles.rm) %in% breast_prism.cl, ]
+breast.cl <- which(prism.cl[,"lineage"] == "breast")
+prism.achilles.breast <- prism.achilles.rm[rownames(prism.achilles.rm) %in% prism.cl[breast.cl, 1], ]
 ################
 ### Overview ###
 ################

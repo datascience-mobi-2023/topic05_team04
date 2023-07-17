@@ -156,6 +156,24 @@ rownames(achilles.genes.adj)[which(achilles.genes.adj<0.05)]
 
 breast_prism.snv <- prism.snv[which(prism.snv$DepMap_ID%in%breast_prism.cl$DepMap_ID),]
 
+boxplot.data.breast <- as.data.frame(prism.achilles.breast[,"SDHC"])
+colnames(boxplot.data.breast) <- "SDHC"
+boxplot.data.breast$lineage<- "breast"
+boxplot.data.other <- as.data.frame(prism.achilles.rm[-breast.cl,"SDHC"])
+colnames(boxplot.data.other) <- "SDHC"
+boxplot.data.other$lineage <- "other"
+achilles.boxplot <- rbind(boxplot.data.breast, boxplot.data.other)
+
+
+ggplot(achilles.boxplot)+
+  geom_boxplot(aes(x = lineage, y = SDHC), fill = "lightgrey")+
+  theme_minimal()+
+  labs(title = "Prism.achilles scores for gene SDHC",
+       x = "Lineage",
+       y = "Achilles score",
+       )+
+  theme(plot.title = element_text(hjust = 0.5),
+        text = element_text(''))
 
 ```
 
