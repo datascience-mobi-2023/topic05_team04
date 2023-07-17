@@ -19,13 +19,13 @@ The expression data frame describes expression levels of each gene in different 
  
 ## Folder Structure
 
-**01_DataCleaning/Filtering:** Cleaning of the different datasets and filtering of the data to prepare for downstream analysis.
+**[01_DataCleaning/Filtering](/01_DataCleaning/Filtering):** Cleaning of the different datasets and filtering of the data to prepare for downstream analysis.
 
-**02_DescriptiveAnalysis:** Gene search engine and descriptive analysis of the data.
+**[02_DescriptiveAnalysis](02_DescriptiveAnalysis):** Gene search engine and descriptive analysis of the data.
 
-**03_DimensionReduction:** UMAP and PCA of filtered data
+**[03_DimensionReduction](/03_DimensionReduction):** UMAP and PCA of filtered data
 
-**04_GeneAnalysis:** Correlation between gene expression and gene copy number and statistical testing of important genes
+**[04_GeneAnalysis](/04_GeneAnalysis):** Correlation between gene expression and gene copy number and statistical testing of important genes
 
-**05_LinearRegression:** Linear regression between concentration and average prism score for every drug
+**[05_LinearRegression](/05_LinearRegression):** Linear regression between concentration and average prism score for every drug
 
