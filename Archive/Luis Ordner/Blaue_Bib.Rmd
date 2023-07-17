@@ -242,6 +242,7 @@ for(i in 1:length(duplicate_drugs_b)) {
 ##############
 regression_list_b <- list()
 r_squared_b <- c()
+p_value_b <- c()
 for(i in 1:length(duplicate_drugs_b)) {
     act_rows_b <- which(df_nam_con_mean_b$drugnames_b == duplicate_drugs_b[i])
     act_df_b <- df_nam_con_mean_b[act_rows_b,]
@@ -253,6 +254,7 @@ for(i in 1:length(duplicate_drugs_b)) {
         regression_list_b[[i]] <- list(Summary_reg = summary(act_reg_b), Model = act_reg_b, Residuals = act_residuals_b, R_squared = summary(act_reg_b)$r.squared, Plotdata = act_plot_b, Shapiro_test = act_shapiro_b, prediction = act_df_b)
         names(regression_list_b)[i] <- duplicate_drugs_b[i]
         r_squared_b <- c(r_squared_b, summary(act_reg_b)$r.squared)
+        p_value_b <- c(p_value_b, act_shapiro_b$p.value)
     }
 }
 testname <- "BRD-K99383816-001-03-5"
@@ -465,14 +467,16 @@ summary(model_prism) # <---! linear regression of the drugs on prism-->
 # -------------------------- #
 #hist(as.numeric(lowest_mean_duplicate_b$concentration_b))
 #### Plot 1
-ggplot() +
+ggplot1 <- ggplot() +
     geom_histogram(aes(x = lowest_mean_duplicate_b$concentration_b), bins = 10, fill = "coral") + 
-    labs(title = "Lowest mean Cell growth and respective concentraions", x = "Concentration", y = "Count")
+    labs(title = "Lowest average prism score", x = "Concentration", y = "Count")
 #hist(as.numeric(highest_mean_duplicate_b$concentration_b))
 #### Plot 2
-ggplot() +
+ggplot2 <- ggplot() +
     geom_histogram(aes(x = highest_mean_duplicate_b$concentration_b), bins = 10, fill = "steelblue") + 
-    labs(title = "Highest mean Cell growth and respective concentraions", x = "Concentration", y = "Count")
+    labs(title = "Highest average prism score", x = "Concentration", y = "Count")
+
+grid.arrange(ggplot1, ggplot2, nrow = 1)
 # --------------------------------- #
 ### Cell Growth of filtered drugs ###
 # --------------------------------- #
@@ -501,8 +505,7 @@ high_cor <- highest_cor_b$correlation < -0.7
 ggplot() +
     geom_histogram(aes(x = highest_cor_b$correlation, fill = high_cor), bins = 75) +
     labs(title = "Correlation of drug and concentration", x = "Pearson Correlation", y = "Count", fill = " ") +
-    scale_fill_discrete(labels = c("> 0.7", "< 0.7")) +
-    scale_fill_manual(values = c("coral", "steelblue2"))
+    scale_fill_discrete(labels = c("> 0.7", "< 0.7")) 
 # -------------------------------------- #
 ### UMAP of most effizient drugs prism ###
 # -------------------------------------- #
@@ -525,7 +528,16 @@ ggplot(umap_layout_prism, aes(x = V1, y = V2, color = levels, alpha = alpha_leve
 ### Histogramm of r_squared of regressions ###
 # ------------------------------------------ #
 ggplot() +
-    geom_histogram(aes(x = r_squared_b), bins = 75, fill = "steelblue")
+    geom_histogram(aes(x = r_squared_b), bins = 75, fill = "steelblue") +
+    labs(title = "R^2 of linear regressions for every treatment", x = "R^2 value", y = "Count")
+# ---------------------------------------- #
+### Histogramm of p_value of regressions ###
+# ---------------------------------------- #
+singificance_b <- p_value_b > 0.05
+ggplot() +
+    geom_histogram(aes(x = p_value_b, fill = singificance_b), bins = 75) +
+    labs(title = "Distribution of p-values of the Shapiro-test performed on all models", x = "p-value", y = "Count", fill = "") +
+    scale_fill_discrete(labels = c("< 0.05", "non significant")) 
 ```
 ## Testing
 ```{r}

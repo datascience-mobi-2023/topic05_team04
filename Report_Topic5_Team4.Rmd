@@ -146,14 +146,30 @@ To compile a list of inhibitory drugs, the first step involved filtering of the 
 
 PLOT 1 and PLOT 2
 ```{r Chunk Titel, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift, out.width='0.65\\linewidth'}
-
 # hier dann code für den plot eingeben. Oben schreiben wir, dass man die entsprechenden Variablen aus den anderen rmd files laden muss. können wir auch nochmal ganz oben als disclaimer in den package download chunk packen.
+#### Plot 1
+ggplot1 <- ggplot() +
+    geom_histogram(aes(x = lowest_mean_duplicate_b$concentration_b), bins = 10, fill = "coral") + 
+    labs(title = "Lowest average prism score", x = "Concentration", y = "Count")
+#hist(as.numeric(highest_mean_duplicate_b$concentration_b))
+#### Plot 2
+ggplot2 <- ggplot() +
+    geom_histogram(aes(x = highest_mean_duplicate_b$concentration_b), bins = 10, fill = "steelblue") + 
+    labs(title = "Highest average prism score", x = "Concentration", y = "Count")
 
+grid.arrange(ggplot1, ggplot2, nrow = 1)
 ```
 
 Once the most effective drug concentration combinations were identified, we proceeded with an additional round of filtering. This time only the drugs resulting in an average prism score lower than -2 were selected. This threshold was chosen because its allowing the removal of 60 % of the provided drugs. 
 
-PLOT 3
+```{r Chunk Titel, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift, out.width='0.65\\linewidth'}
+inhibitory_fil <- lowest_mean_duplicate_b$colMeans_breast < -2
+ggplot() +
+    geom_histogram(aes(x = lowest_mean_duplicate_b$colMeans_breast, fill = inhibitory_fil), bins = 30) +
+    labs(title = "Cell Growth of filtered drugs", x = "log2FC", y = "Count", fill = "Inhibitory") +
+    scale_fill_discrete(labels = c("> -2", "< -2")) +
+    scale_fill_manual(values = c("coral", "steelblue2"))
+```
 
 This resulted in a data frame containing 582 inhibitory drugs (columns) and the respective prism scores on 481 cell lines (rows).
 
@@ -181,27 +197,36 @@ Moreover, the 3925 preselected genes were compiled into a data frame for further
 ## Linear regression
 Linear regression is a statistical technique to model the relationship between a dependent variable and one or more independent variables and fitting a straight line to the data. We used linear regression models to predict the average prism score based on the concentration for every drug. We created a function that takes drug names as inputs and returns a scatter plot with a linear fit on top and additional information about how well the model performs. This includes the R2 value, and a Shapiro Wilk normality test performed on the residuals. The R2 value is an indicator of how well the straight line fights the data point and if there is a linear relation between the points. The Shapiro Wilk normality test is commonly used to assess if the residuals follow a normal distribution. This is important to evaluate the performance because deviations from normal distribution suggest an underlying true pattern, that is not captured by the model. 
 
-	PLOT 4
+```{r Chunk Titel, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift, out.width='0.65\\linewidth'}
+plot_reg(testname)
+```
 
 Next we created a function which takes drug names and concentration values as an Input and returns  predicted mean cell growth values for the concentration values. 
 
-	Input
-	Output
-	PLOT 5
+```{r Chunk Titel, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift, out.width='0.65\\linewidth'}
+prediction_tool(testname, c(0.1, 0.3, 6.4, 8.9, 10.5))
+```
 
 To further confirm the relationship between concentration and the mean cell growth, we calculated the Pearson correlation for each drug. 
 
-	PLOT 6
-
+```{r Chunk Titel, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift, out.width='0.65\\linewidth'}
+high_cor <- highest_cor_b$correlation < -0.7
+ggplot() +
+    geom_histogram(aes(x = highest_cor_b$correlation, fill = high_cor), bins = 75) +
+    labs(title = "Correlation of drug and concentration", x = "Pearson Correlation", y = "Count", fill = " ") +
+    scale_fill_discrete(labels = c("> 0.7", "< 0.7")) 
+```
 
 # Discussion
 
 gene search engine:
 An informative gene search engine is a promising advancement in the field of genomic data analysis. Regarding large screenings, utilizing a specific profile as an input to the engine, offers accurate results, enabling other researchers to identify genes and their possible association to another treatment. Respectively, one could have got a possible important gene through literature analysis or comparing every meaningful value in our big database manually, but it is time-consuming and one could lose the overview. The demonstrated scalability and function of our engine does not display the current standard of such engines with a wide range of abilities, being GEMINI and Sigcom LINCS. While further improvements may be considered, our gene search engine occurred to be a usable tool for exploring gene-associated data for an overview and contributes to helping researchers to find their specific gene-treatment interaction.
 
+The analyis of the different doses revealed a trend, Figure 1 shows that higher doses result in a lower average prism score. Figue ?? also validates this discovery, 79 % of the treatments have a high correlation between concentration and average prism score. This can also be seen when looking at the distribution of R^2 values of the linear regression models (Figure ???) that were computed for every drug. The majority of drugs have a R^2 value above 0.5 and higher, which indicates a decent fit of the regression line. The Shapiro Wilk normality test performed on the residuals of the linear regression models showed that the residuals are normally distributed for 72 % of drugs. This is important because it indicates that the model captures the underlying pattern of the data quite well. However, there are some drugs that have a low R^2 value and a p-value below 0.05 for the Shapiro Wilk normality test. This indicates that not all patterns in the data are captured by the model, this could be improved with for example multiple linear regression taking in accound more factors or a completly different approach.
+
 The Pearson correlation analysis of the gene expression and the copy number validated our hypothesis partially. A trend of high positive correlation can be seen on the Fig. XX as shown in the results. This indicates that if there are more copies of a gene it is likely that the gene expression is upregulated for this gene as well. But as the graph shows, this is not always the case as 15,23% of the correlations are negative. This might be the case since gene regulation isn’t as simple as only the gene copy. Other regulatory units that are on another part of the genome could be involved. It could also be that after some point the higher the copy number gets, the less effect it has on gene expression. Further research across cancer cell lines shows similar results (Shao *et al.*, 2019). They conclude that there is a mostly positive correlation between copy number and gene expression as well.
 
-Correlation analysis of breast cancer concluded one gene that is particularly interesting, SDHC. The correlation score of SDHC is -0.751 which means that a high gene expression indicates low treatment score and therefore a good treatment response. The Wilcoxon-rank-sum test showed that the SDHC gene has a significantly lower mean knockout score compared to the other lineages. This suggest that SDHC has particular importance in the breast cancer cell lines in our research project. The gene SDHC codes for the succinate dehydrogenase complex subunit c, a subunit of the succinate dehydrogenase important for anchoring and stabilization. The succinate dehydrogenase is part of the respiratory chain in mitochondria. Potential risks of mutations are a disbalance in the respiratory chain and oxidative stress (Cerqua *et al.*, 2021). SDHC has been linked in the correlation analysis to only one treatment, known as tegafur. This drug targets the thymidylate synthase (Lee *et al.*, 2015). Using the prediction model from this research project shows that tegafur response in breast cancer can be predicted quite accurately. Literature research have shown that tegafur already has been used on some cases in breast cancer with positive results. Yet, it is unclear how effective the treatment is and if it opens a new potential for targeted application if a high gene expression in patients can be detected. As it has already been tested if tegafur has a potential effect in breast cancer, the objective of finding novel applications for treatments has not been met.
+Correlation analysis of breast cancer concluded one gene that is particularly interesting, SDHC. The correlation score of SDHC is -0.751 which means that a high gene expression indicates low treatment score and therefore a good treatment response. The Wilcoxon-rank-sum test showed that the SDHC gene has a significantly lower mean knockout score compared to the other lineages. This suggest that SDHC has particular importance in the breast cancer cell lines in our research project. The gene SDHC codes for the succinate dehydrogenase complex subunit c, a subunit of the succinate dehydrogenase important for anchoring and stabilization. The succinate dehydrogenase is part of the respiratory chain in mitochondria. Potential risks of mutations are a disbalance in the respiratory chain and oxidative stress (Cerqua *et al.*, 2021). SDHC has been linked in the correlation analysis to only one treatment, known as tegafur. This drug targets the thymidylate synthase (Lee *et al.*, 2015). Using the prediction model from this research project shows that tegafur response in breast cancer has a high correlation with the dosage. The r-squared value is 0.672 and the residuals are normally distributed, which indicate that the model is a good fit. Literature research have shown that tegafur already has been used on some cases in breast cancer with positive results. Yet, it is unclear how effective the treatment is and if it opens a new potential for targeted application if a high gene expression in patients can be detected. As it has already been tested if tegafur has a potential effect in breast cancer, the objective of finding novel applications for treatments has not been met.
 
 Our final dataframe revealed results regarding the importance of mTOR in breast cancer cell lines. A mean importance value of -1.268 emphasizes that the knock-out of mTOR could play a crucial role in breast cancer development. This matches with existing literature, which has shown that dysregulation of mTOR in the PAM pathway is associated with increased tumor growth in breast cancer (Zhu *et al.*, 2022). 
 The mechanistic target of rapamycin (mTOR) encodes a protein kinase, functioning as a central regulator of essential cellular pathways involved in growth, proliferation and survival (Zhu *et al.*, 2022). The regulatory function of mTOR makes it a possible cause for various cancer types when mutated and consequently an attractive target for therapeutic interventions.
@@ -216,3 +241,14 @@ In hindsight, this approach may not be optimal to further decrease the number of
 # References
 
 # Appendix
+```{r Chunk Titel, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift, out.width='0.65\\linewidth'}
+ggplot() +
+    geom_histogram(aes(x = r_squared_b), bins = 75, fill = "steelblue") +
+    labs(title = "R^2 of linear regressions for every treatment", x = "R^2 value", y = "Count")
+
+singificance_b <- p_value_b > 0.05
+ggplot() +
+    geom_histogram(aes(x = p_value_b, fill = singificance_b), bins = 75) +
+    labs(title = "Distribution of p-values of the Shapiro-test performed on all models", x = "p-value", y = "Count", fill = "") +
+    scale_fill_discrete(labels = c("< 0.05", "non significant")) 
+```
