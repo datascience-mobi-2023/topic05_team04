@@ -75,6 +75,28 @@ It was shown that associations between genes and treatments could be made even t
 
 \newpage
 \section*{Abbreviations}
+\begin{table}[h]
+\centering
+\caption{Table of abbreviations}
+\begin{tabular}{lr}
+\textbf{Abbreviation} & \textbf{Full Form} \\
+\hline
+AURKA & Aurora-kinase A \\
+DMSO & Dimethyl sulfoxide \\
+FDR & False discovery rate \\
+HDAC & Histone-deacetylase \\
+HSP & Heat shock protein \\
+ID & Identifier \\
+MEK & Mitogen-activated protein kinase \\
+MOA & Mechanism of action \\
+mTOR & Mammalian target of Rapamycin \\
+PAM & PI3K/AKT/mTor \\
+PCA & Principal component analysis \\
+PRISM & Profiling Relative Inhibition Simultaneously in Mixture \\
+SDHC & Succinate dehydrogenase complex subunit C \\
+UMAP & Uniform Manifold Approximation and Projection \\
+\end{tabular}
+\end{table}
 
 
 
@@ -126,11 +148,11 @@ The conclusive outcome of this engine development was a final modified search en
 To compile a list of inhibitory drugs, the first step involved filtering of the prism dataset. This dataset consists of 1396 distinct drugs that were tested on their effect on cell growth at concentrations ranging from 0.000194147 nM to 12.655 nM. Further Analysis showed that every drug was tested at 4 – 8 different doses. In the prism data set, the lowest values, indicate the highest effectiveness. To identify inhibitory drugs, we calculated the average prism score for every drug. Then we specifically chose the concentration that exhibited the lowest average prism score for every drug. To further understand the impact of the doses on the prism score, we compared the concentrations associated with the lowest and highest average prism score for every drug as seen in Fig. 1. 
 
 ```{r, fig.pos= "H", echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\ Histogram of which concentration concentrations results in the lowest (left) or highest (right) average prism score.', out.width='0.65\\linewidth'}
-load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heidelberg/Module/BioInfo/BioInfoProjekt/prism_datasets.rda")
-load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heidelberg/Module/BioInfo/BioInfoProjekt/cellline_datasets.rda")
+#load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heidelberg/Module/BioInfo/BioInfoProjekt/prism_datasets.rda")
+#load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heidelberg/Module/BioInfo/BioInfoProjekt/cellline_datasets.rda")
 
-#load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/prism_datasets.rda")
-#load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/cellline_datasets.rda")
+load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/prism_datasets.rda")
+load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/cellline_datasets.rda")
 
 #url3 <- "https://figshare.com/ndownloader/files/27670806?private_link=65b1d32c2be53afb00c9"
 #file3 <- "prism_datasets.rda"
