@@ -770,10 +770,10 @@ rownames(exp.copy.cor) <- as.vector(copy.names)
 colnames(exp.copy.cor) <- c("correlation")
 ggplot(exp.copy.cor)+
   geom_histogram(aes(x = correlation), fill = "lightgray")+
-  geom_vline(xintercept = 0.324, linetype = "dashed", color = "red")+
-  geom_vline(xintercept = 0.345, linetype = "dashed", color = "blue")+
-  geom_text(x = 0.23, y = 500, label = "mean", color = "red", vjust = -1) +
-  geom_text(x = 0.45, y = 500, label = "median", color = "blue", vjust = -1) +
+  geom_vline(xintercept = 0.324, linetype = "dashed", color = "#BE3428FF", size = 1)+
+  geom_vline(xintercept = 0.345, linetype = "dashed", color = "#088BBEFF", size = 1)+
+  geom_text(x = 0.18, y = 500, label = "mean", color = "#BE3428FF", vjust = -1, size = 7) +
+  geom_text(x = 0.52, y = 500, label = "median", color = "#088BBEFF", vjust = -1, size = 7) +
   theme_minimal()+
   labs(title = "Correlation between gene expression and copy number",
        x = "Correlation",
