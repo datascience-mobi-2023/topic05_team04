@@ -5,6 +5,7 @@
 
 #######Problems with data loading
 library(jsonlite)
+
 hallmarks <- fromJSON("~/Downloads/h.all.v2023.1.Hs.json.txt")
 
 hallmarks.geneSym <- unlist(lapply(hallmarks, function(x) x$geneSymbols))
