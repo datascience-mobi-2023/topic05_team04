@@ -61,8 +61,8 @@ library(jsonlite) #install.packages("jsonlite")
 
 \newpage
 \section*{Abstract}
-Breast cancer still presents a significant global health challenge, requiring improved treatment options with minimized side effects. Since traditional drug development is costly, time-consuming, and risky, hindering progress. Drug repurposing offers a potential solution by finding new applications for approved drugs, therefore reducing costs and development time.\\
-This research project focuses on a computational approach, utilizing genetic associations to identify target genes for drug development. By analysing treatment response and genetic data, including gene expression profiles, the research project aims to identify promising gene candidates as potential drug targets. The evaluation includes assessing gene knockout scores and predicting drug effectiveness at different treatment doses. The goal is to contribute to personalized and efficient treatment options for breast cancer patients.\\
+Breast cancer still presents a significant global health challenge, requiring improved treatment options with minimized side effects. Since traditional drug development is costly, time-consuming, and risky, progress is hindered. Drug repurposing offers a potential solution by finding new applications for approved drugs, therefore reducing costs and development time.\\
+This research project focuses on a computational approach, utilizing genetic associations to identify target genes for drug development. By analysing treatment response and genetic data, including gene expression profiles, the research project aims to identify promising gene candidates as potential drug targets. These genes were evaluated  by assessing gene knockout scores and drug effectiveness of associated treatments at different treatment doses could be predicted. The goal is to contribute to personalized and efficient treatment options for breast cancer patients.\\
 It was shown that associations between genes and treatments could be made even though with only slight potential for drug repurposing use. However, predicting treatment response by drug dose is able to accurately help in evaluating potential drug repurposing candidates. In general, this research project highlights an approach in finding new gene targets and drugs applications by analysing genetic data and evaluating the potential usefulness of such repurposed drugs.
 
 
@@ -82,14 +82,14 @@ It was shown that associations between genes and treatments could be made even t
 
 # Introduction
 
-As breast cancer is the most common type of cancer in women, accounting for approximately 2.3 million cases each year, treating breast cancer is still a major objective in global research (Łukasiewicz *et al.*, 2021). “Even though a significant number of cancers do not always need to result in death, they significantly lower the quality of life and require larger costs in general.” (Łukasiewicz *et al.*, 2021) While therapies such as chemotherapy have significantly improved outcomes, they are often accompanied by notable side effects. Therefore, there is a critical need to discover new compounds that can enhance treatment outcomes for breast cancer while minimizing adverse effects. (Kumbhar *et al.*, 2023)  
+As breast cancer is the most common type of cancer in women, accounting for approximately 2.3 million cases each year, treating breast cancer is still a major objective in global research (Łukasiewicz *et al.*, 2021). 'Even though a significant number of cancers do not always need to result in death, they significantly lower the quality of life and require larger costs in general.' (Łukasiewicz *et al.*, 2021) While therapies such as chemotherapy have significantly improved outcomes, they are often accompanied by notable side effects. Therefore, there is a critical need to discover new compounds that can enhance treatment outcomes for breast cancer while minimizing adverse effects. (Kumbhar *et al.*, 2023)  
 Nevertheless, the process of drug development is lengthy and expensive, typically taking around 12-15 years and costing billions of dollars to bring a new compound to market (Wouters *et al.*, 2020). This challenge is further amplified in the field of cancer, as cancer cells exhibit a heightened resistance to treatment with estimations that only about 5% of potential drugs enter the clinical testing (Sleire *et al.*, 2017). Consequently, researching and developing new cancer treatments pose substantial risks for pharmaceutical companies. Small companies and start-ups, in particular, require significant investments to undertake such endeavours. It is estimated that for every dollar a pharmaceutical company invests in drug development, less than a dollar is returned, resulting in minimal profitability and discouraging potential investors. This issue is particularly detrimental to the development of medications for rare diseases and those prevalent in developing countries, as the financial incentives are even more limited (Pushpakom *et al.*, 2019).  
 A potential solution to this problem is drug repurposing, which involves utilizing already approved drugs for the treatment of other diseases. By repurposing existing drugs, the cost can be significantly reduced to around 300 million dollars, and the development time can be greatly shortened, as these drugs have already undergone the necessary regulatory processes. (Nosengo, 2016)  
-By addressing these challenges through drug repurposing, we can expedite the availability of new treatment options for breast cancer and other diseases, making substantial progress in improving patient outcomes while maximizing resource efficiency.  
+By addressing these challenges through drug repurposing, we can accelerate the availability of new treatment options for breast cancer and other diseases, making substantial progress in improving patient outcomes while maximizing resource efficiency.  
 Drug repurposing can be approached through various methods, including computational and experimental approaches. In this research project, the chosen approach was a computational one, specifically focusing on genetic associations. The objective was to identify genes associated with the disease that could potentially serve as targets for future drug development (Pushpakom *et al.*, 2019).  
-To achieve this, treatment response data for cancer cells obtained using the PRISM method, along with genetic data such as gene expression profiles of the cancer cell lines, were collected. These data were utilized to explore new opportunities for drug repurposing. In the beginning, the treatments in the data sets are categorized on their potential of inhibition. This data will then be used for analysis of similarity between treatments as well as being the basis for a genetic analysis of the data. Specifically, this research project emphasizes the use of gene expression as an indicator for identifying genes that could serve as new drug targets. With advancements in analysis techniques and the increasing affordability of gene expression analysis, it has become feasible to analyse gene expression for individual patients and identify potential drugs for targeted treatment (Chawla *et al.*, 2022).  
+To achieve this, treatment response data for cancer cells obtained using the PRISM method, along with genetic data such as gene expression profiles of the cancer cell lines, were collected. These data were utilized to explore new opportunities for drug repurposing. In the beginning, the treatments in the data sets are categorized on their potential of inhibition. This data will then be used for analysis of similarity between treatments as well as being the basis for a genetic analysis of the data. Specifically, this research project emphasizes the use of gene expression as an indicator for identifying genes that could serve as new drug targets. With advancements in analysis techniques and the increasing affordability of gene expression analysis, it has become feasible to analyse gene expression for individual patients as a mean to identifying potential drugs for targeted treatment (Chawla *et al.*, 2022).  
 The potential target genes are subsequently evaluated based on their gene knockout scores, which indicate the extent to which the knockout of the target gene inhibits cell growth significantly.  
-Furthermore, predicting the effectiveness of the possibly repurposed drugs depending on the treatment dose is another objective of our research. As during the preclinical and clinical testing phase drugs are evaluated on their effective dose and their maximum dose, it is important to be able to predict if a drug can have a beneficial effect in the permitted dose.  
+Furthermore, predicting the effectiveness of the possibly repurposed drugs depending on the treatment dose is another objective of our research. As during the preclinical and clinical testing phase drugs are evaluated on their effective dose and their maximum dose, it is important to be able to predict if a drug can have a beneficial effect in the permitted dose range.  
 By leveraging the genetic association approach and focusing on gene expression analysis as well as analysing the inhibiting treatments, this research aims to identify promising candidates for drug repurposing and pave the way for the development of new treatment options tailored to specific patients.
 
 # Materials and Methods
@@ -99,9 +99,9 @@ By leveraging the genetic association approach and focusing on gene expression a
 ### Prism Datasets  
 
 Seven datasets were provided for further data analysis. These datasets can be divided into to two subsets, the PRISM datasets and gene-related datasets.
-Our main PRISM dataset describes treatment response on cell growth of different cell lines. Assigned columns are code ID names from the treatments and the cell lines are ordered row-wise. The values represent the log 2 fold change in comparison with a DMSO experiment and are referred to as prism scores. Additional information about the treatments used in PRISM can be found in the second dataset including its mechanism of action, common purpose etc.. Lastly, the PRISM cell line data set presents detailed information about all cell lines and their cancer origin.
+Our main PRISM dataset describes treatment response on cell growth of different cell lines. Assigned columns are code ID names from the treatments and the cell lines are ordered row-wise. The values represent the log 2 fold change in comparison with a DMSO experiment and are referred to as prism scores. Additional information about the treatments used in PRISM can be found in the second dataset including its mechanism of action, common purpose and more. Lastly, the PRISM cell line data set presents detailed information about all cell lines and their cancer origin.
 Furthermore, the three of the four given gene-related datasets present gene designations as column names and cell line IDs as row names, each containing different measurement values.
-The expression data frame describes expression levels of each gene in different cell lines. The copy number data frame contains the copy number of each gene for every cell line used in the PRISM screen. The gene importance data frame displays the gene importance measured by knockout scores of each gene in every cell line. With different format the last gene-related data set offers valuable information about the gene including the common function, mutation and so on.
+The expression data frame describes expression levels of each gene in different cell lines. The copy number data frame contains the copy number of each gene for every cell line used in the PRISM screen. The gene importance data frame displays the gene importance measured by knockout scores of each gene in every cell line. With different format the last gene-related data set offers valuable information about the gene including the common function, mutation and more.
    
 ## Data clean up/Filtering
 
@@ -124,11 +124,11 @@ The conclusive outcome of this engine development was a final modified search en
 To compile a list of inhibitory drugs, the first step involved filtering of the prism dataset. This dataset consists of 1396 distinct drugs that were tested on their effect on cell growth at concentrations ranging from 0.000194147 nM to 12.655 nM. Further Analysis showed that every drug was tested at 4 – 8 different doses. In the prism data set, the lowest values, indicate the highest effectiveness. To identify inhibitory drugs, we calculated the average prism score for every drug. Then we specifically chose the concentration that exhibited the lowest average prism score for every drug. To further understand the impact of the doses on the prism score, we compared the concentrations associated with the lowest and highest average prism score for every drug. 
 
 ```{r, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\ Histogram of which concentration concentrations results in the lowest (left) or highest (right) average prism score.', out.width='0.65\\linewidth'}
-load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heidelberg/Module/BioInfo/BioInfoProjekt/prism_datasets.rda")
-load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heidelberg/Module/BioInfo/BioInfoProjekt/cellline_datasets.rda")
+#load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heidelberg/Module/BioInfo/BioInfoProjekt/prism_datasets.rda")
+#load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heidelberg/Module/BioInfo/BioInfoProjekt/cellline_datasets.rda")
 
-#load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/prism_datasets.rda")
-#load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/cellline_datasets.rda")
+load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/prism_datasets.rda")
+load("C:/Users/aaron/Desktop/Studium/4. Semester/Bioinfo/cellline_datasets.rda")
 
 #url3 <- "https://figshare.com/ndownloader/files/27670806?private_link=65b1d32c2be53afb00c9"
 #file3 <- "prism_datasets.rda"
@@ -199,7 +199,7 @@ grid.arrange(ggplot1, ggplot2, nrow = 1)
 
 Once the most effective drug concentration combinations were identified, we proceeded with an additional round of filtering. This time only the drugs resulting in an average prism score lower than -2 were selected. This threshold was chosen because its allowing the removal of 60 % of the provided drugs. 
 
-```{r, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Figure 5: Histogram of the mean log 2 fold change of the drugs after the first round of filtering. The colors indicate if the drugs is below or above the selected threshold of -2.', out.width='0.65\\linewidth'}
+```{r, echo = FALSE, message=FALSE, fig.align='center', fig.cap='Histogram of the mean log 2 fold change of the drugs after the first round of filtering. The colors indicate if the drugs is below or above the selected threshold of -2.', out.width='0.65\\linewidth'}
 #### Plot 3
 inhibitory_fil <- lowest_mean_duplicate_b$colMeans_breast < -2
 ggplot() +
@@ -251,10 +251,10 @@ rownames(exp.copy.cor) <- as.vector(copy.names)
 colnames(exp.copy.cor) <- c("correlation")
 ggplot(exp.copy.cor)+
   geom_histogram(aes(x = correlation), fill = "lightgray")+
-  geom_vline(xintercept = 0.324, linetype = "dashed", color = "red")+
-  geom_vline(xintercept = 0.345, linetype = "dashed", color = "blue")+
-  geom_text(x = 0.23, y = 500, label = "mean", color = "red", vjust = -1) +
-  geom_text(x = 0.45, y = 500, label = "median", color = "blue", vjust = -1) +
+  geom_vline(xintercept = 0.324, linetype = "dashed", color = "#BE3428FF", size = 1)+
+  geom_vline(xintercept = 0.345, linetype = "dashed", color = "#088BBEFF", size = 1)+
+  geom_text(x = 0.18, y = 500, label = "mean", color = "#BE3428FF", vjust = -1, size = 7) +
+  geom_text(x = 0.52, y = 500, label = "median", color = "#088BBEFF", vjust = -1, size = 7) +
   theme_minimal()+
   labs(title = "Correlation between gene expression and copy number",
        x = "Correlation",
@@ -262,6 +262,8 @@ ggplot(exp.copy.cor)+
        )+
   theme(plot.title = element_text(hjust = 0.5),
         text = element_text(''))
+ 
+ 
 
 ```
 
@@ -278,7 +280,7 @@ Moreover, the 3925 preselected genes were compiled into a data frame for further
 Linear regression is a statistical technique to model the relationship between a dependent variable and one or more independent variables and fitting a straight line to the data. We used linear regression models to predict the average prism score based on the concentration for every drug. We created a function that takes drug names as inputs and returns a scatter plot with a linear fit on top and additional information about how well the model performs. This includes the R2 value, and a Shapiro Wilk normality test performed on the residuals. The R2 value is an indicator of how well the straight line fights the data point and if there is a linear relation between the points. The Shapiro Wilk normality test is commonly used to assess if the residuals follow a normal distribution. This is important to evaluate the performance because deviations from normal distribution suggest an underlying true pattern, that is not captured by the model. 
 
 Next we created a function which takes drug names and concentration values as an Input and returns  predicted mean cell growth values for the concentration values. 
-```{r, warning = FALSE, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Figure 6: Scatter plot with a regression line for the drug “BRD-K99383816-001-03-5”. The black dots represent the original values that were used to for the linear regression model. The red dots represent the predicted average prism score for the concentrations: 0.1 nM, 0.3 nM, 6.4 nM, 8.9 nM and 10.5 nM.', out.width='0.65\\linewidth'}
+```{r, warning = FALSE, echo = FALSE, message=FALSE, fig.align='center', fig.cap='Scatter plot with a regression line for the drug “BRD-K99383816-001-03-5”. The black dots represent the original values that were used to for the linear regression model. The red dots represent the predicted average prism score for the concentrations: 0.1 nM, 0.3 nM, 6.4 nM, 8.9 nM and 10.5 nM.', out.width='0.65\\linewidth'}
 ###############################
 # 9. # LINEAR REGRESSION ###### Luis
 ###############################
@@ -355,7 +357,7 @@ prediction_tool(testname, c(0.1, 0.3, 6.4, 8.9, 10.5))
 
 To further confirm the relationship between concentration and the mean cell growth, we calculated the Pearson correlation for each drug. 
 
-```{r, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Figure 7: Histogram of the correlation between the different concentrations and the respective average prism score. Correlations below the set threshold of -0.7 are colored red and correlations higher that -0.7 are colored blue.', out.width='0.65\\linewidth'}
+```{r, echo = FALSE, message=FALSE, fig.align='center', fig.cap='Histogram of the correlation between the different concentrations and the respective average prism score. Correlations below the set threshold of -0.7 are colored red and correlations higher that -0.7 are colored blue.', out.width='0.65\\linewidth'}
 ####################################
 # 9.1 # CORRELATION DRUG ~ CONC ###### Luis
 ####################################
@@ -403,25 +405,27 @@ Moreover, we obtained a mean expression level value of 4.736, which indicates a 
 Finally, our results reinforce the significance of mTOR in breast cancer. However, targeting mTOR in breast cancer should be investigated to develop safe treatment strategies. Nevertheless, our study about mTOR is similar to the groundwork findings, consequently suited for future research.
 
 The basis of our gene analysis is the correlation analysis of treatment response and gene expression. The idea was that high absolute correlation could show genes that are associated with breast cancer. This means that a particular gene could be linked to a treatment. However, this does not imply causality meaning that the treatment could possibly not be affected directly by the treatment. The next selection process was on the importance of the genes via gene knockout score. The findings conclude genes and treatments that have been associated with cancer or further breast cancer but some only slightly. Novel opportunities for drug repurposing have not been found.
-In hindsight, this approach may not be optimal to further decrease the number of potential targets. As stated before, correlation of gene expression does not imply the direct causality between the treatment and the gene expression. So, looking at the importance of a gene via gene knockout score does not show that a gene could be a good target. With more time to analyse the data, we would want to test new ways in looking into the data and selecting genes. Possible approaches could be as following.
+In hindsight, this approach may not be optimal to further decrease the number of potential targets. As stated before, correlation of gene expression does not imply the direct causality between the treatment and the gene expression. So, looking at the importance of a gene via gene knockout score does not show that a gene could be a good target. With more time to analyse the data, we would want to test new ways in looking into the data and selecting genes. Possible approaches could be as follows. It might improve the correlation analysis if we did it separately with each sub lineage of breast cancer. To detect potential targets, a correlation analysis between gene knockout score and gene expression could be used with further sub selection via negative mean knockout scores. The gene expression and treatment response correlation could be used as markers for potential new targeted therapy on base of individual gene expression. 
+Finding such as the UMAP clustering could be investigated by applying the available data.
+
 
 # References
 
-Cerqua, C., Buson, L., and Trevisson, E. (2021). Mutations in Assembly Factors Required for the Biogenesis of Mitochondrial Respiratory Chain. In Mitochondrial Diseases: Theory, Diagnosis and Therapy, P. Navas, and L. Salviati, eds. (Springer International Publishing), pp. 33-68.
-Chawla, S., Rockstroh, A., Lehman, M., Ratther, E., Jain, A., Anand, A., Gupta, A., Bhattacharya, N., Poonia, S., Rai, P., et al. (2022). Gene expression based inference of cancer drug sensitivity. Nature Communications 13, 5680.
-Corsello, S.M., Nagari, R.T., Spangler, R.D., Rossen, J., Kocak, M., Bryan, J.G., Humeidi, R., Peck, D., Wu, X., Tang, A.A., et al. (2020). Discovering the anticancer potential of non-oncology drugs by systematic viability profiling. Nature Cancer 1, 235-248.
-Gonçalves, E., Segura-Cabrera, A., Pacini, C., Picco, G., Behan, F.M., Jaaks, P., Coker, E.A., van der Meer, D., Barthorpe, A., Lightfoot, H., et al. (2020). Drug mechanism-of-action discovery through the integration of pharmacological and CRISPR screens. Molecular Systems Biology 16, e9405.
-Joshua, M.D., Jordan, R., Mariya, K., Joshua, P., Guillaume, K., David, E.R., and Aviad, T. (2019). Extracting Biological Insights from the Project Achilles Genome-Scale CRISPR Screens in Cancer Cell Lines. bioRxiv, 720243.
-Kumbhar, P., Kole, K., Manjappa, A., Jha, N.K., Disouza, J., and Patravale, V. (2023). Drug Repurposing Opportunities in Cancer. In Drug Repurposing for Emerging Infectious Diseases and Cancer, R.C. Sobti, S.K. Lal, and R.K. Goyal, eds. (Springer Nature Singapore), pp. 53-87.
-Lee, B.R., Yu, J.Y., Yoon, S.H., Ban, H.J., Kwon, Y.S., Oh, I.J., Kim, K.S., Kim, Y.I., Lim, S.C., and Kim, Y.C. (2015). Variability in the anti-tumor effect of tegafur-uracil depending on histologic types of lung cancer. J Thorac Dis 7, 433-438.
+Cerqua, C., Buson, L., and Trevisson, E. (2021). Mutations in Assembly Factors Required for the Biogenesis of Mitochondrial Respiratory Chain. In Mitochondrial Diseases: Theory, Diagnosis and Therapy, P. Navas, and L. Salviati, eds. (Springer International Publishing), pp. 33-68.  
+Chawla, S., Rockstroh, A., Lehman, M., Ratther, E., Jain, A., Anand, A., Gupta, A., Bhattacharya, N., Poonia, S., Rai, P., et al. (2022). Gene expression based inference of cancer drug sensitivity. Nature Communications 13, 5680.  
+Corsello, S.M., Nagari, R.T., Spangler, R.D., Rossen, J., Kocak, M., Bryan, J.G., Humeidi, R., Peck, D., Wu, X., Tang, A.A., et al. (2020). Discovering the anticancer potential of non-oncology drugs by systematic viability profiling. Nature Cancer 1, 235-248.  
+Gonçalves, E., Segura-Cabrera, A., Pacini, C., Picco, G., Behan, F.M., Jaaks, P., Coker, E.A., van der Meer, D., Barthorpe, A., Lightfoot, H., et al. (2020). Drug mechanism-of-action discovery through the integration of pharmacological and CRISPR screens. Molecular Systems Biology 16, e9405.  
+Joshua, M.D., Jordan, R., Mariya, K., Joshua, P., Guillaume, K., David, E.R., and Aviad, T. (2019). Extracting Biological Insights from the Project Achilles Genome-Scale CRISPR Screens in Cancer Cell Lines. bioRxiv, 720243.  
+Kumbhar, P., Kole, K., Manjappa, A., Jha, N.K., Disouza, J., and Patravale, V. (2023). Drug Repurposing Opportunities in Cancer. In Drug Repurposing for Emerging Infectious Diseases and Cancer, R.C. Sobti, S.K. Lal, and R.K. Goyal, eds. (Springer Nature Singapore), pp. 53-87.  
+Lee, B.R., Yu, J.Y., Yoon, S.H., Ban, H.J., Kwon, Y.S., Oh, I.J., Kim, K.S., Kim, Y.I., Lim, S.C., and Kim, Y.C. (2015). Variability in the anti-tumor effect of tegafur-uracil depending on histologic types of lung cancer. J Thorac Dis 7, 433-438.  
 Łukasiewicz, S., Czeczelewski, M., Forma, A., Baj, J., Sitarz, R., and Stanisławek, A. (2021). Breast Cancer-Epidemiology, Risk Factors, Classification, Prognostic Markers, and Current Treatment Strategies-An Updated Review. Cancers (Basel) 13.
-McInnes, L., and Healy, J. (2018). UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction.
+McInnes, L., and Healy, J. (2018). UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction.  
 Nosengo, N. (2016). Can you teach old drugs new tricks? Nature 534, 314-316.
 Pushpakom, S., Iorio, F., Eyers, P.A., Escott, K.J., Hopper, S., Wells, A., Doig, A., Guilliams, T., Latimer, J., McNamee, C., et al. (2019). Drug repurposing: progress, challenges and recommendations. Nature Reviews Drug Discovery 18, 41-58.
-Shao, X., Lv, N., Liao, J., Long, J., Xue, R., Ai, N., Xu, D., and Fan, X. (2019). Copy number variation is highly correlated with differential gene expression: a pan-cancer study. BMC Medical Genetics 20, 175.
-Sleire, L., Førde, H.E., Netland, I.A., Leiss, L., Skeie, B.S., and Enger, P.Ø. (2017). Drug repurposing in cancer. Pharmacological Research 124, 74-91.
-Wouters, O.J., McKee, M., and Luyten, J. (2020). Estimated Research and Development Investment Needed to Bring a New Medicine to Market, 2009-2018. JAMA 323, 844-853.
-Yu, C., Mannan, A.M., Yvone, G.M., Ross, K.N., Zhang, Y.-L., Marton, M.A., Taylor, B.R., Crenshaw, A., Gould, J.Z., Tamayo, P., et al. (2016). High-throughput identification of genotype-specific cancer vulnerabilities in mixtures of barcoded tumor cell lines. Nature Biotechnology 34, 419-423.
+Shao, X., Lv, N., Liao, J., Long, J., Xue, R., Ai, N., Xu, D., and Fan, X. (2019). Copy number variation is highly correlated with differential gene expression: a pan-cancer study. BMC Medical Genetics 20, 175.  
+Sleire, L., Førde, H.E., Netland, I.A., Leiss, L., Skeie, B.S., and Enger, P.Ø. (2017). Drug repurposing in cancer. Pharmacological Research 124, 74-91.  
+Wouters, O.J., McKee, M., and Luyten, J. (2020). Estimated Research and Development Investment Needed to Bring a New Medicine to Market, 2009-2018. JAMA 323, 844-853.  
+Yu, C., Mannan, A.M., Yvone, G.M., Ross, K.N., Zhang, Y.-L., Marton, M.A., Taylor, B.R., Crenshaw, A., Gould, J.Z., Tamayo, P., et al. (2016). High-throughput identification of genotype-specific cancer vulnerabilities in mixtures of barcoded tumor cell lines. Nature Biotechnology 34, 419-423.  
 Zhu, K., Wu, Y., He, P., Fan, Y., Zhong, X., Zheng, H., and Luo, T. (2022). PI3K/AKT/mTOR-Targeted Therapy for Breast Cancer. Cells 11, 2508.
 
 
@@ -452,12 +456,14 @@ ggplot(achilles.boxplot)+
         text = element_text(''))
 
 ```
-```{r, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift', out.width='0.65\\linewidth'}
+```{r, echo = FALSE, message=FALSE, fig.align='center', fig.cap='Bild unterschrift', out.width='0.65\\linewidth'}
 #### Plot 7
 ggplot() +
     geom_histogram(aes(x = r_squared_b), bins = 75, fill = "steelblue") +
     labs(title = "R^2 of linear regressions for every treatment", x = "R^2 value", y = "Count")
+```
 
+```{r, echo = FALSE, message=FALSE, fig.align='center', fig.cap='Bild unterschrift', out.width='0.65\\linewidth'}
 #### Plot 8
 singificance_b <- p_value_b > 0.05
 ggplot() +
