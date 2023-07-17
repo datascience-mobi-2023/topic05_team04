@@ -2,8 +2,6 @@
 title: "  "
 author: " "
 date: " "
-bibliography: references/ref.bib 
-csl: references/citation_style.csl
 geometry: "margin=2.3cm"
 linestretch: 1.15
 fontsize: 11pt
@@ -14,9 +12,12 @@ output:
 ```{r, include=FALSE}
 # das ist das package was man braucht. mit dem dahinter sollte eigentlich alles was man braucht runter geladen werden
 #install.packages("bookdown", dependencies = TRUE)
-library(ggplot2)
-library(gridExtra)
-
+library(ggplot2) #install.packages("ggplot2")
+library(umap) #install.packages("umap")
+library(readxl) #install.packages("readxl")
+library(scales) #install.packages("scales")
+library(dplyr)  #install.packages("dplyr")
+library(gridExtra) #install.packages("gridExtra")
 ```
 
 
@@ -147,18 +148,20 @@ The conclusive outcome of this engine development was a final modified search en
 To compile a list of inhibitory drugs, the first step involved filtering of the prism dataset. This dataset consists of 1396 distinct drugs that were tested on their effect on cell growth at concentrations ranging from 0.000194147 nM to 12.655 nM. Further Analysis showed that every drug was tested at 4 – 8 different doses. In the prism data set, the lowest values, indicate the highest effectiveness. To identify inhibitory drugs, we calculated the average prism score for every drug. Then we specifically chose the concentration that exhibited the lowest average prism score for every drug. To further understand the impact of the doses on the prism score, we compared the concentrations associated with the lowest and highest average prism score for every drug. 
 
 PLOT 1 and PLOT 2
-```{r Chunk Titel, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift, out.width='0.65\\linewidth'}
-url3 <- "https://figshare.com/ndownloader/files/27670806?private_link=65b1d32c2be53afb00c9"
-file3 <- "prism_datasets.rda"
-download.file(url3, destfile = file3, method = "auto")
-downloaded_file_path3 <- file.path(getwd(), file3)
-load(downloaded_file_path3)
+```{r, label='Chunk Titel1', echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift', out.width='0.65\\linewidth'}
+#url3 <- "https://figshare.com/ndownloader/files/27670806?private_link=65b1d32c2be53afb00c9"
+#file3 <- "prism_datasets.rda"
+#download.file(url3, destfile = file3, method = "auto")
+#downloaded_file_path3 <- file.path(getwd(), file3)
+#load(downloaded_file_path3)
 
-url4 <- "https://figshare.com/ndownloader/files/27453818?private_link=0a47128e7c487d6f9867"
-file4 <- "cellline_datasets.rda"
-download.file(url4, destfile = file4, method = "auto")
-downloaded_file_path4 <- file.path(getwd(), file4)
-load(downloaded_file_path4)
+#url4 <- "https://figshare.com/ndownloader/files/27453818?private_link=0a47128e7c487d6f9867"
+#file4 <- "cellline_datasets.rda"
+#download.file(url4, destfile = file4, method = "auto")
+#downloaded_file_path4 <- file.path(getwd(), file4)
+#load(downloaded_file_path4)
+load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heidelberg/Module/BioInfo/BioInfoProjekt/prism_datasets.rda")
+load("C:/Users/simon/Documents/Simon Westermann/Ruprecht-Karls-Universität Heidelberg/Module/BioInfo/BioInfoProjekt/cellline_datasets.rda")
 #### Plot 1
 ######################################
 # 3. # BREAST PRISM IMPUTATION #######
@@ -219,7 +222,7 @@ grid.arrange(ggplot1, ggplot2, nrow = 1)
 
 Once the most effective drug concentration combinations were identified, we proceeded with an additional round of filtering. This time only the drugs resulting in an average prism score lower than -2 were selected. This threshold was chosen because its allowing the removal of 60 % of the provided drugs. 
 
-```{r Chunk Titel, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift, out.width='0.65\\linewidth'}
+```{r, label='Chunk Titel2', echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift', out.width='0.65\\linewidth'}
 inhibitory_fil <- lowest_mean_duplicate_b$colMeans_breast < -2
 ggplot() +
     geom_histogram(aes(x = lowest_mean_duplicate_b$colMeans_breast, fill = inhibitory_fil), bins = 30) +
@@ -254,7 +257,7 @@ Moreover, the 3925 preselected genes were compiled into a data frame for further
 ## Linear regression
 Linear regression is a statistical technique to model the relationship between a dependent variable and one or more independent variables and fitting a straight line to the data. We used linear regression models to predict the average prism score based on the concentration for every drug. We created a function that takes drug names as inputs and returns a scatter plot with a linear fit on top and additional information about how well the model performs. This includes the R2 value, and a Shapiro Wilk normality test performed on the residuals. The R2 value is an indicator of how well the straight line fights the data point and if there is a linear relation between the points. The Shapiro Wilk normality test is commonly used to assess if the residuals follow a normal distribution. This is important to evaluate the performance because deviations from normal distribution suggest an underlying true pattern, that is not captured by the model. 
 
-```{r Chunk Titel, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift, out.width='0.65\\linewidth'}
+```{r, label='Chunk Titel3', echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift', out.width='0.65\\linewidth'}
 ###############################
 # 9. # LINEAR REGRESSION ###### Luis
 ###############################
@@ -313,7 +316,7 @@ plot_reg(testname)
 
 Next we created a function which takes drug names and concentration values as an Input and returns  predicted mean cell growth values for the concentration values. 
 
-```{r Chunk Titel, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift, out.width='0.65\\linewidth'}
+```{r, label='Chunk Titel4', echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift', out.width='0.65\\linewidth'}
 #######################
 ### PREDICTION TOOL ###
 #######################
@@ -365,7 +368,7 @@ prediction_tool(testname, c(0.1, 0.3, 6.4, 8.9, 10.5))
 
 To further confirm the relationship between concentration and the mean cell growth, we calculated the Pearson correlation for each drug. 
 
-```{r Chunk Titel, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift, out.width='0.65\\linewidth'}
+```{r, label='Chunk Titel5', echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift', out.width='0.65\\linewidth'}
 ####################################
 # 9.1 # CORRELATION DRUG ~ CONC ###### Luis
 ####################################
@@ -419,7 +422,7 @@ In hindsight, this approach may not be optimal to further decrease the number of
 # References
 
 # Appendix
-```{r Chunk Titel, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift, out.width='0.65\\linewidth'}
+```{r, label='Chunk Titel6', echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift', out.width='0.65\\linewidth'}
 ggplot() +
     geom_histogram(aes(x = r_squared_b), bins = 75, fill = "steelblue") +
     labs(title = "R^2 of linear regressions for every treatment", x = "R^2 value", y = "Count")
