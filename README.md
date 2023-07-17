@@ -17,7 +17,7 @@ Our main PRISM dataset describes treatment response on cell growth of different 
 Furthermore, the three of the four given gene-related datasets present gene designations as column names and cell line IDs as row names, each containing different measurement values.
 The expression data frame describes expression levels of each gene in different cell lines. The copy number data frame contains the copy number of each gene for every cell line used in the PRISM screen. The gene importance data frame displays the gene importance measured by knockout scores of each gene in every cell line. With different format the last gene-related data set offers valuable information about the gene including the common function, mutation and more.
  
-## Our Repository
+## Folder Structure
 
 **01_DataCleaning/Filtering:** Cleaning of the different datasets and filtering of the data to prepare for downstream analysis.
 
