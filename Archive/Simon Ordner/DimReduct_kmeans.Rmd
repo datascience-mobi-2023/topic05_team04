@@ -246,25 +246,31 @@ ggplot(umap_hsp, aes(x = V1, y = V2, color = levels, alpha = alpha_level)) +
     geom_point(size = 3) +
     scale_color_manual(values = color_palette0) +
     theme_bw() +
-    ggtitle("UMAP of MOAs")
+    ggtitle("UMAP of HSP inhibitor")
 umap_tubulin <- umap_layout_prism[which(umap_layout_prism$levels ==  "tubulin polymerization inhibitor"), ]
 ggplot(umap_tubulin, aes(x = V1, y = V2, color = levels, alpha = alpha_level)) +
     geom_point(size = 3) +
     scale_color_manual(values = color_palette0) +
     theme_bw() +
-    ggtitle("UMAP of MOAs")
+    ggtitle("UMAP of tubulin polymerization inhibitor")
 umap_HDAC <- umap_layout_prism[which(umap_layout_prism$levels ==  "HDAC inhibitor"), ]
 ggplot(umap_HDAC, aes(x = V1, y = V2, color = levels, alpha = alpha_level)) +
     geom_point(size = 3) +
     scale_color_manual(values = color_palette0) +
     theme_bw() +
-    ggtitle("UMAP of MOAs")
+    ggtitle("UMAP of HDAC inhibitor")
 umap_MEK <- umap_layout_prism[which(umap_layout_prism$levels ==  "MEK inhibitor"), ]
 ggplot(umap_MEK, aes(x = V1, y = V2, color = levels, alpha = alpha_level)) +
     geom_point(size = 3) +
     scale_color_manual(values = color_palette0) +
     theme_bw() +
-    ggtitle("UMAP of MOAs")
+    ggtitle("UMAP of MEK inhibitor")
+umap_gluco <- umap_layout_prism[which(umap_layout_prism$levels ==  "glucocorticoid receptor agonist"), ]
+ggplot(umap_gluco, aes(x = V1, y = V2, color = levels, alpha = alpha_level)) +
+    geom_point(size = 3) +
+    scale_color_manual(values = color_palette0) +
+    theme_bw() +
+    ggtitle("UMAP of glucocorticoid receptor agonist")
 
 # silhouette score for best kmeans
 silhouette_score <- function(k){
