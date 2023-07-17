@@ -22,7 +22,7 @@ library(tidyverse) #install.packages("tidyverse")
 
 
 ```{r}
-
+####PLEASE load the extended data sets in your environment. You can alter the code below. You can find them in our github in 07_extdata or dare to use the functions below.
 url <- "https://raw.githubusercontent.com/datascience-mobi-2023/topic05_team04/main/07_extdata/oncological_treatments.xlsx"
 file1 <- "oncological_treatments.xlsx"
 download.file(url, destfile = file1, mode = "wb")
