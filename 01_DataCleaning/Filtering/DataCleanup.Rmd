@@ -11,17 +11,30 @@ library(gridExtra) #install.packages("gridExtra")
 library(jsonlite) #install.packages("jsonlite")
 #library(tidyverse) #install.packages("tidyverse")
 # --------------------------------- #
-url <- "https://raw.githubusercontent.com/datascience-mobi-2023/topic05_team04/main/07_extdata/oncological_treatments.xlsx"
+url1 <- "https://raw.githubusercontent.com/datascience-mobi-2023/topic05_team04/main/07_extdata/oncological_treatments.xlsx"
 file1 <- "oncological_treatments.xlsx"
-download.file(url, destfile = file1, method = "auto")
+download.file(url1, destfile = file1, method = "auto")
 downloaded_file_path1 <- file.path(getwd(), file1)
 cancer.therapy <- read_excel(downloaded_file_path1, sheet = 1)
 
-url1 <- "https://raw.githubusercontent.com/datascience-mobi-2023/topic05_team04/main/07_extdata/h.all.v2023.1.Hs.json.txt"
+url2 <- "https://raw.githubusercontent.com/datascience-mobi-2023/topic05_team04/main/07_extdata/h.all.v2023.1.Hs.json.txt"
 file2 <- "h.all.v2023.1.Hs.json.txt"
-download.file(url1, destfile = file2, method = "auto")
+download.file(url2, destfile = file2, method = "auto")
 downloaded_file_path2 <- file.path(getwd(), file2)
 hallmarks <- fromJSON(downloaded_file_path2)
+
+
+url3 <- "https://figshare.com/ndownloader/files/27670806?private_link=65b1d32c2be53afb00c9"
+file3 <- "prism_datasets.rda"
+download.file(url3, destfile = file3, method = "auto")
+downloaded_file_path3 <- file.path(getwd(), file3)
+load(downloaded_file_path3)
+
+url4 <- "https://figshare.com/ndownloader/files/27453818?private_link=0a47128e7c487d6f9867"
+file4 <- "cellline_datasets.rda"
+download.file(url4, destfile = file4, method = "auto")
+downloaded_file_path4 <- file.path(getwd(), file4)
+load(downloaded_file_path4)
 ```
 ```{r}
 ## Checkt wie viele Zeilen und Spalten NA`s drin habe

@@ -2,8 +2,8 @@
 title: "  "
 author: " "
 date: " "
-#bibliography: references/ref.bib 
-#csl: references/citation_style.csl
+bibliography: references/ref.bib 
+csl: references/citation_style.csl
 geometry: "margin=2.3cm"
 linestretch: 1.15
 fontsize: 11pt
@@ -11,7 +11,13 @@ output:
   pdf_document:
     number_sections: true
 ---
+```{r, include=FALSE}
+# das ist das package was man braucht. mit dem dahinter sollte eigentlich alles was man braucht runter geladen werden
+#install.packages("bookdown", dependencies = TRUE)
+library(ggplot2)
+library(gridExtra)
 
+```
 
 
 ```{=tex}
@@ -95,11 +101,11 @@ By leveraging the genetic association approach and focusing on gene expression a
 
 ### Prism Datasets  
 
-**Prism:** effect of the treatment (columns) on cell growth of the cell lines (rows); includes drug, dosage and assay used
+**Prism:** contains the effect of the treatment (columns) on cell growth of the cell lines (rows). The values represent a log2FC with a control DMSO experiment.
 
-**Prism.treat:** for each treatment (rows) further information on the treatment and drug
+**Prism.treat:** provides supplementary data for the different treatments (row), such as the target of the treatment, the mechanism of action, the drug name and more information.
 
-**Prism.cl:** contains information about the different celllines    
+**Prism.cl:** provides supplementary data for the different cell lines (row), such as the the disease type, the cell line name and more information.
 
 ### Cellline Datasets  
 
@@ -141,11 +147,86 @@ The conclusive outcome of this engine development was a final modified search en
 To compile a list of inhibitory drugs, the first step involved filtering of the prism dataset. This dataset consists of 1396 distinct drugs that were tested on their effect on cell growth at concentrations ranging from 0.000194147 nM to 12.655 nM. Further Analysis showed that every drug was tested at 4 – 8 different doses. In the prism data set, the lowest values, indicate the highest effectiveness. To identify inhibitory drugs, we calculated the average prism score for every drug. Then we specifically chose the concentration that exhibited the lowest average prism score for every drug. To further understand the impact of the doses on the prism score, we compared the concentrations associated with the lowest and highest average prism score for every drug. 
 
 PLOT 1 and PLOT 2
+```{r Chunk Titel, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift, out.width='0.65\\linewidth'}
+url3 <- "https://figshare.com/ndownloader/files/27670806?private_link=65b1d32c2be53afb00c9"
+file3 <- "prism_datasets.rda"
+download.file(url3, destfile = file3, method = "auto")
+downloaded_file_path3 <- file.path(getwd(), file3)
+load(downloaded_file_path3)
 
+url4 <- "https://figshare.com/ndownloader/files/27453818?private_link=0a47128e7c487d6f9867"
+file4 <- "cellline_datasets.rda"
+download.file(url4, destfile = file4, method = "auto")
+downloaded_file_path4 <- file.path(getwd(), file4)
+load(downloaded_file_path4)
+#### Plot 1
+######################################
+# 3. # BREAST PRISM IMPUTATION #######
+######################################
+breast_prism.cl <- prism.cl[which(prism.cl$lineage == 'breast'), ]
+breast_prism <- prism[which(rownames(prism) %in% breast_prism.cl$DepMap_ID), ]
+bp_onlyNA.col <- colnames(breast_prism[which(colSums(is.na(breast_prism)) == 22)]) 
+rem.bpNAcol <- which(colnames(breast_prism) %in% bp_onlyNA.col)
+breast_prism_imp <- breast_prism[, -rem.bpNAcol] 
+
+breast_prism_imp <- as.data.frame(apply(breast_prism_imp, 2, function(x) {
+    is_na <- is.na(x)
+    x[is_na] <- mean(x, na.rm = TRUE)
+    return(x)
+}))
+#########################################
+# 5. # SELECT MOST EFFIZIENT DRUGS ######
+#########################################
+##############
+### BREAST ###
+##############
+drugnames_b <- sub("::.*", "", colnames(breast_prism_imp))
+concentration_b <- as.numeric(sub(".*::(.*?)::.*", "\\1", colnames(breast_prism_imp)))
+names_conc_drug_b <- sub("::.*", "", sub("::", ":", colnames(breast_prism_imp)))
+colMeans_breast <- apply(breast_prism_imp, 2, mean)
+duplicate_drugs_b <- unique(drugnames_b[duplicated(drugnames_b)])
+df_nam_con_mean_b <- data.frame(colMeans_breast, drugnames_b, concentration_b, names_conc_drug_b)
+lowest_mean_duplicate_b <- data.frame()
+for(i in 1:length(duplicate_drugs_b)) {
+    act_rows_b <- which(df_nam_con_mean_b$drugnames_b == duplicate_drugs_b[i])
+    act_df_b <- df_nam_con_mean_b[act_rows_b,]
+    lowest_colmean_b <- min(act_df_b$colMeans_breast, na.rm = TRUE)
+    lowest_mean_duplicate_b <- rbind(lowest_mean_duplicate_b, act_df_b[which(act_df_b$colMeans_breast == lowest_colmean_b),])
+}
+highest_mean_duplicate_b <- data.frame()
+for(i in 1:length(duplicate_drugs_b)) {
+    act_rows_b <- which(df_nam_con_mean_b$drugnames_b == duplicate_drugs_b[i])
+    act_df_b <- df_nam_con_mean_b[act_rows_b,]
+    highest_colmean_b <- max(act_df_b$colMeans_breast, na.rm = TRUE)
+    highest_mean_duplicate_b <- rbind(highest_mean_duplicate_b , act_df_b[which(act_df_b$colMeans_breast == highest_colmean_b),])
+}
+pref_drug_con_combo_breast <- rownames(lowest_mean_duplicate_b)
+breast_prism_lowest <- breast_prism_imp[,pref_drug_con_combo_breast]
+lowest_mean_duplicate_tsh_b <- lowest_mean_duplicate_b[lowest_mean_duplicate_b$colMeans_breast < -2,]
+pref_drug_ths_b <- rownames(lowest_mean_duplicate_tsh_b)
+breast_prism_lowest_ths <- breast_prism_imp[,pref_drug_ths_b]
+ggplot1 <- ggplot() +
+    geom_histogram(aes(x = lowest_mean_duplicate_b$concentration_b), bins = 10, fill = "coral") + 
+    labs(title = "Lowest average prism score", x = "Concentration", y = "Count")
+#hist(as.numeric(highest_mean_duplicate_b$concentration_b))
+#### Plot 2
+ggplot2 <- ggplot() +
+    geom_histogram(aes(x = highest_mean_duplicate_b$concentration_b), bins = 10, fill = "steelblue") + 
+    labs(title = "Highest average prism score", x = "Concentration", y = "Count")
+
+grid.arrange(ggplot1, ggplot2, nrow = 1)
+```
 
 Once the most effective drug concentration combinations were identified, we proceeded with an additional round of filtering. This time only the drugs resulting in an average prism score lower than -2 were selected. This threshold was chosen because its allowing the removal of 60 % of the provided drugs. 
 
-
+```{r Chunk Titel, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift, out.width='0.65\\linewidth'}
+inhibitory_fil <- lowest_mean_duplicate_b$colMeans_breast < -2
+ggplot() +
+    geom_histogram(aes(x = lowest_mean_duplicate_b$colMeans_breast, fill = inhibitory_fil), bins = 30) +
+    labs(title = "Cell Growth of filtered drugs", x = "log2FC", y = "Count", fill = "Inhibitory") +
+    scale_fill_discrete(labels = c("> -2", "< -2")) +
+    scale_fill_manual(values = c("coral", "steelblue2"))
+```
 
 This resulted in a data frame containing 582 inhibitory drugs (columns) and the respective prism scores on 481 cell lines (rows).
 
@@ -173,15 +254,146 @@ Moreover, the 3925 preselected genes were compiled into a data frame for further
 ## Linear regression
 Linear regression is a statistical technique to model the relationship between a dependent variable and one or more independent variables and fitting a straight line to the data. We used linear regression models to predict the average prism score based on the concentration for every drug. We created a function that takes drug names as inputs and returns a scatter plot with a linear fit on top and additional information about how well the model performs. This includes the R2 value, and a Shapiro Wilk normality test performed on the residuals. The R2 value is an indicator of how well the straight line fights the data point and if there is a linear relation between the points. The Shapiro Wilk normality test is commonly used to assess if the residuals follow a normal distribution. This is important to evaluate the performance because deviations from normal distribution suggest an underlying true pattern, that is not captured by the model. 
 
+```{r Chunk Titel, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift, out.width='0.65\\linewidth'}
+###############################
+# 9. # LINEAR REGRESSION ###### Luis
+###############################
+##############
+### BREAST ###
+##############
+regression_list_b <- list()
+r_squared_b <- c()
+p_value_b <- c()
+for(i in 1:length(duplicate_drugs_b)) {
+    act_rows_b <- which(df_nam_con_mean_b$drugnames_b == duplicate_drugs_b[i])
+    act_df_b <- df_nam_con_mean_b[act_rows_b,]
+    if (length(act_rows_b) > 3) {
+        act_reg_b <- lm(colMeans_breast ~ concentration_b, data = act_df_b)
+        act_residuals_b <- act_reg_b$residuals
+        act_shapiro_b <- shapiro.test(act_residuals_b)
+        act_plot_b <- data.frame(concentration_b = act_df_b$concentration, colMeans = act_df_b$colMeans_breast)
+        regression_list_b[[i]] <- list(Summary_reg = summary(act_reg_b), Model = act_reg_b, Residuals = act_residuals_b, R_squared = summary(act_reg_b)$r.squared, Plotdata = act_plot_b, Shapiro_test = act_shapiro_b, prediction = act_df_b)
+        names(regression_list_b)[i] <- duplicate_drugs_b[i]
+        r_squared_b <- c(r_squared_b, summary(act_reg_b)$r.squared)
+        p_value_b <- c(p_value_b, act_shapiro_b$p.value)
+    }
+}
+testname <- "BRD-K99383816-001-03-5"
+#######################
+### PLOT REGRESSION ###
+#######################
+plot_reg <- function(drugname) {
+    position <- which(drugname == names(regression_list_b))
+    #### Summary model ####
+    act_summary_b <- regression_list_b[[position]][[2]]
+    #### Model ####
+    act_model_b <- regression_list_b[[position]][[1]]
+    #### Shapiro-Wilk test ####
+    act_shapiro <- regression_list_b[[position]][[6]]
 
+    #### Metadata ####
+    eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2, 
+    list(a = format(unname(coef(act_model_b)[1]), digits = 2),
+         b = format(unname(coef(act_model_b)[2]), digits = 2),
+         r2 = format(act_model_b$r.squared, digits = 3)))
+    as.character(as.expression(eq))
+
+    #### Plot the regression ####
+    ggplot <- ggplot(data = regression_list_b[[position]][[5]], aes(x = concentration_b, y = colMeans)) +
+        stat_smooth(method = "lm", formula = y ~ x, geom = "smooth") +
+        geom_point() +
+        labs(x = "Concentration", y = "Mean of PRISM score", title = paste("Regression for:", drugname)) +
+        annotate("text", x = 6.5, y = 1.5, label = eq, size = 3) +
+        annotate("text", x = 6.5, y = 1, label = paste("Shapiro-Wilk normality test for Residuals:", "\n", "W =", round(act_shapiro$statistic, 3), "|  p-value =", format(act_shapiro$p.value, scientific = TRUE)), size = 3)
+
+    return(ggplot)
+}
+plot_reg(testname)
+```
 
 Next we created a function which takes drug names and concentration values as an Input and returns  predicted mean cell growth values for the concentration values. 
 
+```{r Chunk Titel, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift, out.width='0.65\\linewidth'}
+#######################
+### PREDICTION TOOL ###
+#######################
+prediction_tool <- function(drugname, conc_values) {
 
+    position <- which(drugname == names(regression_list_b))
+
+    #### Prediction ####
+    act_model_b <- regression_list_b[[position]][[2]]
+    new_data <- data.frame(concentration_b = conc_values) 
+    act_shapiro <- regression_list_b[[position]][[6]]
+    colMeans <- predict(act_model_b, newdata = new_data)
+
+    cat("-------------------------------------------------------\n")
+    cat("Concentrations:\n")
+    print(setNames(conc_values, c(1:length(conc_values))))
+    cat("Predicted Prism Scores:\n")
+    print(round(colMeans, 3))
+    cat("-------------------------------------------------------\n")
+
+    ### Combine the data ###
+    act_newdata <- cbind(new_data, colMeans)
+    act_newdata <- cbind(act_newdata, level = c(replicate(length(new_data), "predicted")))
+    hold_df <- cbind(regression_list_b[[position]][[5]], level = c(replicate(length(regression_list_b[[position]][[5]]$concentration_b), "original")))
+    comb_df <- rbind(hold_df, act_newdata)
+    comb_df[,3] <- as.factor(comb_df[,3])
+    col_df <- c(predicted = "coral2", original = "black")
+
+    ### Metadata ###
+    eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2, 
+    list(a = format(unname(coef(act_model_b)[1]), digits = 2),
+         b = format(unname(coef(act_model_b)[2]), digits = 2),
+         r2 = format(summary(act_model_b)$r.squared, digits = 3)))
+    as.character(as.expression(eq))
+
+    ### Plot the prediction ###
+    ggplot <- ggplot(data = comb_df, aes(x = concentration_b, y = colMeans, color = level)) +
+        stat_smooth(method = "lm", formula = y ~ x, geom = "smooth", color = "steelblue") +
+        geom_point() +
+        labs(x = "Concentration", y = "Mean of PRISM score", title = paste("Regression for:", drugname), color = "") +
+        scale_color_manual(values = col_df) +
+        annotate("text", x = 6.5, y = 1.5, label = eq, size = 3) +
+        annotate("text", x = 6.5, y = 1, label = paste("Shapiro-Wilk normality test for Residuals:", "\n", "W =", round(act_shapiro$statistic, 3), "|  p-value =", format(act_shapiro$p.value, scientific = TRUE)), size = 3)
+
+    return(ggplot)
+}
+prediction_tool(testname, c(0.1, 0.3, 6.4, 8.9, 10.5))
+```
 
 To further confirm the relationship between concentration and the mean cell growth, we calculated the Pearson correlation for each drug. 
 
-
+```{r Chunk Titel, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift, out.width='0.65\\linewidth'}
+####################################
+# 9.1 # CORRELATION DRUG ~ CONC ###### Luis
+####################################
+##############
+### BREAST ###
+##############
+drugnames_b <- sub("::.*", "", colnames(breast_prism_imp))
+concentration_b <- as.numeric(sub(".*::(.*?)::.*", "\\1", colnames(breast_prism_imp)))
+names_conc_drug_b <- sub("::.*", "", sub("::", ":", colnames(breast_prism_imp)))
+colMeans_breast <- apply(breast_prism_imp, 2, mean)
+duplicate_drugs_b <- unique(drugnames_b)
+df_nam_con_mean_b <- data.frame(colMeans_breast, drugnames_b, concentration_b, names_conc_drug_b)
+highest_cor_b <- data.frame()
+for(i in 1:length(duplicate_drugs_b)) {
+    act_rows_b <- which(df_nam_con_mean_b$drugnames_b == duplicate_drugs_b[i])
+    act_df_b <- df_nam_con_mean_b[act_rows_b,]
+    if (length(act_rows_b) > 2) {
+        cor_b <- cor(act_df_b$concentration_b, act_df_b$colMeans_breast, method = "pearson")
+        new_row <- data.frame(drugname = duplicate_drugs_b[i], correlation = cor_b)
+        highest_cor_b <- rbind(highest_cor_b, new_row)
+    }
+}
+high_cor <- highest_cor_b$correlation < -0.7
+ggplot() +
+    geom_histogram(aes(x = highest_cor_b$correlation, fill = high_cor), bins = 75) +
+    labs(title = "Correlation of drug and concentration", x = "Pearson Correlation", y = "Count", fill = " ") +
+    scale_fill_discrete(labels = c("> 0.7", "< 0.7")) 
+```
 
 # Discussion
 
@@ -207,3 +419,14 @@ In hindsight, this approach may not be optimal to further decrease the number of
 # References
 
 # Appendix
+```{r Chunk Titel, echo = FALSE, message=FALSE, fig.align='center', fig.cap='\\textbf{Titel Abbildung} Bild unterschrift, out.width='0.65\\linewidth'}
+ggplot() +
+    geom_histogram(aes(x = r_squared_b), bins = 75, fill = "steelblue") +
+    labs(title = "R^2 of linear regressions for every treatment", x = "R^2 value", y = "Count")
+
+singificance_b <- p_value_b > 0.05
+ggplot() +
+    geom_histogram(aes(x = p_value_b, fill = singificance_b), bins = 75) +
+    labs(title = "Distribution of p-values of the Shapiro-test performed on all models", x = "p-value", y = "Count", fill = "") +
+    scale_fill_discrete(labels = c("< 0.05", "non significant")) 
+```
